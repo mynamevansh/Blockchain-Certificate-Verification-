@@ -11,11 +11,9 @@ import {
   Search,
   Download,
   Eye,
-  Trash2,
   LogOut,
   ShieldCheck,
   Settings,
-  BarChart3,
   Menu,
   Home,
   Award,
@@ -115,10 +113,6 @@ const AdminDashboard = () => {
     }));
   };
 
-  const saveUsersToStorage = (usersData) => {
-    localStorage.setItem('users', JSON.stringify(usersData));
-  };
-
   const generateCertificateId = () => {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 1000);
@@ -216,7 +210,7 @@ const AdminDashboard = () => {
       localStorage.removeItem('user');
       
       // Show sign-out success toast
-      const toastId = toast.success('Signed out successfully! Redirecting...', {
+      toast.success('Signed out successfully! Redirecting...', {
         autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,

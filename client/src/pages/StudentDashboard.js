@@ -8,7 +8,6 @@ import {
   Eye, 
   LogOut,
   GraduationCap,
-  Calendar,
   User,
   Shield,
   ExternalLink,
@@ -43,7 +42,7 @@ const StudentDashboard = () => {
     });
     
     setCertificates([]);
-  }, []);
+  }, [hideLoading]);
 
   const handleSignOut = () => {
     localStorage.removeItem('userType');

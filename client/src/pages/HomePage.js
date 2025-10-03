@@ -8,7 +8,6 @@ import {
   Users, 
   Award,
   CheckCircle,
-  Clock,
   Globe,
   ArrowRight,
   Play,
@@ -27,7 +26,7 @@ import {
 
 const HomePage = () => {
   const navigateWithLoading = useNavigateWithLoading();
-  const { showLoading } = useLoading();
+  useLoading();
   const [showProjectModal, setShowProjectModal] = useState(false);
 
   const handleGetStarted = () => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
 const LoadingSpinner = ({ show, message = "Loading..." }) => {
   if (!show) return null;

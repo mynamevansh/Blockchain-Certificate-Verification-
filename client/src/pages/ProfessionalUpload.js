@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/SimpleWebSocketContext';
-import { certificateAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import { 
   Upload as UploadIcon, 

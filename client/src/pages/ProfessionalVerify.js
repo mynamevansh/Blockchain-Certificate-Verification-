@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { certificateAPI } from '../services/api';
 import { toast } from 'react-toastify';
 import { 
   Search, 
@@ -8,9 +7,7 @@ import {
   XCircle, 
   Shield,
   AlertTriangle,
-  ArrowLeft,
-  Download,
-  ExternalLink
+  ArrowLeft
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
@@ -94,29 +91,6 @@ const ProfessionalVerify = () => {
     } finally {
       setVerifying(false);
     }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const getStatusBadge = (status, isValid) => {
-    if (!isValid) {
-      return <span className="status-badge revoked">Invalid</span>;
-    }
-    
-    const statusMap = {
-      active: { class: 'active', text: 'Valid & Active' },
-      revoked: { class: 'revoked', text: 'Revoked' },
-      expired: { class: 'pending', text: 'Expired' }
-    };
-    
-    const statusInfo = statusMap[status] || { class: 'verified', text: 'Valid' };
-    return <span className={`status-badge ${statusInfo.class}`}>{statusInfo.text}</span>;
   };
 
   return (

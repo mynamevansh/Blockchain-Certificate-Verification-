@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
 import useNavigateWithLoading from '../hooks/useNavigateWithLoading';
 import { ShieldCheck, GraduationCap, Users, FileCheck, ChevronRight } from 'lucide-react';
 
 const AuthHomePage = () => {
-  const navigate = useNavigate();
   const navigateWithLoading = useNavigateWithLoading();
   const { hideLoading } = useLoading();
-  const [signingInAsAdmin, setSigningInAsAdmin] = useState(false);
-  const [signingInAsStudent, setSigningInAsStudent] = useState(false);
+  const [signingIn, setSigningIn] = useState(null);
 
   useEffect(() => {
     hideLoading();
@@ -42,7 +39,7 @@ const AuthHomePage = () => {
       }));
       
       // Show success toast immediately after authentication
-      const toastId = toast.success('Signed in as Administrator! Redirecting...', {
+      toast.success('Signed in as Administrator! Redirecting...', {
         autoClose: 2500, // Stay visible for 2.5 seconds
         hideProgressBar: false,
         closeOnClick: true,
@@ -89,7 +86,7 @@ const AuthHomePage = () => {
       }));
       
       // Show success toast immediately after authentication
-      const toastId = toast.success('Signed in as Student! Redirecting...', {
+      toast.success('Signed in as Student! Redirecting...', {
         autoClose: 2500, // Stay visible for 2.5 seconds
         hideProgressBar: false,
         closeOnClick: true,

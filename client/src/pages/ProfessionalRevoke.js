@@ -116,14 +116,6 @@ const ProfessionalRevoke = () => {
       // Simulate revocation process
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const revocationData = {
-        certificateId: selectedCertificate.id,
-        reason: revocationReason,
-        revokedBy: user?.name || 'System Administrator',
-        revokedDate: new Date().toISOString(),
-        previousStatus: selectedCertificate.status
-      };
-
       // Update certificate status
       const updatedCertificate = {
         ...selectedCertificate,
