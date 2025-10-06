@@ -1,24 +1,20 @@
-// API Configuration
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 export const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:5000';
 
-// Blockchain Configuration
 export const BLOCKCHAIN_CONFIG = {
   NETWORK_ID: process.env.REACT_APP_NETWORK_ID || '1337',
   CONTRACT_ADDRESS: process.env.REACT_APP_CONTRACT_ADDRESS || '',
   IPFS_GATEWAY: process.env.REACT_APP_IPFS_GATEWAY || 'https://ipfs.io/ipfs/',
 };
 
-// Application Constants
 export const APP_CONFIG = {
   NAME: 'CertVerify',
   DESCRIPTION: 'Tamper-Proof Certificate Verification System',
   VERSION: '1.0.0',
-  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+  MAX_FILE_SIZE: 10 * 1024 * 1024,
   SUPPORTED_FILE_TYPES: ['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx'],
 };
 
-// Status Constants
 export const CERTIFICATE_STATUS = {
   ACTIVE: 'active',
   REVOKED: 'revoked',
@@ -26,7 +22,6 @@ export const CERTIFICATE_STATUS = {
   EXPIRED: 'expired',
 };
 
-// Notification Types
 export const NOTIFICATION_TYPES = {
   SUCCESS: 'success',
   ERROR: 'error',
@@ -34,7 +29,6 @@ export const NOTIFICATION_TYPES = {
   INFO: 'info',
 };
 
-// Route Constants
 export const ROUTES = {
   HOME: '/',
   UPLOAD: '/upload',
@@ -43,7 +37,6 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
 };
 
-// Error Messages
 export const ERROR_MESSAGES = {
   WALLET_NOT_CONNECTED: 'Please connect your wallet to continue',
   FILE_TOO_LARGE: 'File size exceeds maximum limit',
@@ -54,7 +47,6 @@ export const ERROR_MESSAGES = {
   UNAUTHORIZED: 'You are not authorized to perform this action',
 };
 
-// Success Messages
 export const SUCCESS_MESSAGES = {
   CERTIFICATE_UPLOADED: 'Certificate uploaded successfully',
   CERTIFICATE_VERIFIED: 'Certificate verified successfully',
@@ -63,7 +55,6 @@ export const SUCCESS_MESSAGES = {
   WALLET_DISCONNECTED: 'Wallet disconnected successfully',
 };
 
-// Loading Messages
 export const LOADING_MESSAGES = {
   CONNECTING_WALLET: 'Connecting wallet...',
   UPLOADING_CERTIFICATE: 'Uploading certificate...',
@@ -72,14 +63,12 @@ export const LOADING_MESSAGES = {
   LOADING_DATA: 'Loading data...',
 };
 
-// Animation Durations (in ms)
 export const ANIMATION_DURATION = {
   FAST: 150,
   NORMAL: 300,
   SLOW: 500,
 };
 
-// Breakpoints
 export const BREAKPOINTS = {
   SM: '640px',
   MD: '768px',
@@ -88,7 +77,6 @@ export const BREAKPOINTS = {
   '2XL': '1536px',
 };
 
-// Colors (matching the CSS variables)
 export const COLORS = {
   PRIMARY: {
     50: '#eff6ff',

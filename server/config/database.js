@@ -109,7 +109,7 @@ const seedInitialData = async () => {
       const initialStudent = new User({
         name: 'John Smith',
         email: 'student@university.edu',
-        password: 'student123', // Will be hashed by pre-save middleware
+        password: 'demostudent', // Will be hashed by pre-save middleware
         studentId: 'STU-2024-001',
         program: 'Computer Science',
         department: 'Computer Science',
@@ -122,7 +122,7 @@ const seedInitialData = async () => {
       await initialStudent.save();
       console.log('🎓 Initial student user created successfully');
       console.log('📧 Email: student@university.edu');
-      console.log('🔑 Password: student123');
+      console.log('🔑 Password: demostudent');
       console.log('🆔 Student ID: STU-2024-001');
     }
 

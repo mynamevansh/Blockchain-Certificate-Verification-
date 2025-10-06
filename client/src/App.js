@@ -4,15 +4,11 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './styles/professional.css';
 
-// Context Providers
 import { AuthProvider } from './context/AuthContext';
 import { WebSocketProvider } from './context/SimpleWebSocketContext';
 import { LoadingProvider, useLoading } from './context/LoadingContext';
 
-// Components
 import LoadingSpinner from './components/LoadingSpinner';
-
-// Pages
 import HomePage from './pages/HomePage';
 import AuthHomePage from './pages/AuthHomePage';
 import AdminDashboard from './pages/NewAdminDashboard';
@@ -23,7 +19,6 @@ import ProfessionalVerify from './pages/ProfessionalVerify';
 import ProfessionalRevoke from './pages/ProfessionalRevoke';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
 
-// Protected Route Component
 function ProtectedRoute({ children, allowedRole }) {
   const userType = localStorage.getItem('userType');
   
@@ -38,7 +33,6 @@ function ProtectedRoute({ children, allowedRole }) {
   return children;
 }
 
-// Main App Component with Loading
 function AppContent() {
   const { isLoading, loadingMessage } = useLoading();
 
@@ -47,11 +41,8 @@ function AppContent() {
       <LoadingSpinner show={isLoading} message={loadingMessage} />
       <Router>
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/auth" element={<AuthHomePage />} />
-            
-            {/* University System - Protected Routes */}
             <Route 
               path="/admin-dashboard" 
               element={
@@ -69,14 +60,12 @@ function AppContent() {
               } 
             />
             
-            {/* Legacy Professional Routes */}
             <Route path="/home" element={<ProfessionalHome />} />
             <Route path="/upload" element={<ProfessionalUpload />} />
             <Route path="/verify" element={<ProfessionalVerify />} />
             <Route path="/revoke" element={<ProfessionalRevoke />} />
             <Route path="/dashboard" element={<ProfessionalDashboard />} />
             
-            {/* Fallback Route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           

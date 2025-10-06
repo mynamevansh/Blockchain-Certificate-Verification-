@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 
 const LoadingDashboard = () => {
-  // Add CSS animation to the document head
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = `
@@ -31,7 +30,7 @@ const LoadingDashboard = () => {
       fontFamily: 'Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Open Sans", sans-serif',
       padding: '1rem'
     }}>
-      {/* Loading Spinner */}
+      
       <div 
         className="loading-spinner"
         style={{
@@ -44,7 +43,7 @@ const LoadingDashboard = () => {
         }} 
       />
       
-      {/* Loading Text */}
+      
       <h2 style={{
         fontSize: '1.25rem',
         fontWeight: '500',
@@ -57,7 +56,7 @@ const LoadingDashboard = () => {
         Loading Dashboard...
       </h2>
       
-      {/* Subtitle */}
+      
       <p style={{
         fontSize: '0.875rem',
         color: '#94a3b8',
@@ -70,7 +69,7 @@ const LoadingDashboard = () => {
         Please wait while we prepare your workspace
       </p>
 
-      {/* Optional: Progress Dots */}
+      
       <div style={{
         display: 'flex',
         gap: '0.375rem',
@@ -90,7 +89,7 @@ const LoadingDashboard = () => {
         ))}
       </div>
 
-      {/* Add pulse animation for dots */}
+      
       <style>{`
         @keyframes loading-pulse {
           0%, 80%, 100% {

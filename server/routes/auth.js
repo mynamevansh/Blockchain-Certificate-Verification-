@@ -1,9 +1,5 @@
 const express = require('express');
 const router = express.Router();
-
-// @route   GET /api/auth/verify
-// @desc    Verify token and get user info
-// @access  Private
 router.get('/verify', require('../middleware/auth').authenticate, (req, res) => {
   res.status(200).json({
     success: true,
@@ -20,17 +16,10 @@ router.get('/verify', require('../middleware/auth').authenticate, (req, res) => 
     }
   });
 });
-
-// @route   POST /api/auth/logout
-// @desc    Logout user (client-side token removal)
-// @access  Private
 router.post('/logout', require('../middleware/auth').authenticate, (req, res) => {
-  // In a real application, you might want to blacklist the token
-  // For now, we'll just return success (client will remove the token)
   res.status(200).json({
     success: true,
     message: 'Logged out successfully'
   });
 });
-
 module.exports = router;

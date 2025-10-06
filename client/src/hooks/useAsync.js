@@ -5,7 +5,6 @@ export const useAsync = (asyncFunction, immediate = true) => {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
 
-  // The execute function wraps asyncFunction and handles setting state for pending, resolved, and rejected promises
   const execute = useCallback(
     async (...args) => {
       setStatus('loading');
@@ -26,7 +25,6 @@ export const useAsync = (asyncFunction, immediate = true) => {
     [asyncFunction]
   );
 
-  // Call execute if we want to fire it right away. Otherwise execute can be called later, such as in an onClick handler
   useEffect(() => {
     if (immediate) {
       execute();

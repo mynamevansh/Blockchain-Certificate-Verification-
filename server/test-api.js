@@ -1,23 +1,16 @@
 const axios = require('axios');
-
 const API_BASE = 'http://localhost:5000/api';
-
-// Test credentials
 const ADMIN_CREDENTIALS = {
   email: 'University_admin@university.edu',
   password: 'admin123'
 };
-
 const STUDENT_CREDENTIALS = {
   email: 'student@university.edu',
-  password: 'student123'
+  password: 'demostudent'
 };
-
 const testAPI = async () => {
   try {
     console.log('🧪 Testing Backend API Endpoints...\n');
-
-    // Test 1: Health Check
     console.log('1️⃣ Testing Health Check...');
     try {
       const healthResponse = await axios.get('http://localhost:5000/health');
@@ -26,18 +19,13 @@ const testAPI = async () => {
       console.log('❌ Health Check Failed:', error.message);
       return;
     }
-
-    // Test 2: Admin Login
     console.log('\n2️⃣ Testing Admin Login...');
     try {
       const adminResponse = await axios.post(`${API_BASE}/admin/login`, ADMIN_CREDENTIALS);
       console.log('✅ Admin Login Success:', adminResponse.data.message);
       console.log('🔑 Admin Token:', adminResponse.data.data?.token ? 'Generated' : 'Missing');
-      
-      // Store admin token for further tests
       const adminToken = adminResponse.data.data?.token;
       if (adminToken) {
-        // Test admin profile
         console.log('\n3️⃣ Testing Admin Profile Access...');
         const profileResponse = await axios.get(`${API_BASE}/admin/profile`, {
           headers: { Authorization: `Bearer ${adminToken}` }
@@ -48,18 +36,13 @@ const testAPI = async () => {
       console.log('❌ Admin Login Failed:', error.response?.data?.message || error.message);
       console.log('🔍 Status Code:', error.response?.status);
     }
-
-    // Test 3: Student Login  
     console.log('\n4️⃣ Testing Student Login...');
     try {
       const studentResponse = await axios.post(`${API_BASE}/users/login`, STUDENT_CREDENTIALS);
       console.log('✅ Student Login Success:', studentResponse.data.message);
       console.log('🔑 Student Token:', studentResponse.data.data?.token ? 'Generated' : 'Missing');
-      
-      // Store student token for further tests
       const studentToken = studentResponse.data.data?.token;
       if (studentToken) {
-        // Test student profile
         console.log('\n5️⃣ Testing Student Profile Access...');
         const profileResponse = await axios.get(`${API_BASE}/users/profile`, {
           headers: { Authorization: `Bearer ${studentToken}` }
@@ -70,8 +53,6 @@ const testAPI = async () => {
       console.log('❌ Student Login Failed:', error.response?.data?.message || error.message);
       console.log('🔍 Status Code:', error.response?.status);
     }
-
-    // Test 4: Invalid Credentials
     console.log('\n6️⃣ Testing Invalid Credentials...');
     try {
       await axios.post(`${API_BASE}/admin/login`, {
@@ -86,15 +67,11 @@ const testAPI = async () => {
         console.log('⚠️  Unexpected error:', error.message);
       }
     }
-
     console.log('\n🎉 API Testing Complete!');
-
   } catch (error) {
     console.error('❌ API Test Failed:', error.message);
   }
 };
-
-// Check if server is running before testing
 const checkServerStatus = async () => {
   try {
     await axios.get('http://localhost:5000/health');
@@ -106,12 +83,10 @@ const checkServerStatus = async () => {
     return false;
   }
 };
-
 const runTests = async () => {
   const serverRunning = await checkServerStatus();
   if (serverRunning) {
     await testAPI();
   }
 };
-
 runTests();

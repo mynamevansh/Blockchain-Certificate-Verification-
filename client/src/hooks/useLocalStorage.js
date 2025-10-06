@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
 export const useLocalStorage = (key, initialValue) => {
-  // Get from local storage then parse stored json or return initialValue
   const [storedValue, setStoredValue] = useState(() => {
     try {
       const item = window.localStorage.getItem(key);
@@ -12,10 +11,8 @@ export const useLocalStorage = (key, initialValue) => {
     }
   });
 
-  // Return a wrapped version of useState's setter function that persists the new value to localStorage
   const setValue = useCallback((value) => {
     try {
-      // Allow value to be a function so we have the same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
       window.localStorage.setItem(key, JSON.stringify(valueToStore));
@@ -24,7 +21,6 @@ export const useLocalStorage = (key, initialValue) => {
     }
   }, [key, storedValue]);
 
-  // Remove item from localStorage
   const removeValue = useCallback(() => {
     try {
       window.localStorage.removeItem(key);
@@ -34,7 +30,6 @@ export const useLocalStorage = (key, initialValue) => {
     }
   }, [key, initialValue]);
 
-  // Listen for changes to the localStorage key from other tabs/windows
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === key && e.newValue !== null) {

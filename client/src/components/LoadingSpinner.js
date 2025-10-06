@@ -20,7 +20,7 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
       zIndex: 9999,
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif'
     }}>
-      {/* Brand Logo */}
+      
       <div 
         className="loading-brand-logo"
         style={{
@@ -53,12 +53,12 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
         </h1>
       </div>
 
-      {/* Animated Spinner */}
+      
       <div style={{
         position: 'relative',
         marginBottom: '1.5rem'
       }}>
-        {/* Outer Ring */}
+        
         <div style={{
           width: '64px',
           height: '64px',
@@ -68,7 +68,7 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           animation: 'spin 1s linear infinite'
         }}></div>
         
-        {/* Inner Ring */}
+        
         <div style={{
           position: 'absolute',
           top: '8px',
@@ -81,7 +81,7 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           animation: 'spin 1.5s linear infinite reverse'
         }}></div>
 
-        {/* Center Dot */}
+        
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -95,7 +95,7 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
         }}></div>
       </div>
 
-      {/* Loading Message */}
+      
       <p style={{
         fontSize: 'clamp(0.875rem, 3vw, 1rem)',
         color: '#6b7280',
@@ -109,7 +109,7 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
         {message}
       </p>
 
-      {/* Progress Bar */}
+      
       <div style={{
         width: '200px',
         height: '2px',
@@ -127,7 +127,7 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
         }}></div>
       </div>
 
-      {/* Progress Dots */}
+      
       <div style={{
         display: 'flex',
         gap: '0.5rem',
@@ -147,7 +147,7 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
         ))}
       </div>
 
-      {/* Inject CSS animations into document head */}
+      
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes spin {

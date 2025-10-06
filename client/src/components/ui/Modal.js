@@ -60,10 +60,10 @@ const Modal = ({
         className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
         onClick={handleOverlayClick}
       >
-        {/* Background overlay */}
+        
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
 
-        {/* Center modal */}
+        
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" />&#8203;
         
         <div className={`
@@ -71,7 +71,7 @@ const Modal = ({
           shadow-xl transform transition-all sm:my-8 sm:align-middle sm:p-6 w-full
           ${sizeClasses[size]}
         `}>
-          {/* Header */}
+          
           <div className="flex items-center justify-between mb-4">
             {title && (
               <h3 className="text-lg font-medium text-gray-900">
@@ -90,12 +90,12 @@ const Modal = ({
             )}
           </div>
 
-          {/* Content */}
+          
           <div className="mb-6">
             {children}
           </div>
 
-          {/* Footer */}
+          
           {footer && (
             <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
               {footer}

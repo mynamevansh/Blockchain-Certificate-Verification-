@@ -77,7 +77,7 @@ const AuthHomePage = () => {
     } else {
       setFormData({
         email: 'student@university.edu',
-        password: 'student123',
+        password: 'demostudent',
         rememberMe: false
       });
     }
@@ -555,7 +555,7 @@ const AuthHomePage = () => {
                 fontFamily: 'monospace'
               }}>
                 student@university.edu<br/>
-                student123
+                demostudent
               </p>
             </div>
           </div>
