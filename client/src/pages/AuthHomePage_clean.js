@@ -67,7 +67,7 @@ const AuthHomePage = () => {
       
       localStorage.setItem('userType', 'student');
       localStorage.setItem('studentId', 'student_001');
-      localStorage.setItem('studentName', 'John Smith');
+      localStorage.setItem('studentName', 'Vansh Ranawat');
       localStorage.setItem('studentEmail', 'john.smith@university.edu');
       localStorage.setItem('studentDepartment', 'Computer Science');
       localStorage.setItem('studentYear', 'Senior');

@@ -107,7 +107,7 @@ const seedInitialData = async () => {
     
     if (!existingStudent) {
       const initialStudent = new User({
-        name: 'John Smith',
+        name: 'Vansh Ranawat',
         email: 'student@university.edu',
         password: 'demostudent', // Will be hashed by pre-save middleware
         studentId: 'STU-2024-001',

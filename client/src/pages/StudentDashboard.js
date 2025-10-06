@@ -72,7 +72,7 @@ const StudentDashboard = () => {
   const handleSignOut = async () => {
     try {
       await logout();
-      navigate('/');
+      navigate('/auth');
     } catch (error) {
       toast.error('Sign out failed. Please try again.');
     }

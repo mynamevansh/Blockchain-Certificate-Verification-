@@ -292,8 +292,8 @@ const AdminDashboard = () => {
       // Wait for user to see the message before navigating
       await new Promise(resolve => setTimeout(resolve, 1200));
       
-      // Navigate to home page
-      navigate('/');
+      // Navigate to sign in page
+      navigate('/auth');
       
     } catch (error) {
       toast.error('Sign out failed. Please try again.');

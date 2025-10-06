@@ -32,7 +32,7 @@ const AdminDashboard = () => {
   const [certificates, setCertificates] = useState([
     {
       id: 'CERT-2024-001',
-      recipientName: 'John Smith',
+      recipientName: 'Vansh Ranawat',
       courseName: 'Advanced Web Development',
       issueDate: '2024-05-15',
       expiryDate: '2024-12-15',
@@ -80,7 +80,7 @@ const AdminDashboard = () => {
     localStorage.removeItem('userType');
     localStorage.removeItem('user');
     toast.success('Signed out successfully');
-    navigate('/');
+    navigate('/auth');
   };
 
   const handleVerification = async (e) => {

@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../hooks/useNotification';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../constants';
 import { authAPI } from '../services/api';
+
 const AuthContext = createContext();
+
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -11,7 +14,9 @@ export const useAuth = () => {
   }
   return context;
 };
+
 export const AuthProvider = ({ children }) => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [userType, setUserType] = useState(null); // 'admin' or 'student'
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -23,12 +28,14 @@ export const AuthProvider = ({ children }) => {
     notifications: true,
   });
   const { showSuccess, showError } = useNotification();
+
   useEffect(() => {
     if (error) {
       const timer = setTimeout(() => setError(null), 5000);
       return () => clearTimeout(timer);
     }
   }, [error]);
+
   const checkExistingAuth = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -36,6 +43,7 @@ export const AuthProvider = ({ children }) => {
       const token = localStorage.getItem('auth_token');
       const storedUserType = localStorage.getItem('userType');
       const userData = localStorage.getItem('user_data');
+      
       if (token && storedUserType && userData) {
         try {
           let profile;
@@ -58,9 +66,11 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   }, []);
+
   useEffect(() => {
     checkExistingAuth();
   }, [checkExistingAuth]);
+
   useEffect(() => {
     const handleLogout = () => {
       setUser(null);
@@ -71,6 +81,7 @@ export const AuthProvider = ({ children }) => {
     window.addEventListener('auth:logout', handleLogout);
     return () => window.removeEventListener('auth:logout', handleLogout);
   }, []);
+
   const loginAsAdmin = useCallback(async (email, password, rememberMe = false) => {
     try {
       setIsLoading(true);
@@ -95,6 +106,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   }, [setUserPreferences, showError, showSuccess]);
+
   const loginAsUser = useCallback(async (email, password, rememberMe = false) => {
     try {
       setIsLoading(true);
@@ -119,6 +131,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   }, [setUserPreferences, showError, showSuccess]);
+
   const registerAdmin = useCallback(async (userData) => {
     try {
       setIsLoading(true);
@@ -136,6 +149,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   }, [showError, showSuccess]);
+
   const registerUser = useCallback(async (userData) => {
     try {
       setIsLoading(true);
@@ -153,6 +167,7 @@ export const AuthProvider = ({ children }) => {
       setIsLoading(false);
     }
   }, [showError, showSuccess]);
+
   const logout = useCallback(async () => {
     try {
       authAPI.logout();
@@ -164,14 +179,20 @@ export const AuthProvider = ({ children }) => {
         setUserPreferences(prev => ({ ...prev, rememberMe: false }));
       }
       showSuccess('Successfully logged out');
+      // Redirect to sign-in page after logout
+      navigate('/auth');
     } catch (error) {
       console.error('Failed to logout:', error);
       showError('Failed to logout properly');
+      // Still redirect even if there's an error
+      navigate('/auth');
     }
-  }, [userPreferences.rememberMe, setUserPreferences, showSuccess, showError]);
+  }, [navigate, userPreferences.rememberMe, setUserPreferences, showSuccess, showError]);
+
   const updatePreferences = useCallback((newPreferences) => {
     setUserPreferences(prev => ({ ...prev, ...newPreferences }));
   }, [setUserPreferences]);
+
   const getProfile = useCallback(async () => {
     try {
       if (!isAuthenticated) return null;
@@ -185,9 +206,11 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   }, [isAuthenticated, userType]);
+
   const hasRole = useCallback((role) => {
     return userType === role;
   }, [userType]);
+
   const value = {
     user,
     userType,
@@ -205,9 +228,12 @@ export const AuthProvider = ({ children }) => {
     hasRole,
     checkExistingAuth,
   };
+
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
+
+export { AuthContext };
