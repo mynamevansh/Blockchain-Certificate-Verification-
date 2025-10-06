@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
-  const { isConnected } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const features = [
     {

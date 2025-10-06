@@ -14,7 +14,7 @@ import AuthHomePage from './pages/AuthHomePage';
 import AdminDashboard from './pages/NewAdminDashboard';
 import StudentDashboard from './pages/StudentDashboard';
 import ProfessionalHome from './pages/ProfessionalHome';
-import ProfessionalUpload from './pages/ProfessionalUpload';
+import Upload from './pages/Upload';
 import ProfessionalVerify from './pages/ProfessionalVerify';
 import ProfessionalRevoke from './pages/ProfessionalRevoke';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
@@ -60,7 +60,7 @@ function AppContent() {
         />
         
         <Route path="/home" element={<ProfessionalHome />} />
-        <Route path="/upload" element={<ProfessionalUpload />} />
+        <Route path="/upload" element={<Upload />} />
         <Route path="/verify" element={<ProfessionalVerify />} />
         <Route path="/revoke" element={<ProfessionalRevoke />} />
         <Route path="/dashboard" element={<ProfessionalDashboard />} />

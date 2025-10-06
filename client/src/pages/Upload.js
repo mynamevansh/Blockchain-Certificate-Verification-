@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/SimpleWebSocketContext';
 import { certificateAPI } from '../services/api';
@@ -6,7 +6,7 @@ import blockchainService from '../services/blockchain';
 import { toast } from 'react-toastify';
 
 const Upload = () => {
-  const { user, isConnected } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { emitEvent } = useWebSocket();
   
   const [formData, setFormData] = useState({
@@ -23,15 +23,19 @@ const Upload = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadedCertificate, setUploadedCertificate] = useState(null);
 
-  const handleInputChange = (e) => {
+  // Memoize computed values to prevent unnecessary re-renders
+  const isFormDisabled = useMemo(() => uploading, [uploading]);
+  const canSubmit = useMemo(() => !uploading && file && isAuthenticated, [uploading, file, isAuthenticated]);
+
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-  };
+  }, []);
 
-  const handleDrag = (e) => {
+  const handleDrag = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     if (e.type === 'dragenter' || e.type === 'dragover') {
@@ -39,9 +43,9 @@ const Upload = () => {
     } else if (e.type === 'dragleave') {
       setDragActive(false);
     }
-  };
+  }, []);
 
-  const handleDrop = (e) => {
+  const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
@@ -49,9 +53,9 @@ const Upload = () => {
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
-  };
+  }, [handleFileSelect]);
 
-  const handleFileSelect = (selectedFile) => {
+  const handleFileSelect = useCallback((selectedFile) => {
     // Validate file type (allow common certificate formats)
     const allowedTypes = [
       'application/pdf',
@@ -75,15 +79,15 @@ const Upload = () => {
 
     setFile(selectedFile);
     toast.success('File selected successfully');
-  };
+  }, []);
 
-  const handleFileInputChange = (e) => {
+  const handleFileInputChange = useCallback((e) => {
     if (e.target.files && e.target.files[0]) {
       handleFileSelect(e.target.files[0]);
     }
-  };
+  }, [handleFileSelect]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     const required = ['recipientName', 'recipientEmail', 'courseName', 'institution', 'issueDate'];
     const missing = required.filter(field => !formData[field]);
     
@@ -98,13 +102,13 @@ const Upload = () => {
     }
 
     return true;
-  };
+  }, [formData, file]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
-    if (!isConnected) {
-      toast.error('Please connect your wallet first');
+    if (!isAuthenticated) {
+      toast.error('Please log in first');
       return;
     }
 
@@ -126,7 +130,7 @@ const Upload = () => {
       const certificateData = {
         ...formData,
         hash: fileHash,
-        issuer: user.address,
+        issuer: user?.address || user?.email,
         recipient: formData.recipientEmail,
         metadata: {
           fileName: file.name,
@@ -162,11 +166,13 @@ const Upload = () => {
       setUploadedCertificate(completeCertificate);
       
       // Emit WebSocket event
-      emitEvent('certificateUploaded', {
-        certificateId: completeCertificate.certificateId,
-        issuer: user.address,
-        recipient: formData.recipientName
-      });
+      if (emitEvent) {
+        emitEvent('certificateUploaded', {
+          certificateId: completeCertificate.certificateId,
+          issuer: user?.address || user?.email,
+          recipient: formData.recipientName
+        });
+      }
       
       toast.success('Certificate issued successfully!');
       
@@ -187,9 +193,9 @@ const Upload = () => {
     } finally {
       setUploading(false);
     }
-  };
+  }, [isAuthenticated, validateForm, file, formData, user, emitEvent]);
 
-  if (!isConnected) {
+  if (!isAuthenticated) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
@@ -198,9 +204,9 @@ const Upload = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Wallet Connection Required</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h2>
           <p className="text-gray-600 mb-6">
-            You need to connect your wallet to upload and issue certificates.
+            You need to log in to upload and issue certificates.
           </p>
         </div>
       </div>
@@ -347,7 +353,7 @@ const Upload = () => {
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Certificate Information</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+            <div key="recipientName-field">
               <label htmlFor="recipientName" className="block text-sm font-medium text-gray-700 mb-2">
                 Recipient Name *
               </label>
@@ -360,10 +366,11 @@ const Upload = () => {
                 className="input-field"
                 placeholder="Enter recipient's full name"
                 required
+                key="recipientName-input"
               />
             </div>
 
-            <div>
+            <div key="recipientEmail-field">
               <label htmlFor="recipientEmail" className="block text-sm font-medium text-gray-700 mb-2">
                 Recipient Email *
               </label>
@@ -376,10 +383,11 @@ const Upload = () => {
                 className="input-field"
                 placeholder="Enter recipient's email"
                 required
+                key="recipientEmail-input"
               />
             </div>
 
-            <div>
+            <div key="courseName-field">
               <label htmlFor="courseName" className="block text-sm font-medium text-gray-700 mb-2">
                 Course/Program Name *
               </label>
@@ -392,10 +400,11 @@ const Upload = () => {
                 className="input-field"
                 placeholder="Enter course or program name"
                 required
+                key="courseName-input"
               />
             </div>
 
-            <div>
+            <div key="institution-field">
               <label htmlFor="institution" className="block text-sm font-medium text-gray-700 mb-2">
                 Issuing Institution *
               </label>
@@ -408,10 +417,11 @@ const Upload = () => {
                 className="input-field"
                 placeholder="Enter institution name"
                 required
+                key="institution-input"
               />
             </div>
 
-            <div>
+            <div key="issueDate-field">
               <label htmlFor="issueDate" className="block text-sm font-medium text-gray-700 mb-2">
                 Issue Date *
               </label>
@@ -423,10 +433,11 @@ const Upload = () => {
                 onChange={handleInputChange}
                 className="input-field"
                 required
+                key="issueDate-input"
               />
             </div>
 
-            <div className="md:col-span-2">
+            <div className="md:col-span-2" key="description-field">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Description (Optional)
               </label>
@@ -438,6 +449,7 @@ const Upload = () => {
                 rows={3}
                 className="input-field"
                 placeholder="Enter additional details about the certificate"
+                key="description-input"
               />
             </div>
           </div>
@@ -447,7 +459,7 @@ const Upload = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            disabled={uploading || !file}
+            disabled={!canSubmit}
             className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
           >
             {uploading ? (

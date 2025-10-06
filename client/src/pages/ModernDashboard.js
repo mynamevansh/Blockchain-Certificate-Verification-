@@ -5,7 +5,7 @@ import { certificateAPI, statsAPI } from '../services/api';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { user, isConnected } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { notifications, isConnected: wsConnected } = useWebSocket();
   
   const [stats, setStats] = useState({
@@ -103,10 +103,10 @@ const Dashboard = () => {
   }, [user?.address, notifications, recentCertificates]);
 
   useEffect(() => {
-    if (isConnected && user?.address) {
+    if (isAuthenticated && user) {
       loadDashboardData();
     }
-  }, [isConnected, user, period, loadDashboardData]);
+  }, [isAuthenticated, user, period, loadDashboardData]);
 
   const getActivityIcon = (type, subType) => {
     if (type === 'notification') {
@@ -122,7 +122,7 @@ const Dashboard = () => {
     return '📋';
   };
 
-  if (!isConnected) {
+  if (!isAuthenticated) {
     return (
       <div className="p-8">
         <div className="text-center">

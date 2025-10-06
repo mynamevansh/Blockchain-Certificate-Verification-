@@ -6,7 +6,7 @@ import blockchainService from '../services/blockchain';
 import { toast } from 'react-toastify';
 
 const Revoke = () => {
-  const { user, isConnected } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { emitEvent } = useWebSocket();
   
   const [certificateId, setCertificateId] = useState('');
@@ -29,10 +29,10 @@ const Revoke = () => {
   ];
 
   useEffect(() => {
-    if (isConnected && user?.address) {
+    if (isAuthenticated && user) {
       loadUserCertificates();
     }
-  }, [isConnected, user]);
+  }, [isAuthenticated, user]);
 
   const loadUserCertificates = async () => {
     setLoadingUserCertificates(true);
@@ -193,7 +193,7 @@ const Revoke = () => {
     setCertificate(null);
   };
 
-  if (!isConnected) {
+  if (!isAuthenticated) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">

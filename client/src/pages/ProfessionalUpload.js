@@ -18,7 +18,7 @@ import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
 
 const ProfessionalUpload = () => {
-  const { user, isConnected } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   useWebSocket(); // For potential future use
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
@@ -525,7 +525,7 @@ const ProfessionalUpload = () => {
                   )}
                 </button>
                 
-                {!isConnected && (
+                {!isAuthenticated && (
                   <div style={{ 
                     marginTop: 'var(--spacing-md)', 
                     padding: 'var(--spacing-md)', 

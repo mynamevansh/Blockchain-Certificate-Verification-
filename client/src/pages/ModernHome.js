@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Home = () => {
-  const { isConnected, connectWallet } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const features = [
     {
@@ -48,7 +48,7 @@ const Home = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            {isConnected ? (
+            {isAuthenticated ? (
               <>
                 <Link to="/dashboard" className="btn-modern btn-primary text-lg px-8 py-4">
                   🚀 Go to Dashboard
@@ -59,9 +59,9 @@ const Home = () => {
               </>
             ) : (
               <>
-                <button onClick={connectWallet} className="btn-modern btn-primary text-lg px-8 py-4">
+                <Link to="/auth" className="btn-modern btn-primary text-lg px-8 py-4">
                   🚀 Get Started
-                </button>
+                </Link>
                 <Link to="/verify" className="btn-modern btn-secondary text-lg px-8 py-4">
                   🔍 Verify Certificate
                 </Link>
@@ -150,14 +150,14 @@ const Home = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            {isConnected ? (
+            {isAuthenticated ? (
               <Link to="/upload" className="btn-modern btn-primary text-lg px-8 py-4">
                 📤 Issue Your First Certificate
               </Link>
             ) : (
-              <button onClick={connectWallet} className="btn-modern btn-primary text-lg px-8 py-4">
-                👛 Connect Wallet & Start
-              </button>
+              <Link to="/auth" className="btn-modern btn-primary text-lg px-8 py-4">
+                👛 Login & Start
+              </Link>
             )}
             <Link to="/verify" className="btn-modern btn-secondary text-lg px-8 py-4">
               🔍 Verify a Certificate
