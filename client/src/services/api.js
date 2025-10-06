@@ -411,12 +411,111 @@ export const certificateAPI = {
   },
 };
 
+// Authentication API endpoints
+export const authAPI = {
+  // Admin login
+  adminLogin: async (email, password) => {
+    try {
+      const response = await api.post('/admin/login', { email, password });
+      if (response.data?.token) {
+        localStorage.setItem('auth_token', response.data.token);
+        localStorage.setItem('userType', 'admin');
+        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      }
+      return response;
+    } catch (error) {
+      console.error('Admin login failed:', error);
+      throw error;
+    }
+  },
+
+  // User login
+  userLogin: async (email, password) => {
+    try {
+      const response = await api.post('/users/login', { email, password });
+      if (response.data?.token) {
+        localStorage.setItem('auth_token', response.data.token);
+        localStorage.setItem('userType', 'student');
+        localStorage.setItem('user_data', JSON.stringify(response.data.user));
+      }
+      return response;
+    } catch (error) {
+      console.error('User login failed:', error);
+      throw error;
+    }
+  },
+
+  // Admin registration
+  adminRegister: async (userData) => {
+    try {
+      return await api.post('/admin/register', userData);
+    } catch (error) {
+      console.error('Admin registration failed:', error);
+      throw error;
+    }
+  },
+
+  // User registration
+  userRegister: async (userData) => {
+    try {
+      return await api.post('/users/register', userData);
+    } catch (error) {
+      console.error('User registration failed:', error);
+      throw error;
+    }
+  },
+
+  // Get admin profile
+  getAdminProfile: async () => {
+    try {
+      return await api.get('/admin/profile');
+    } catch (error) {
+      console.error('Failed to fetch admin profile:', error);
+      throw error;
+    }
+  },
+
+  // Get user profile
+  getUserProfile: async () => {
+    try {
+      return await api.get('/users/profile');
+    } catch (error) {
+      console.error('Failed to fetch user profile:', error);
+      throw error;
+    }
+  },
+
+  // Logout
+  logout: () => {
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('userType');
+    localStorage.removeItem('user_data');
+    window.dispatchEvent(new Event('auth:logout'));
+  },
+
+  // Check if user is authenticated
+  isAuthenticated: () => {
+    return !!localStorage.getItem('auth_token');
+  },
+
+  // Get current user data
+  getCurrentUser: () => {
+    const userData = localStorage.getItem('user_data');
+    return userData ? JSON.parse(userData) : null;
+  },
+
+  // Get current user type
+  getUserType: () => {
+    return localStorage.getItem('userType');
+  },
+};
+
 // User API endpoints
 export const userAPI = {
   // Get user profile
   getProfile: async () => {
     try {
-      return await api.get('/users/profile');
+      return await authAPI.getUserProfile();
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       throw error;

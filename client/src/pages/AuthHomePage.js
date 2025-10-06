@@ -1,13 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
+import { useAuth } from '../context/AuthContext';
 import useNavigateWithLoading from '../hooks/useNavigateWithLoading';
-import { ShieldCheck, GraduationCap, Users, FileCheck, ChevronRight } from 'lucide-react';
+import { ShieldCheck, GraduationCap, Users, FileCheck, ChevronRight, Eye, EyeOff } from 'lucide-react';
 
 const AuthHomePage = () => {
   const navigateWithLoading = useNavigateWithLoading();
   const { hideLoading } = useLoading();
-  const [signingIn, setSigningIn] = useState(null);
+  const { loginAsAdmin, loginAsUser, isLoading } = useAuth();
+  
+  const [activeTab, setActiveTab] = useState('admin');
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false
+  });
 
   useEffect(() => {
     hideLoading();
@@ -16,103 +25,61 @@ const AuthHomePage = () => {
   useEffect(() => {
     // Cleanup: dismiss all auth-related toasts when component unmounts (page change)
     return () => {
-      toast.dismiss('admin-signin');
-      toast.dismiss('student-signin');
-      toast.dismiss(); // Clear any remaining toasts to prevent overlap
+      toast.dismiss();
     };
   }, []);
 
-  const handleAdminSignIn = async () => {
-    setSigningIn('admin');
+  // Handle input changes
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
+    if (!formData.email || !formData.password) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
     try {
-      // Simulate authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store user type in localStorage for demo
-      localStorage.setItem('userType', 'admin');
-      localStorage.setItem('user', JSON.stringify({
-        id: 'admin1',
-        name: 'System Administrator',
-        email: 'admin@university.edu',
-        role: 'admin'
-      }));
-      
-      // Show success toast immediately after authentication
-      toast.success('Signed in as Administrator! Redirecting...', {
-        autoClose: 2500, // Stay visible for 2.5 seconds
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false, // Don't pause to ensure consistent timing
-        draggable: true,
-        toastId: 'admin-signin' // Unique ID to prevent duplicates
-      });
-      
-      // Clear signing state
-      setSigningIn(null);
-      
-      // Wait for user to see the success message
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      // Auto-dismiss toast before navigation
-      toast.dismiss('admin-signin');
-      
-      // Start navigation with loading
-      navigateWithLoading('/admin-dashboard', {
-        message: 'Loading Admin Dashboard...',
-        delay: 300
-      });
-      
+      if (activeTab === 'admin') {
+        await loginAsAdmin(formData.email, formData.password, formData.rememberMe);
+        navigateWithLoading('/admin-dashboard', {
+          message: 'Loading Admin Dashboard...',
+          delay: 500
+        });
+      } else {
+        await loginAsUser(formData.email, formData.password, formData.rememberMe);
+        navigateWithLoading('/student-dashboard', {
+          message: 'Loading Student Dashboard...',
+          delay: 500
+        });
+      }
     } catch (error) {
-      toast.error('Sign in failed. Please try again.');
-      setSigningIn(null);
+      // Error is already handled in the auth context
     }
   };
 
-  const handleStudentSignIn = async () => {
-    setSigningIn('student');
-    
-    try {
-      // Simulate authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store user type in localStorage for demo
-      localStorage.setItem('userType', 'student');
-      localStorage.setItem('user', JSON.stringify({
-        id: 'student1',
-        name: 'John Smith',
-        email: 'john.smith@student.university.edu',
-        role: 'student'
-      }));
-      
-      // Show success toast immediately after authentication
-      toast.success('Signed in as Student! Redirecting...', {
-        autoClose: 2500, // Stay visible for 2.5 seconds
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false, // Don't pause to ensure consistent timing
-        draggable: true,
-        toastId: 'student-signin' // Unique ID to prevent duplicates
+  // Quick fill demo credentials
+  const fillDemoCredentials = () => {
+    if (activeTab === 'admin') {
+      setFormData({
+        email: 'University_admin@university.edu',
+        password: 'admin123',
+        rememberMe: false
       });
-      
-      // Clear signing state
-      setSigningIn(null);
-      
-      // Wait for user to see the success message
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      // Auto-dismiss toast before navigation
-      toast.dismiss('student-signin');
-      
-      // Start navigation with loading
-      navigateWithLoading('/student-dashboard', {
-        message: 'Loading Student Dashboard...',
-        delay: 300
+    } else {
+      setFormData({
+        email: 'student@university.edu',
+        password: 'student123',
+        rememberMe: false
       });
-      
-    } catch (error) {
-      toast.error('Sign in failed. Please try again.');
-      setSigningIn(null);
     }
   };
 
@@ -249,145 +216,234 @@ const AuthHomePage = () => {
           </div>
         </div>
 
-        {/* Sign In Options */}
+        {/* Login Form */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-          gap: '2rem',
-          maxWidth: '800px',
-          margin: '0 auto'
+          maxWidth: '500px',
+          margin: '0 auto',
+          backgroundColor: 'white',
+          borderRadius: '16px',
+          padding: '2.5rem',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
+          border: '1px solid #e2e8f0'
         }}>
-          {/* Admin Sign In */}
+          {/* Tab Navigation */}
           <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '2.5rem',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-            border: '1px solid #e2e8f0',
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden'
+            display: 'flex',
+            backgroundColor: '#f1f5f9',
+            borderRadius: '12px',
+            padding: '4px',
+            marginBottom: '2rem'
           }}>
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              background: 'linear-gradient(90deg, #3b82f6, #1d4ed8)'
-            }} />
-            
+            <button
+              onClick={() => {
+                setActiveTab('admin');
+                setFormData({ email: '', password: '', rememberMe: false });
+              }}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                backgroundColor: activeTab === 'admin' ? 'white' : 'transparent',
+                color: activeTab === 'admin' ? '#1e293b' : '#64748b',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: activeTab === 'admin' ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none'
+              }}
+            >
+              <ShieldCheck size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+              Administrator
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('student');
+                setFormData({ email: '', password: '', rememberMe: false });
+              }}
+              style={{
+                flex: 1,
+                padding: '0.75rem',
+                backgroundColor: activeTab === 'student' ? 'white' : 'transparent',
+                color: activeTab === 'student' ? '#1e293b' : '#64748b',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: activeTab === 'student' ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none'
+              }}
+            >
+              <GraduationCap size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
+              Student
+            </button>
+          </div>
+
+          {/* Form Header */}
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <div style={{
               width: '64px',
               height: '64px',
-              backgroundColor: '#eff6ff',
+              backgroundColor: activeTab === 'admin' ? '#eff6ff' : '#ecfdf5',
               borderRadius: '16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 1.5rem auto'
+              margin: '0 auto 1rem auto'
             }}>
-              <ShieldCheck size={32} style={{ color: '#3b82f6' }} />
+              {activeTab === 'admin' ? (
+                <ShieldCheck size={32} style={{ color: '#3b82f6' }} />
+              ) : (
+                <GraduationCap size={32} style={{ color: '#10b981' }} />
+              )}
             </div>
-
             <h3 style={{
               fontSize: '1.5rem',
               fontWeight: '600',
               color: '#1e293b',
-              margin: '0 0 0.75rem 0',
-              fontFamily: 'Roboto, sans-serif'
+              margin: '0 0 0.5rem 0'
             }}>
-              Administrator Portal
+              {activeTab === 'admin' ? 'Administrator Login' : 'Student Login'}
             </h3>
-            
             <p style={{
-              fontSize: '1rem',
+              fontSize: '0.875rem',
               color: '#64748b',
-              margin: '0 0 2rem 0',
-              fontFamily: 'Open Sans, sans-serif',
-              lineHeight: '1.5'
+              margin: 0
             }}>
-              Full system access for university staff. Manage certificates, verify credentials, and oversee user accounts.
+              {activeTab === 'admin' 
+                ? 'Sign in to manage certificates and users'
+                : 'Sign in to view your certificates'
+              }
             </p>
+          </div>
 
-            <ul style={{
-              textAlign: 'left',
-              margin: '0 0 2rem 0',
-              padding: 0,
-              listStyle: 'none'
-            }}>
-              <li style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                margin: '0 0 0.5rem 0',
+          {/* Login Form */}
+          <form onSubmit={handleSubmit}>
+            {/* Email Input */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
                 fontSize: '0.875rem',
-                color: '#475569',
-                fontFamily: 'Open Sans, sans-serif'
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '0.5rem'
               }}>
-                <ChevronRight size={14} style={{ color: '#3b82f6' }} />
-                Issue and manage certificates
-              </li>
-              <li style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                margin: '0 0 0.5rem 0',
-                fontSize: '0.875rem',
-                color: '#475569',
-                fontFamily: 'Open Sans, sans-serif'
-              }}>
-                <ChevronRight size={14} style={{ color: '#3b82f6' }} />
-                Verify and revoke certificates
-              </li>
-              <li style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                margin: '0 0 0.5rem 0',
-                fontSize: '0.875rem',
-                color: '#475569',
-                fontFamily: 'Open Sans, sans-serif'
-              }}>
-                <ChevronRight size={14} style={{ color: '#3b82f6' }} />
-                User management and analytics
-              </li>
-            </ul>
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  transition: 'border-color 0.2s',
+                  boxSizing: 'border-box'
+                }}
+                placeholder={activeTab === 'admin' ? 'admin@university.edu' : 'student@university.edu'}
+                onFocus={(e) => e.target.style.borderColor = activeTab === 'admin' ? '#3b82f6' : '#10b981'}
+                onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+              />
+            </div>
 
+            {/* Password Input */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#374151',
+                marginBottom: '0.5rem'
+              }}>
+                Password
+              </label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    paddingRight: '3rem',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    transition: 'border-color 0.2s',
+                    boxSizing: 'border-box'
+                  }}
+                  placeholder="Enter your password"
+                  onFocus={(e) => e.target.style.borderColor = activeTab === 'admin' ? '#3b82f6' : '#10b981'}
+                  onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#6b7280'
+                  }}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me */}
+            <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
+              <input
+                type="checkbox"
+                id="rememberMe"
+                name="rememberMe"
+                checked={formData.rememberMe}
+                onChange={handleInputChange}
+                style={{ marginRight: '0.5rem' }}
+              />
+              <label htmlFor="rememberMe" style={{
+                fontSize: '0.875rem',
+                color: '#374151',
+                cursor: 'pointer'
+              }}>
+                Remember me
+              </label>
+            </div>
+
+            {/* Submit Button */}
             <button
-              onClick={handleAdminSignIn}
-              disabled={signingIn === 'admin'}
+              type="submit"
+              disabled={isLoading}
               style={{
                 width: '100%',
-                padding: '0.875rem 1.5rem',
-                backgroundColor: signingIn === 'admin' ? '#9ca3af' : '#3b82f6',
+                padding: '0.875rem',
+                backgroundColor: isLoading ? '#9ca3af' : (activeTab === 'admin' ? '#3b82f6' : '#10b981'),
                 color: 'white',
                 border: 'none',
-                borderRadius: '12px',
+                borderRadius: '8px',
                 fontSize: '1rem',
                 fontWeight: '600',
-                cursor: signingIn === 'admin' ? 'not-allowed' : 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s',
-                fontFamily: 'Roboto, sans-serif',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '0.5rem'
               }}
-              onMouseEnter={(e) => {
-                if (signingIn !== 'admin') {
-                  e.target.style.backgroundColor = '#2563eb';
-                  e.target.style.transform = 'translateY(-1px)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (signingIn !== 'admin') {
-                  e.target.style.backgroundColor = '#3b82f6';
-                  e.target.style.transform = 'translateY(0)';
-                }
-              }}
             >
-              {signingIn === 'admin' ? (
+              {isLoading ? (
                 <>
                   <div style={{
                     width: '16px',
@@ -400,164 +456,39 @@ const AuthHomePage = () => {
                   Signing In...
                 </>
               ) : (
-                <>
-                  <ShieldCheck size={18} />
-                  Sign in as Admin
-                </>
+                `Sign In as ${activeTab === 'admin' ? 'Administrator' : 'Student'}`
               )}
             </button>
-          </div>
 
-          {/* Student Sign In */}
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '16px',
-            padding: '2.5rem',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
-            border: '1px solid #e2e8f0',
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              height: '4px',
-              background: 'linear-gradient(90deg, #10b981, #047857)'
-            }} />
-            
-            <div style={{
-              width: '64px',
-              height: '64px',
-              backgroundColor: '#ecfdf5',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 1.5rem auto'
-            }}>
-              <GraduationCap size={32} style={{ color: '#10b981' }} />
-            </div>
-
-            <h3 style={{
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              color: '#1e293b',
-              margin: '0 0 0.75rem 0',
-              fontFamily: 'Roboto, sans-serif'
-            }}>
-              Student Portal
-            </h3>
-            
-            <p style={{
-              fontSize: '1rem',
-              color: '#64748b',
-              margin: '0 0 2rem 0',
-              fontFamily: 'Open Sans, sans-serif',
-              lineHeight: '1.5'
-            }}>
-              View and manage your academic certificates. Access your credential history and verification status.
-            </p>
-
-            <ul style={{
-              textAlign: 'left',
-              margin: '0 0 2rem 0',
-              padding: 0,
-              listStyle: 'none'
-            }}>
-              <li style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                margin: '0 0 0.5rem 0',
-                fontSize: '0.875rem',
-                color: '#475569',
-                fontFamily: 'Open Sans, sans-serif'
-              }}>
-                <ChevronRight size={14} style={{ color: '#10b981' }} />
-                View your certificates
-              </li>
-              <li style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                margin: '0 0 0.5rem 0',
-                fontSize: '0.875rem',
-                color: '#475569',
-                fontFamily: 'Open Sans, sans-serif'
-              }}>
-                <ChevronRight size={14} style={{ color: '#10b981' }} />
-                Download credential proofs
-              </li>
-              <li style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                margin: '0 0 0.5rem 0',
-                fontSize: '0.875rem',
-                color: '#475569',
-                fontFamily: 'Open Sans, sans-serif'
-              }}>
-                <ChevronRight size={14} style={{ color: '#10b981' }} />
-                Share verification links
-              </li>
-            </ul>
-
+            {/* Demo Credentials Button */}
             <button
-              onClick={handleStudentSignIn}
-              disabled={signingIn === 'student'}
+              type="button"
+              onClick={fillDemoCredentials}
               style={{
                 width: '100%',
-                padding: '0.875rem 1.5rem',
-                backgroundColor: signingIn === 'student' ? '#9ca3af' : '#10b981',
-                color: 'white',
-                border: 'none',
-                borderRadius: '12px',
-                fontSize: '1rem',
-                fontWeight: '600',
-                cursor: signingIn === 'student' ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s',
-                fontFamily: 'Roboto, sans-serif',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
+                marginTop: '1rem',
+                padding: '0.75rem',
+                backgroundColor: 'transparent',
+                color: activeTab === 'admin' ? '#3b82f6' : '#10b981',
+                border: `1px solid ${activeTab === 'admin' ? '#3b82f6' : '#10b981'}`,
+                borderRadius: '8px',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => {
-                if (signingIn !== 'student') {
-                  e.target.style.backgroundColor = '#059669';
-                  e.target.style.transform = 'translateY(-1px)';
-                }
+                e.target.style.backgroundColor = activeTab === 'admin' ? '#3b82f6' : '#10b981';
+                e.target.style.color = 'white';
               }}
               onMouseLeave={(e) => {
-                if (signingIn !== 'student') {
-                  e.target.style.backgroundColor = '#10b981';
-                  e.target.style.transform = 'translateY(0)';
-                }
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.color = activeTab === 'admin' ? '#3b82f6' : '#10b981';
               }}
             >
-              {signingIn === 'student' ? (
-                <>
-                  <div style={{
-                    width: '16px',
-                    height: '16px',
-                    border: '2px solid #ffffff',
-                    borderTop: '2px solid transparent',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }} />
-                  Signing In...
-                </>
-              ) : (
-                <>
-                  <GraduationCap size={18} />
-                  Sign in as Student
-                </>
-              )}
+              Fill Demo Credentials
             </button>
-          </div>
+          </form>
         </div>
 
         {/* Footer Note */}
@@ -572,12 +503,62 @@ const AuthHomePage = () => {
           <p style={{
             fontSize: '0.875rem',
             color: '#64748b',
-            margin: 0,
+            margin: '0 0 1rem 0',
             fontFamily: 'Open Sans, sans-serif'
           }}>
-            <strong>Demo System:</strong> This is a demonstration of the certificate management system.
-            Both admin and student portals are pre-configured for testing purposes.
+            <strong>🔒 MongoDB Authentication System:</strong> Use the credentials below or click "Fill Demo Credentials" to auto-populate the form.
           </p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '1rem',
+            marginTop: '1rem'
+          }}>
+            <div style={{
+              padding: '0.75rem',
+              backgroundColor: '#eff6ff',
+              borderRadius: '8px',
+              border: '1px solid #dbeafe'
+            }}>
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#1e40af',
+                margin: '0 0 0.25rem 0',
+                fontWeight: '600'
+              }}>Admin Login:</p>
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#3730a3',
+                margin: 0,
+                fontFamily: 'monospace'
+              }}>
+                University_admin@university.edu<br/>
+                admin123
+              </p>
+            </div>
+            <div style={{
+              padding: '0.75rem',
+              backgroundColor: '#ecfdf5',
+              borderRadius: '8px',
+              border: '1px solid #d1fae5'
+            }}>
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#047857',
+                margin: '0 0 0.25rem 0',
+                fontWeight: '600'
+              }}>Student Login:</p>
+              <p style={{
+                fontSize: '0.75rem',
+                color: '#065f46',
+                margin: 0,
+                fontFamily: 'monospace'
+              }}>
+                student@university.edu<br/>
+                student123
+              </p>
+            </div>
+          </div>
         </div>
       </main>
 

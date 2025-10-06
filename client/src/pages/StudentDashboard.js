@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
+import { useAuth } from '../context/AuthContext';
+import { authAPI, certificateAPI, userAPI } from '../services/api';
 import { 
   FileText, 
   Download, 
@@ -18,37 +20,62 @@ import {
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const { hideLoading } = useLoading();
+  const { user, logout, isAuthenticated, hasRole } = useAuth();
   const [certificates, setCertificates] = useState([]);
-  const [student, setStudent] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Initialize student data - will be loaded from API in production
+  // Initialize student data and load from API
   useEffect(() => {
-    // Hide loading spinner when dashboard loads
     hideLoading();
     
-    // In a real application, this would fetch student data from your API
-    // const studentData = fetchStudentProfile();
-    // const studentCertificates = fetchStudentCertificates();
+    // Check authentication
+    if (!isAuthenticated || !hasRole('student')) {
+      navigate('/auth');
+      return;
+    }
     
-    // For demo purposes, keeping minimal placeholder data
-    setStudent({
-      id: 'student1',
-      name: 'Student Name',
-      email: 'student@university.edu',
-      studentId: 'STU-XXXX-XXX',
-      program: 'Program Name',
-      enrollmentDate: new Date().toISOString().split('T')[0],
-      expectedGraduation: new Date(new Date().setFullYear(new Date().getFullYear() + 4)).toISOString().split('T')[0]
-    });
-    
-    setCertificates([]);
-  }, [hideLoading]);
+    // Load student data
+    loadStudentData();
+  }, [hideLoading, isAuthenticated, hasRole, navigate]);
 
-  const handleSignOut = () => {
-    localStorage.removeItem('userType');
-    localStorage.removeItem('user');
-    toast.success('Signed out successfully');
-    navigate('/');
+  // Load student data from backend
+  const loadStudentData = async () => {
+    try {
+      setLoading(true);
+      
+      // Load user certificates from backend
+      try {
+        const certificatesResponse = await fetch('/api/certificates/user', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (certificatesResponse.ok) {
+          const certificatesData = await certificatesResponse.json();
+          setCertificates(certificatesData.data || []);
+        }
+      } catch (certError) {
+        console.warn('Certificate endpoint not available yet:', certError);
+        setCertificates([]);
+      }
+      
+    } catch (error) {
+      console.error('Failed to load student data:', error);
+      toast.error('Failed to load your certificates');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await logout();
+      navigate('/');
+    } catch (error) {
+      toast.error('Sign out failed. Please try again.');
+    }
   };
 
   const handleDownloadCertificate = (certificateId) => {
@@ -107,7 +134,7 @@ const StudentDashboard = () => {
     );
   };
 
-  if (!student) {
+  if (loading || !user) {
     return (
       <div style={{
         display: 'flex',
@@ -167,7 +194,7 @@ const StudentDashboard = () => {
               color: '#64748b',
               fontFamily: 'Open Sans, sans-serif'
             }}>
-              Welcome, {student.name}
+              Welcome, {user.name || 'Student'}
             </span>
             <button
               onClick={handleSignOut}
@@ -222,7 +249,7 @@ const StudentDashboard = () => {
                   margin: 0,
                   fontFamily: 'Roboto, sans-serif'
                 }}>
-                  {student.name}
+                  {user.name || 'Student Name'}
                 </h2>
               </div>
               <div style={{
@@ -234,19 +261,19 @@ const StudentDashboard = () => {
               }}>
                 <div>
                   <strong>Student ID:</strong><br />
-                  {student.studentId}
+                  {user.studentId || 'STU-XXXX-XXX'}
                 </div>
                 <div>
                   <strong>Program:</strong><br />
-                  {student.program}
+                  {user.program || 'Program Name'}
                 </div>
                 <div>
                   <strong>Email:</strong><br />
-                  {student.email}
+                  {user.email}
                 </div>
                 <div>
-                  <strong>Expected Graduation:</strong><br />
-                  {new Date(student.expectedGraduation).toLocaleDateString()}
+                  <strong>Status:</strong><br />
+                  {user.status || 'Active'}
                 </div>
               </div>
             </div>

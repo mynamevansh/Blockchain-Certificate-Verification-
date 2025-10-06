@@ -21,17 +21,15 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif'
     }}>
       {/* Brand Logo */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        marginBottom: '2rem',
-        animation: 'fadeInUp 0.6s ease-out',
-        '@media (max-width: 640px)': {
-          flexDirection: 'column',
-          gap: '0.5rem'
-        }
-      }}>
+      <div 
+        className="loading-brand-logo"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '2rem',
+          animation: 'fadeInUp 0.6s ease-out'
+        }}>
         <div style={{
           width: '48px',
           height: '48px',
@@ -203,6 +201,13 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
             0% { transform: translateX(-100%); }
             50% { transform: translateX(200%); }
             100% { transform: translateX(300%); }
+          }
+
+          @media (max-width: 640px) {
+            .loading-brand-logo {
+              flex-direction: column !important;
+              gap: 0.5rem !important;
+            }
           }
         `
       }} />

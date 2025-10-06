@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
+import { useAuth } from '../context/AuthContext';
+import { authAPI, certificateAPI, userAPI } from '../services/api';
 import { 
   FileText, 
   CheckCircle, 
@@ -24,10 +26,12 @@ import {
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { hideLoading } = useLoading();
+  const { user, logout, isAuthenticated, hasRole } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [certificates, setCertificates] = useState([]);
   const [users, setUsers] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [certificateForm, setCertificateForm] = useState({
     studentName: '',
@@ -55,27 +59,18 @@ const AdminDashboard = () => {
   useEffect(() => {
     hideLoading();
     
-    const savedCertificates = localStorage.getItem('certificates');
-    if (savedCertificates) {
-      const parsedCertificates = JSON.parse(savedCertificates);
-      setCertificates(parsedCertificates);
-      updateStats(parsedCertificates);
-    } else {
-      setCertificates([]);
+    // Check authentication
+    if (!isAuthenticated || !hasRole('admin')) {
+      navigate('/auth');
+      return;
     }
     
-    const savedUsers = localStorage.getItem('users');
-    if (savedUsers) {
-      const parsedUsers = JSON.parse(savedUsers);
-      setUsers(parsedUsers);
-    } else {
-      setUsers([]);
-    }
+    // Load dashboard data
+    loadDashboardData();
     
     // Show welcome toast after page fully renders
     const timer = setTimeout(() => {
-      const user = JSON.parse(localStorage.getItem('user') || '{}');
-      if (user.name) {
+      if (user && user.name) {
         toast.success(`Welcome back, ${user.name}!`, {
           autoClose: 2500,
           hideProgressBar: false,
@@ -85,14 +80,91 @@ const AdminDashboard = () => {
           toastId: 'dashboard-welcome'
         });
       }
-    }, 800); // Wait for page to fully render
+    }, 800);
     
     return () => {
       clearTimeout(timer);
-      // Cleanup: dismiss welcome toast when leaving dashboard
       toast.dismiss('dashboard-welcome');
     };
-  }, [hideLoading]);
+  }, [hideLoading, isAuthenticated, hasRole, navigate, user]);
+
+  // Load dashboard data from backend
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Debug: Check authentication status
+      const token = localStorage.getItem('auth_token');
+      const userType = localStorage.getItem('userType');
+      const userData = localStorage.getItem('user_data');
+      
+      console.log('🔍 Debug Auth Status:', {
+        hasToken: !!token,
+        userType,
+        userData: userData ? JSON.parse(userData) : null,
+        isAuthenticated,
+        hasAdminRole: hasRole('admin')
+      });
+      
+      if (!token) {
+        console.error('❌ No auth token found');
+        toast.error('Please log in to access admin features');
+        navigate('/auth');
+        return;
+      }
+      
+      // Load certificates from backend
+      try {
+        console.log('📡 Making request to /api/certificates/admin with token:', token.substring(0, 20) + '...');
+        
+        const certificatesResponse = await fetch('/api/certificates/admin', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        console.log('📈 Response Status:', certificatesResponse.status, certificatesResponse.statusText);
+        
+        if (certificatesResponse.ok) {
+          const certificatesData = await certificatesResponse.json();
+          console.log('✅ Certificates loaded:', certificatesData);
+          setCertificates(certificatesData.data || []);
+          updateStats(certificatesData.data || []);
+        } else {
+          // Handle different error types
+          const errorData = await certificatesResponse.text();
+          console.error('❌ API Error:', certificatesResponse.status, errorData);
+          
+          if (certificatesResponse.status === 401) {
+            toast.error('Session expired. Please log in again.');
+            logout();
+            navigate('/auth');
+            return;
+          } else if (certificatesResponse.status === 403) {
+            toast.error('Access denied. Admin privileges required.');
+            console.error('403 Forbidden - Check user role and permissions');
+          } else {
+            toast.error('Failed to load certificates');
+          }
+          setCertificates([]);
+        }
+      } catch (certError) {
+        console.error('Certificate endpoint error:', certError);
+        toast.error('Network error loading certificates');
+        setCertificates([]);
+      }
+      
+      // Load users (placeholder for now)
+      setUsers([]);
+      
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updateStats = (certificatesData) => {
     const total = certificatesData.length;
@@ -135,10 +207,8 @@ const AdminDashboard = () => {
     setIssuingCertificate(true);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      const newCertificate = {
-        id: generateCertificateId(),
+      // Prepare certificate data for backend
+      const certificateData = {
         studentName: certificateForm.studentName,
         studentId: certificateForm.studentId,
         studentEmail: certificateForm.studentEmail,
@@ -149,36 +219,48 @@ const AdminDashboard = () => {
         university: certificateForm.university,
         dean: certificateForm.dean,
         registrar: certificateForm.registrar,
-        issuedDate: new Date().toLocaleDateString(),
-        status: 'Valid',
-        blockchainHash: `0x${Math.random().toString(16).substr(2, 40)}`,
-        ipfsHash: `Qm${Math.random().toString(36).substr(2, 44)}`
+        issuer: user.email,
+        issuerId: user._id
       };
 
-      const updatedCertificates = [...certificates, newCertificate];
-      setCertificates(updatedCertificates);
-      
-      localStorage.setItem('certificates', JSON.stringify(updatedCertificates));
-      
-      updateStats(updatedCertificates);
-
-      setCertificateForm({
-        studentName: '',
-        studentId: '',
-        studentEmail: '',
-        course: '',
-        degree: '',
-        gpa: '',
-        graduationDate: '',
-        university: 'University of Excellence',
-        dean: 'Dr. John Anderson',
-        registrar: 'Mary Johnson'
+      // Call backend API to create certificate
+      const response = await fetch('/api/certificates/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(certificateData)
       });
-      setShowIssueModal(false);
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Refresh certificates list
+        await loadDashboardData();
+        
+        // Reset form and close modal
+        setCertificateForm({
+          studentName: '',
+          studentId: '',
+          studentEmail: '',
+          course: '',
+          degree: '',
+          gpa: '',
+          graduationDate: '',
+          university: 'University of Excellence',
+          dean: 'Dr. John Anderson',
+          registrar: 'Mary Johnson'
+        });
+        setShowIssueModal(false);
 
-      toast.success(`Certificate ${newCertificate.id} issued successfully!`);
+        toast.success(`Certificate issued successfully!`);
+      } else {
+        throw new Error(result.message || 'Failed to issue certificate');
+      }
     } catch (error) {
-      toast.error('Failed to issue certificate. Please try again.');
+      console.error('Certificate issuance failed:', error);
+      toast.error(error.message || 'Failed to issue certificate. Please try again.');
     } finally {
       setIssuingCertificate(false);
     }
@@ -205,19 +287,7 @@ const AdminDashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      // Clear user data
-      localStorage.removeItem('userType');
-      localStorage.removeItem('user');
-      
-      // Show sign-out success toast
-      toast.success('Signed out successfully! Redirecting...', {
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: true,
-        toastId: 'signout-success'
-      });
+      await logout();
       
       // Wait for user to see the message before navigating
       await new Promise(resolve => setTimeout(resolve, 1200));
@@ -1762,14 +1832,14 @@ const AdminDashboard = () => {
                   color: '#111827',
                   margin: 0
                 }}>
-                  Administrator
+                  {user?.name || 'Administrator'}
                 </p>
                 <p style={{
                   fontSize: '0.75rem',
                   color: '#6b7280',
                   margin: 0
                 }}>
-                  admin@university.edu
+                  {user?.email || 'admin@university.edu'}
                 </p>
               </div>
             </div>
