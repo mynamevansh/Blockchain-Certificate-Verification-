@@ -34,94 +34,17 @@ export const WebSocketProvider = ({ children }) => {
   ]);
 
   useEffect(() => {
-    // Commented out socket connection for now to avoid errors
-    // Will connect to WebSocket when backend is available
-    const newSocket = io(process.env.REACT_APP_SERVER_URL || 'http://localhost:5000', {
-      transports: ['websocket'],
-      autoConnect: true
-    });
-
-    newSocket.on('connect', () => {
-      setIsConnected(true);
-      console.log('Connected to server');
-    });
-
-    newSocket.on('disconnect', () => {
-      setIsConnected(false);
-      console.log('Disconnected from server');
-    });
-
-    // Listen for certificate events
-    newSocket.on('certificateIssued', (data) => {
-      const notification = {
-        id: Date.now(),
-        type: 'success',
-        title: 'Certificate Issued',
-        message: `Certificate ${data.certificateId} has been successfully issued`,
-        timestamp: new Date().toISOString()
-      };
-      
-      setNotifications(prev => [notification, ...prev]);
-      toast.success(notification.message);
-    });
-
-    newSocket.on('certificateRevoked', (data) => {
-      const notification = {
-        id: Date.now(),
-        type: 'warning',
-        title: 'Certificate Revoked',
-        message: `Certificate ${data.certificateId} has been revoked`,
-        timestamp: new Date().toISOString()
-      };
-      
-      setNotifications(prev => [notification, ...prev]);
-      toast.warning(notification.message);
-    });
-
-    newSocket.on('certificateVerified', (data) => {
-      const notification = {
-        id: Date.now(),
-        type: 'info',
-        title: 'Certificate Verified',
-        message: `Certificate verification completed: ${data.isValid ? 'Valid' : 'Invalid'}`,
-        timestamp: new Date().toISOString()
-      };
-      
-      setNotifications(prev => [notification, ...prev]);
-      toast.info(notification.message);
-    });
-
-    // Listen for system notifications
-    newSocket.on('notification', (data) => {
-      const notification = {
-        id: Date.now(),
-        type: data.type || 'info',
-        title: data.title || 'Notification',
-        message: data.message,
-        timestamp: new Date().toISOString()
-      };
-      
-      setNotifications(prev => [notification, ...prev]);
-      
-      switch (notification.type) {
-        case 'success':
-          toast.success(notification.message);
-          break;
-        case 'error':
-          toast.error(notification.message);
-          break;
-        case 'warning':
-          toast.warning(notification.message);
-          break;
-        default:
-          toast.info(notification.message);
-      }
-    });
-
-    setSocket(newSocket);
-
+    // WebSocket connection disabled to prevent connection errors
+    // This file exists for future backend integration
+    console.log('WebSocket connection disabled - using mock data only');
+    
+    // Mock connection state
+    setIsConnected(false);
+    setSocket(null);
+    
+    // No actual connection attempt
     return () => {
-      newSocket.close();
+      console.log('WebSocket cleanup (no-op)');
     };
   }, []);
 

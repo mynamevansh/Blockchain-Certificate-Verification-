@@ -11,6 +11,24 @@ export const useWebSocket = () => {
 };
 
 export const WebSocketProvider = ({ children }) => {
+  // Suppress WebSocket connection errors in development
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const originalError = console.error;
+      console.error = (...args) => {
+        if (args[0]?.includes?.('WebSocket connection') || 
+            args[0]?.includes?.('ws://localhost')) {
+          return; // Suppress WebSocket errors
+        }
+        originalError.apply(console, args);
+      };
+      
+      return () => {
+        console.error = originalError;
+      };
+    }
+  }, []);
+
   const [socket] = useState(null);
   const [isConnected] = useState(false); // Set to false since no backend
   const [notifications, setNotifications] = useState([
