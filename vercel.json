@@ -7,11 +7,13 @@
   "devCommand": "cd client && npm start",
   "framework": null,
   "env": {
-    "CI": "false"
+    "CI": "false",
+    "DISABLE_ESLINT_PLUGIN": "true"
   },
   "build": {
     "env": {
-      "CI": "false"
+      "CI": "false",
+      "DISABLE_ESLINT_PLUGIN": "true"
     }
   },
   "rewrites": [
