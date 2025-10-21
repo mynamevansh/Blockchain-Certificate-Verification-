@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Certificate Schema
 const certificateSchema = new mongoose.Schema({
   certificateId: {
     type: String,
@@ -114,13 +113,11 @@ const certificateSchema = new mongoose.Schema({
   }
 });
 
-// Update the updatedAt field before saving
 certificateSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-// Instance method to revoke certificate
 certificateSchema.methods.revoke = async function(adminId, reason) {
   this.status = 'Revoked';
   this.revokedBy = adminId;
@@ -129,14 +126,12 @@ certificateSchema.methods.revoke = async function(adminId, reason) {
   return await this.save();
 };
 
-// Static method to generate certificate ID
 certificateSchema.statics.generateCertificateId = function() {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000);
   return `CERT-${timestamp}-${random}`;
 };
 
-// Static method to find valid certificates for a student
 certificateSchema.statics.findValidByStudent = function(studentId) {
   return this.find({ studentId, status: 'Valid' }).populate('issuedBy', 'name email');
 };

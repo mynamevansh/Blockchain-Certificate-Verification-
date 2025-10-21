@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// User (Student) Schema
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -105,13 +104,10 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-// Hash password before saving
 userSchema.pre('save', async function(next) {
-  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
   
   try {
-    // Hash password with cost of 12
     const hashedPassword = await bcrypt.hash(this.password, 12);
     this.password = hashedPassword;
     next();
@@ -120,24 +116,20 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Update the updatedAt field before saving
 userSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-// Instance method to check password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Instance method to update last login
 userSchema.methods.updateLastLogin = async function() {
   this.lastLogin = new Date();
   return await this.save();
 };
 
-// Instance method to add certificate
 userSchema.methods.addCertificate = async function(certificateId) {
   this.certificates.push({
     certificateId,
@@ -147,12 +139,10 @@ userSchema.methods.addCertificate = async function(certificateId) {
   return await this.save();
 };
 
-// Static method to find active user by email
 userSchema.statics.findActiveByEmail = function(email) {
   return this.findOne({ email: email.toLowerCase(), isActive: true });
 };
 
-// Static method to find by student ID
 userSchema.statics.findByStudentId = function(studentId) {
   return this.findOne({ studentId: studentId.toUpperCase(), isActive: true });
 };

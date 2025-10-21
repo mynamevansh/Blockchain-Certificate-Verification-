@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// Admin Schema
 const adminSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -53,13 +52,10 @@ const adminSchema = new mongoose.Schema({
   }
 });
 
-// Hash password before saving
 adminSchema.pre('save', async function(next) {
-  // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
   
   try {
-    // Hash password with cost of 12
     const hashedPassword = await bcrypt.hash(this.password, 12);
     this.password = hashedPassword;
     next();
@@ -68,24 +64,20 @@ adminSchema.pre('save', async function(next) {
   }
 });
 
-// Update the updatedAt field before saving
 adminSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
 
-// Instance method to check password
 adminSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Instance method to update last login
 adminSchema.methods.updateLastLogin = async function() {
   this.lastLogin = new Date();
   return await this.save();
 };
 
-// Static method to find active admin by email
 adminSchema.statics.findActiveByEmail = function(email) {
   return this.findOne({ email: email.toLowerCase(), isActive: true });
 };
