@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
 import { useAuth } from '../context/AuthContext';
 import useNavigateWithLoading from '../hooks/useNavigateWithLoading';
-import { ShieldCheck, GraduationCap, Users, FileCheck, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, GraduationCap, Users, FileCheck, Eye, EyeOff } from 'lucide-react';
 
 const AuthHomePage = () => {
   const navigateWithLoading = useNavigateWithLoading();

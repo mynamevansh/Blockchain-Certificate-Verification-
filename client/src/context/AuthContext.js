@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { useNavigate } from 'react-router-dom';
 import { useNotification } from '../hooks/useNotification';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../constants';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -46,11 +45,10 @@ export const AuthProvider = ({ children }) => {
       
       if (token && storedUserType && userData) {
         try {
-          let profile;
           if (storedUserType === 'admin') {
-            profile = await authAPI.getAdminProfile();
+            await authAPI.getAdminProfile();
           } else {
-            profile = await authAPI.getUserProfile();
+            await authAPI.getUserProfile();
           }
           setUser(JSON.parse(userData));
           setUserType(storedUserType);

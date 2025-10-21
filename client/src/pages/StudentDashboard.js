@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
 import { useAuth } from '../context/AuthContext';
-import { authAPI, certificateAPI, userAPI } from '../services/api';
 import { 
   FileText, 
   Download, 

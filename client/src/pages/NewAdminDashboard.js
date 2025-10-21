@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
 import { useAuth } from '../context/AuthContext';
-import { authAPI, certificateAPI, userAPI } from '../services/api';
 import { 
   FileText, 
   CheckCircle, 
@@ -31,7 +30,6 @@ const AdminDashboard = () => {
   const [certificates, setCertificates] = useState([]);
   const [users, setUsers] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [loading, setLoading] = useState(false);
   const [showIssueModal, setShowIssueModal] = useState(false);
   const [certificateForm, setCertificateForm] = useState({
     studentName: '',
@@ -56,44 +54,8 @@ const AdminDashboard = () => {
     systemUptime: '99.9%'
   });
 
-  useEffect(() => {
-    hideLoading();
-    
-    // Check authentication
-    if (!isAuthenticated || !hasRole('admin')) {
-      navigate('/auth');
-      return;
-    }
-    
-    // Load dashboard data
-    loadDashboardData();
-    
-    // Show welcome toast after page fully renders
-    const timer = setTimeout(() => {
-      if (user && user.name) {
-        toast.success(`Welcome back, ${user.name}!`, {
-          autoClose: 2500,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          toastId: 'dashboard-welcome'
-        });
-      }
-    }, 800);
-    
-    return () => {
-      clearTimeout(timer);
-      toast.dismiss('dashboard-welcome');
-    };
-  }, [hideLoading, isAuthenticated, hasRole, navigate, user]);
-
-  // Load dashboard data from backend
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
-      setLoading(true);
-      
-      // Debug: Check authentication status
       const token = localStorage.getItem('auth_token');
       const userType = localStorage.getItem('userType');
       const userData = localStorage.getItem('user_data');
@@ -161,10 +123,8 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       toast.error('Failed to load dashboard data');
-    } finally {
-      setLoading(false);
     }
-  };
+  }, [isAuthenticated, hasRole, navigate, logout]);
 
   const updateStats = (certificatesData) => {
     const total = certificatesData.length;
@@ -185,11 +145,34 @@ const AdminDashboard = () => {
     }));
   };
 
-  const generateCertificateId = () => {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    return `CERT-${timestamp}-${random}`;
-  };
+  useEffect(() => {
+    hideLoading();
+    
+    if (!isAuthenticated || !hasRole('admin')) {
+      navigate('/auth');
+      return;
+    }
+    
+    loadDashboardData();
+    
+    const timer = setTimeout(() => {
+      if (user && user.name) {
+        toast.success(`Welcome back, ${user.name}!`, {
+          autoClose: 2500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          toastId: 'dashboard-welcome'
+        });
+      }
+    }, 800);
+    
+    return () => {
+      clearTimeout(timer);
+      toast.dismiss('dashboard-welcome');
+    };
+  }, [hideLoading, isAuthenticated, hasRole, navigate, user, loadDashboardData]);
 
   const handleFormChange = (field, value) => {
     setCertificateForm(prev => ({

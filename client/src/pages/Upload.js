@@ -23,8 +23,6 @@ const Upload = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadedCertificate, setUploadedCertificate] = useState(null);
 
-  // Memoize computed values to prevent unnecessary re-renders
-  const isFormDisabled = useMemo(() => uploading, [uploading]);
   const canSubmit = useMemo(() => !uploading && file && isAuthenticated, [uploading, file, isAuthenticated]);
 
   const handleInputChange = useCallback((e) => {
@@ -34,26 +32,6 @@ const Upload = () => {
       [name]: value
     }));
   }, []);
-
-  const handleDrag = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragActive(true);
-    } else if (e.type === 'dragleave') {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
-    }
-  }, [handleFileSelect]);
 
   const handleFileSelect = useCallback((selectedFile) => {
     // Validate file type (allow common certificate formats)
@@ -80,6 +58,26 @@ const Upload = () => {
     setFile(selectedFile);
     toast.success('File selected successfully');
   }, []);
+
+  const handleDrag = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0]);
+    }
+  }, [handleFileSelect]);
 
   const handleFileInputChange = useCallback((e) => {
     if (e.target.files && e.target.files[0]) {
