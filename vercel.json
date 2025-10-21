@@ -24,28 +24,6 @@
       "destination": "/api"
     }
   ],
-  "routes": [
-    {
-      "src": "/manifest.json",
-      "dest": "/manifest.json"
-    },
-    {
-      "src": "/favicon.(ico|svg)",
-      "dest": "/favicon.$1"
-    },
-    {
-      "src": "/logo(.*).png",
-      "dest": "/logo$1.png"
-    },
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "headers": [
     {
       "source": "/static/(.*)",
