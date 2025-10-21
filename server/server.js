@@ -116,5 +116,9 @@ process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   process.exit(1);
 });
-startServer();
+if (require.main === module) {
+  startServer();
+} else {
+  connectDB().then(() => seedInitialData()).catch(console.error);
+}
 module.exports = app;

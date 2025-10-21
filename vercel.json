@@ -3,20 +3,32 @@
   "name": "blockchain-certificate-verification",
   "buildCommand": "cd client && npm install && npm run build",
   "outputDirectory": "client/build",
-  "installCommand": "npm install --prefix client",
+  "installCommand": "npm install --prefix client && npm install --prefix server",
   "devCommand": "cd client && npm start",
   "framework": null,
   "env": {
     "CI": "false",
-    "DISABLE_ESLINT_PLUGIN": "true"
+    "DISABLE_ESLINT_PLUGIN": "true",
+    "REACT_APP_API_URL": "/api"
   },
   "build": {
     "env": {
       "CI": "false",
-      "DISABLE_ESLINT_PLUGIN": "true"
+      "DISABLE_ESLINT_PLUGIN": "true",
+      "REACT_APP_API_URL": "/api"
     }
   },
+  "builds": [
+    {
+      "src": "server/server.js",
+      "use": "@vercel/node"
+    }
+  ],
   "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/server/server.js"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
