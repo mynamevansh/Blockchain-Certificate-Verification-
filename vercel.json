@@ -22,10 +22,28 @@
     {
       "source": "/api/(.*)",
       "destination": "/server/server.js"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/manifest.json",
+      "dest": "/manifest.json"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/favicon.(ico|svg)",
+      "dest": "/favicon.$1"
+    },
+    {
+      "src": "/logo(.*).png",
+      "dest": "/logo$1.png"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ],
   "headers": [
