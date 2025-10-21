@@ -1,12 +1,10 @@
 const Admin = require('../models/Admin');
 const { generateToken } = require('../middleware/auth');
 
-// Admin Login
 const adminLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -14,7 +12,6 @@ const adminLogin = async (req, res) => {
       });
     }
 
-    // Find admin by email
     const admin = await Admin.findActiveByEmail(email);
     
     if (!admin) {
@@ -24,7 +21,6 @@ const adminLogin = async (req, res) => {
       });
     }
 
-    // Check password
     const isPasswordValid = await admin.comparePassword(password);
     
     if (!isPasswordValid) {
@@ -34,17 +30,14 @@ const adminLogin = async (req, res) => {
       });
     }
 
-    // Update last login
     await admin.updateLastLogin();
 
-    // Generate token
     const token = generateToken({
       id: admin._id,
       email: admin.email,
       role: admin.role
     });
 
-    // Return success response
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -71,12 +64,10 @@ const adminLogin = async (req, res) => {
   }
 };
 
-// Admin Registration (for super admins to create new admins)
 const adminRegister = async (req, res) => {
   try {
     const { name, email, password, department, permissions } = req.body;
 
-    // Validate input
     if (!name || !email || !password || !department) {
       return res.status(400).json({
         success: false,
@@ -84,7 +75,6 @@ const adminRegister = async (req, res) => {
       });
     }
 
-    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email: email.toLowerCase() });
     
     if (existingAdmin) {
@@ -94,7 +84,6 @@ const adminRegister = async (req, res) => {
       });
     }
 
-    // Create new admin
     const newAdmin = new Admin({
       name,
       email,
@@ -106,7 +95,6 @@ const adminRegister = async (req, res) => {
 
     await newAdmin.save();
 
-    // Generate token
     const token = generateToken({
       id: newAdmin._id,
       email: newAdmin.email,
@@ -146,7 +134,6 @@ const adminRegister = async (req, res) => {
   }
 };
 
-// Get Admin Profile
 const getAdminProfile = async (req, res) => {
   try {
     const admin = await Admin.findById(req.user._id).select('-password');
@@ -183,7 +170,6 @@ const getAdminProfile = async (req, res) => {
   }
 };
 
-// Update Admin Profile
 const updateAdminProfile = async (req, res) => {
   try {
     const { name, department } = req.body;
@@ -229,7 +215,6 @@ const updateAdminProfile = async (req, res) => {
   }
 };
 
-// Get All Admins (Super Admin only)
 const getAllAdmins = async (req, res) => {
   try {
     const admins = await Admin.find({ isActive: true })

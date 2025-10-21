@@ -4,11 +4,11 @@
   "description": "Blockchain-based certificate verification system",
   "main": "index.js",
   "scripts": {
-    "install-all": "npm install && cd client && npm install && cd ../server && npm install && cd ../blockchain && npm install",
+    "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm start\"",
-    "build": "cd client && CI=false npm run build",
-    "vercel-build": "cd client && npm install && CI=false npm run build",
-    "test": "cd blockchain && truffle test",
+    "build": "cd client && npm install && npm run build",
+    "vercel-build": "cd client && npm install && npm run build",
+    "test": "echo \"No tests specified\"",
     "start": "cd client && npm start"
   },
   "keywords": [

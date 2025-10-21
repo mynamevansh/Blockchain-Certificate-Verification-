@@ -1,4 +1,3 @@
-// Date formatting utilities
 export const formatDate = (date, options = {}) => {
   if (!date) return 'N/A';
   
@@ -52,7 +51,6 @@ export const formatTimeAgo = (date) => {
   return formatDate(date);
 };
 
-// Address formatting
 export const formatAddress = (address, startChars = 6, endChars = 4) => {
   if (!address) return '';
   if (address.length <= startChars + endChars) return address;
@@ -60,7 +58,6 @@ export const formatAddress = (address, startChars = 6, endChars = 4) => {
   return `${address.substring(0, startChars)}...${address.substring(address.length - endChars)}`;
 };
 
-// Hash formatting
 export const formatHash = (hash, length = 8) => {
   if (!hash) return '';
   if (hash.length <= length * 2) return hash;

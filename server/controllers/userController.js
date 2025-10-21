@@ -1,12 +1,10 @@
 const User = require('../models/User');
 const { generateToken } = require('../middleware/auth');
 
-// User Login
 const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -14,7 +12,6 @@ const userLogin = async (req, res) => {
       });
     }
 
-    // Find user by email
     const user = await User.findActiveByEmail(email);
     
     if (!user) {
@@ -24,7 +21,6 @@ const userLogin = async (req, res) => {
       });
     }
 
-    // Check password
     const isPasswordValid = await user.comparePassword(password);
     
     if (!isPasswordValid) {
@@ -34,10 +30,8 @@ const userLogin = async (req, res) => {
       });
     }
 
-    // Update last login
     await user.updateLastLogin();
 
-    // Generate token
     const token = generateToken({
       id: user._id,
       email: user.email,
@@ -45,7 +39,6 @@ const userLogin = async (req, res) => {
       studentId: user.studentId
     });
 
-    // Return success response
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -76,7 +69,6 @@ const userLogin = async (req, res) => {
   }
 };
 
-// User Registration
 const userRegister = async (req, res) => {
   try {
     const { 
@@ -92,7 +84,6 @@ const userRegister = async (req, res) => {
       address 
     } = req.body;
 
-    // Validate required fields
     if (!name || !email || !password || !studentId || !program || !department || !enrollmentDate || !expectedGraduation) {
       return res.status(400).json({
         success: false,
@@ -115,7 +106,6 @@ const userRegister = async (req, res) => {
       });
     }
 
-    // Create new user
     const newUser = new User({
       name,
       email,
@@ -132,7 +122,6 @@ const userRegister = async (req, res) => {
 
     await newUser.save();
 
-    // Generate token
     const token = generateToken({
       id: newUser._id,
       email: newUser.email,

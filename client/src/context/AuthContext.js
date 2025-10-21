@@ -179,12 +179,10 @@ export const AuthProvider = ({ children }) => {
         setUserPreferences(prev => ({ ...prev, rememberMe: false }));
       }
       showSuccess('Successfully logged out');
-      // Redirect to sign-in page after logout
       navigate('/auth');
     } catch (error) {
       console.error('Failed to logout:', error);
       showError('Failed to logout properly');
-      // Still redirect even if there's an error
       navigate('/auth');
     }
   }, [navigate, userPreferences.rememberMe, setUserPreferences, showSuccess, showError]);

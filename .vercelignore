@@ -1,0 +1,15 @@
+node_modules
+.git
+.env
+*.log
+server/
+blockchain/
+*.bat
+*.sh
+*.md
+.vscode/
+.idea/
+*.test.js
+*.spec.js
+coverage/
+.DS_Store

@@ -24,26 +24,21 @@ const StudentDashboard = () => {
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Initialize student data and load from API
   useEffect(() => {
     hideLoading();
     
-    // Check authentication
     if (!isAuthenticated || !hasRole('student')) {
       navigate('/auth');
       return;
     }
     
-    // Load student data
     loadStudentData();
   }, [hideLoading, isAuthenticated, hasRole, navigate]);
 
-  // Load student data from backend
   const loadStudentData = async () => {
     try {
       setLoading(true);
       
-      // Load user certificates from backend
       try {
         const certificatesResponse = await fetch('/api/certificates/user', {
           headers: {

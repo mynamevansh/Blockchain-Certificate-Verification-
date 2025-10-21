@@ -2,25 +2,20 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    // MongoDB Atlas connection options
     const options = {
-      // Connection pool settings
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      serverSelectionTimeoutMS: 10000, // Keep trying to send operations for 10 seconds (Atlas needs more time)
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
       
-      // MongoDB Atlas specific options
-      heartbeatFrequencyMS: 30000, // How often to check MongoDB server status
-      useNewUrlParser: true, // Use new URL parser
-      useUnifiedTopology: true, // Use new topology engine
+      heartbeatFrequencyMS: 30000,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
       
-      // Authentication & SSL (required for Atlas)
-      ssl: true, // Enable SSL for Atlas connection
-      authSource: 'admin', // Authentication database
-      retryWrites: true, // Enable retryable writes
+      ssl: true,
+      authSource: 'admin',
+      retryWrites: true,
     };
 
-    // Connect to MongoDB
     const conn = await mongoose.connect(process.env.MONGODB_URI, options);
 
     console.log(`✅ MongoDB Connected Successfully!`);
@@ -28,7 +23,6 @@ const connectDB = async () => {
     console.log(`🌐 Host: ${conn.connection.host}`);
     console.log(`🔌 Port: ${conn.connection.port}`);
 
-    // Handle connection events
     mongoose.connection.on('connected', () => {
       console.log('📡 Mongoose connected to MongoDB');
     });
@@ -41,7 +35,6 @@ const connectDB = async () => {
       console.log('📴 Mongoose disconnected from MongoDB');
     });
 
-    // Handle process termination
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
       console.log('🔌 MongoDB connection closed through app termination');
@@ -56,7 +49,6 @@ const connectDB = async () => {
       code: error.code
     });
     
-    // Provide helpful error messages based on error type
     if (error.message.includes('ECONNREFUSED')) {
       console.log('💡 Solution: Check MongoDB Atlas connection string and network access');
       console.log('   • Verify your Atlas cluster is running');
@@ -77,20 +69,18 @@ const connectDB = async () => {
   }
 };
 
-// Function to seed initial admin user
 const seedInitialData = async () => {
   try {
     const Admin = require('../models/Admin');
     const User = require('../models/User');
     
-    // Check if admin already exists
     const existingAdmin = await Admin.findOne({ email: 'University_admin@university.edu' });
     
     if (!existingAdmin) {
       const initialAdmin = new Admin({
         name: 'University Administrator',
         email: 'University_admin@university.edu',
-        password: 'admin123', // Will be hashed by pre-save middleware
+        password: 'admin123',
         department: 'IT Administration',
         permissions: ['create_certificate', 'revoke_certificate', 'view_users', 'manage_users', 'system_settings'],
         role: 'super_admin'
@@ -102,14 +92,13 @@ const seedInitialData = async () => {
       console.log('🔑 Password: admin123');
     }
 
-    // Check if test student exists
     const existingStudent = await User.findOne({ email: 'student@university.edu' });
     
     if (!existingStudent) {
       const initialStudent = new User({
         name: 'Vansh Ranawat',
         email: 'student@university.edu',
-        password: 'demostudent', // Will be hashed by pre-save middleware
+        password: 'demostudent',
         studentId: 'STU-2024-001',
         program: 'Computer Science',
         department: 'Computer Science',

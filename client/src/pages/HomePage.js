@@ -593,7 +593,7 @@ const HomePage = () => {
             lineHeight: '1.1',
             fontFamily: 'Roboto, sans-serif'
           }}>
-            Secure Certificate Management
+            संरक्षपत्र
           </h1>
 
           <p style={{

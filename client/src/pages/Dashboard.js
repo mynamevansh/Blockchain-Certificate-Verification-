@@ -5,7 +5,7 @@ import { certificateAPI, statsAPI } from '../services/api';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {
-  const { user, isConnected } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { notifications, isConnected: wsConnected } = useWebSocket();
   
   const [stats, setStats] = useState({
@@ -21,10 +21,10 @@ const Dashboard = () => {
   const [period, setPeriod] = useState('30d');
 
   useEffect(() => {
-    if (isConnected && user?.address) {
+    if (isAuthenticated && user?.address) {
       loadDashboardData();
     }
-  }, [isConnected, user, period, loadDashboardData]);
+  }, [isAuthenticated, user, period, loadDashboardData]);
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);

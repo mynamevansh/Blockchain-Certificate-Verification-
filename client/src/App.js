@@ -88,12 +88,11 @@ function App() {
   return (
     <Router
       future={{
-        // React Router v7 Compatibility Flags
-        v7_startTransition: true,       // ✅ Wraps state updates in React.startTransition
-        v7_relativeSplatPath: true,     // ✅ New relative path resolution in splat routes
-        v7_fetcherPersist: true,        // ✅ Persist fetchers across route changes
-        v7_normalizeFormMethod: true,   // ✅ Normalize form methods to uppercase
-        v7_partialHydration: true,      // ✅ Support partial hydration (SSR)
+        v7_startTransition: true,
+        v7_relativeSplatPath: true,
+        v7_fetcherPersist: true,
+        v7_normalizeFormMethod: true,
+        v7_partialHydration: true,
       }}
     >
       <AuthProvider>

@@ -84,7 +84,7 @@ const Home = () => {
               Eliminate fake certificates forever.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              {isConnected ? (
+              {isAuthenticated ? (
                 <>
                   <Link
                     to="/upload"
@@ -221,7 +221,7 @@ const Home = () => {
             Join hundreds of institutions already using our platform to issue and verify tamper-proof certificates.
           </p>
           
-          {isConnected ? (
+          {isAuthenticated ? (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/upload"

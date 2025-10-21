@@ -41,14 +41,7 @@ const AdminDashboard = () => {
     monthlyIssued: 0
   });
 
-  // Initialize data - will be loaded from API in production
   useEffect(() => {
-    // In a real application, this would fetch data from your API
-    // const certificates = await fetchAllCertificates();
-    // const users = await fetchAllUsers();
-    // const statistics = await fetchSystemStats();
-    
-    // For demo purposes, adding sample certificate data
     const sampleCertificates = [
       {
         id: 'CERT-2024-001',
@@ -125,7 +118,6 @@ const AdminDashboard = () => {
     setRevoking(true);
     setRevocationResult(null);
 
-    // Simulate API call
     setTimeout(() => {
       const certificateIndex = certificates.findIndex(c => 
         c.id.toLowerCase() === revokeId.trim().toLowerCase()
@@ -134,12 +126,10 @@ const AdminDashboard = () => {
       if (certificateIndex !== -1) {
         const certificate = certificates[certificateIndex];
         if (certificate.status === 'Valid') {
-          // Update certificate status
           const updatedCertificates = [...certificates];
           updatedCertificates[certificateIndex] = { ...certificate, status: 'Revoked' };
           setCertificates(updatedCertificates);
           
-          // Update stats
           setStats(prev => ({
             ...prev,
             activeCertificates: prev.activeCertificates - 1,
@@ -720,7 +710,7 @@ const AdminDashboard = () => {
                 margin: 0,
                 fontFamily: 'Roboto, sans-serif'
               }}>
-                Certificate Management
+                Tamper proof certificate verification
               </h2>
               <button style={{
                 display: 'flex',
