@@ -37,10 +37,10 @@ app.get('/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/certificates', require('./routes/certificates'));
+app.use('/auth', require('./routes/auth'));
+app.use('/admin', require('./routes/admin'));
+app.use('/users', require('./routes/users'));
+app.use('/certificates', require('./routes/certificates'));
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
@@ -48,9 +48,9 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     endpoints: {
       health: '/health',
-      auth: '/api/auth',
-      admin: '/api/admin',
-      users: '/api/users'
+      auth: '/auth',
+      admin: '/admin',
+      users: '/users'
     },
     documentation: 'See README.md for API documentation'
   });
