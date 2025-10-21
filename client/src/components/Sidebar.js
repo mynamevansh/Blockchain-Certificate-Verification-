@@ -9,10 +9,8 @@ import {
   LogOut,
   Shield
 } from 'lucide-react';
-
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
-
   const menuItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', active: true },
     { path: '/upload', icon: Upload, label: 'Upload Certificate' },
@@ -20,20 +18,17 @@ const Sidebar = ({ isOpen, onClose }) => {
     { path: '/revoke', icon: UserX, label: 'Revoke Certificate' },
     { path: '/settings', icon: Settings, label: 'Settings' },
   ];
-
   return (
     <div className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-logo">
         <Shield className="sidebar-nav-icon" />
         <h2>CertifyChain</h2>
       </div>
-
       <nav>
         <ul className="sidebar-nav">
           {menuItems.map((item) => {
             const isActive = location.pathname === item.path || 
                            (item.path === '/dashboard' && location.pathname === '/');
-            
             return (
               <li key={item.path} className="sidebar-nav-item">
                 <Link 
@@ -49,7 +44,6 @@ const Sidebar = ({ isOpen, onClose }) => {
           })}
         </ul>
       </nav>
-
       <div style={{ marginTop: 'auto', paddingTop: '2rem', borderTop: '1px solid var(--border-light)' }}>
         <button className="sidebar-nav-link" style={{ width: '100%', border: 'none', background: 'none' }}>
           <LogOut className="sidebar-nav-icon" />
@@ -59,5 +53,4 @@ const Sidebar = ({ isOpen, onClose }) => {
     </div>
   );
 };
-
 export default Sidebar;

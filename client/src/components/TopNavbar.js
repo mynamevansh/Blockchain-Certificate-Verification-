@@ -1,6 +1,5 @@
 import React from 'react';
 import { Menu, Bell, Search, User } from 'lucide-react';
-
 const TopNavbar = ({ onMenuToggle, user }) => {
   return (
     <div className="top-navbar">
@@ -14,7 +13,6 @@ const TopNavbar = ({ onMenuToggle, user }) => {
         </button>
         <h1 className="navbar-title">Certificate Management Dashboard</h1>
       </div>
-
       <div className="navbar-right">
         <div className="search-container" style={{ position: 'relative', marginRight: '1rem' }}>
           <Search 
@@ -40,11 +38,9 @@ const TopNavbar = ({ onMenuToggle, user }) => {
             }}
           />
         </div>
-
         <button className="btn btn-secondary" style={{ padding: '0.5rem', minWidth: 'auto' }}>
           <Bell size={18} />
         </button>
-
         <div className="navbar-user">
           <div className="user-avatar">
             {user?.name ? user.name.charAt(0).toUpperCase() : <User size={16} />}
@@ -62,5 +58,4 @@ const TopNavbar = ({ onMenuToggle, user }) => {
     </div>
   );
 };
-
 export default TopNavbar;

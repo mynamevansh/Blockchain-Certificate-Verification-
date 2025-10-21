@@ -23,26 +23,21 @@ import {
   TrendingUp,
   Lightbulb
 } from 'lucide-react';
-
 const HomePage = () => {
   const navigateWithLoading = useNavigateWithLoading();
   useLoading();
   const [showProjectModal, setShowProjectModal] = useState(false);
-
   const handleGetStarted = () => {
     navigateWithLoading('/auth', {
       message: 'Preparing your authentication...',
       delay: 3300
     });
   };
-
   const handleLearnMore = () => {
     setShowProjectModal(true);
   };
-
   const ProjectInfoModal = () => {
     if (!showProjectModal) return null;
-
     const techStack = [
       { name: 'React.js', description: 'Modern frontend framework for building interactive user interfaces', icon: Code, color: '#61dafb' },
       { name: 'Node.js', description: 'Server-side JavaScript runtime for scalable backend development', icon: Cpu, color: '#339933' },
@@ -51,13 +46,11 @@ const HomePage = () => {
       { name: 'AWS Cloud', description: 'Cloud infrastructure for reliable and scalable deployment', icon: Cloud, color: '#ff9900' },
       { name: 'IPFS', description: 'Distributed file system for decentralized certificate storage', icon: Layers, color: '#65c2cb' }
     ];
-
     const projectHighlights = [
       { title: 'Market Need', description: 'Certificate fraud costs the global economy billions annually. Our solution addresses the critical need for tamper-proof credential verification.', icon: Target },
       { title: 'Innovation', description: 'First blockchain-based certificate management system with instant verification and complete lifecycle management.', icon: Lightbulb },
       { title: 'Scalability', description: 'Built to handle millions of certificates with enterprise-grade security and performance optimization.', icon: TrendingUp }
     ];
-
     return (
       <div 
         onClick={() => setShowProjectModal(false)}
@@ -90,7 +83,7 @@ const HomePage = () => {
             cursor: 'default',
             animation: 'slideIn 0.4s ease-out'
           }}>
-          {/* Modal Header */}
+          {}
           <div style={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             padding: '2rem',
@@ -127,7 +120,6 @@ const HomePage = () => {
             >
               <X size={20} />
             </button>
-            
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
               <ShieldCheck size={48} style={{ color: 'white' }} />
               <div>
@@ -150,10 +142,9 @@ const HomePage = () => {
               </div>
             </div>
           </div>
-
-          {/* Modal Content */}
+          {}
           <div style={{ padding: '2rem' }}>
-            {/* Project Purpose & Significance */}
+            {}
             <section style={{ marginBottom: '3rem' }}>
               <h3 style={{
                 fontSize: '1.75rem',
@@ -162,7 +153,6 @@ const HomePage = () => {
                 marginBottom: '1.5rem',
                 fontFamily: 'Inter, sans-serif'
               }}>Project Overview</h3>
-              
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
                 {projectHighlights.map((highlight, index) => {
                   const IconComponent = highlight.icon;
@@ -207,8 +197,7 @@ const HomePage = () => {
                 })}
               </div>
             </section>
-
-            {/* Detailed Purpose */}
+            {}
             <section style={{ marginBottom: '3rem' }}>
               <h3 style={{
                 fontSize: '1.75rem',
@@ -216,7 +205,6 @@ const HomePage = () => {
                 color: '#1e293b',
                 marginBottom: '1.5rem'
               }}>Purpose & Significance</h3>
-              
               <div style={{
                 backgroundColor: '#f0f9ff',
                 padding: '2rem',
@@ -248,7 +236,6 @@ const HomePage = () => {
                   transparent, and instantly verifiable certificate management ecosystem. Our platform addresses the global challenge of 
                   educational credential fraud, which affects millions of students and employers worldwide.
                 </p>
-                
                 <p style={{
                   fontSize: '1rem',
                   color: '#334155',
@@ -262,8 +249,7 @@ const HomePage = () => {
                 </p>
               </div>
             </section>
-
-            {/* Technology Stack */}
+            {}
             <section style={{ marginBottom: '2rem' }}>
               <h3 style={{
                 fontSize: '1.75rem',
@@ -271,7 +257,6 @@ const HomePage = () => {
                 color: '#1e293b',
                 marginBottom: '1.5rem'
               }}>Technology Stack</h3>
-              
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -318,8 +303,7 @@ const HomePage = () => {
                 })}
               </div>
             </section>
-
-            {/* Call to Action */}
+            {}
             <div style={{
               backgroundColor: '#f8fafc',
               padding: '2rem',
@@ -348,7 +332,6 @@ const HomePage = () => {
               }}>
                 Ready to experience the future of certificate management?
               </p>
-              
               <button
                 onClick={() => {
                   setShowProjectModal(false);
@@ -386,14 +369,12 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-        
-        {/* Modal Animation Styles */}
+        {}
         <style>{`
           @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
           }
-          
           @keyframes slideIn {
             from { 
               opacity: 0;
@@ -408,7 +389,6 @@ const HomePage = () => {
       </div>
     );
   };
-
   const features = [
     {
       icon: ShieldCheck,
@@ -435,7 +415,6 @@ const HomePage = () => {
       color: '#f59e0b'
     }
   ];
-
   const workflowSteps = [
     {
       step: '01',
@@ -462,7 +441,6 @@ const HomePage = () => {
       icon: Globe
     }
   ];
-
   return (
     <div style={{ 
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif',
@@ -470,7 +448,7 @@ const HomePage = () => {
       minHeight: '100vh'
     }}>
       <ProjectInfoModal />
-      {/* Navigation Header */}
+      {}
       <header style={{
         backgroundColor: 'white',
         borderBottom: '1px solid #e5e7eb',
@@ -518,7 +496,6 @@ const HomePage = () => {
               CertifyChain
             </h1>
           </div>
-
           <button
             onClick={handleGetStarted}
             style={{
@@ -550,8 +527,7 @@ const HomePage = () => {
           </button>
         </div>
       </header>
-
-      {/* Hero Section */}
+      {}
       <section style={{
         background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
         padding: '6rem 2rem',
@@ -584,7 +560,6 @@ const HomePage = () => {
             <CheckCircle size={16} />
             Trusted by Educational Institutions Worldwide
           </div>
-
           <h1 style={{
             fontSize: 'clamp(2.5rem, 5vw, 4rem)',
             fontWeight: '900',
@@ -595,7 +570,6 @@ const HomePage = () => {
           }}>
             संरक्षपत्र
           </h1>
-
           <p style={{
             fontSize: '1.25rem',
             color: '#64748b',
@@ -607,7 +581,6 @@ const HomePage = () => {
             Verify certificate authenticity and manage certificate lifecycle with 
             blockchain technology.
           </p>
-
           <div style={{
             display: 'flex',
             gap: '1rem',
@@ -645,7 +618,6 @@ const HomePage = () => {
               <Play size={20} />
               Start Verification
             </button>
-
             <button
               onClick={handleLearnMore}
               style={{
@@ -680,8 +652,7 @@ const HomePage = () => {
               Learn More
             </button>
           </div>
-
-          {/* Value Proposition Cards */}
+          {}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -748,7 +719,7 @@ const HomePage = () => {
                   e.currentTarget.style.borderColor = '#f1f5f9';
                   e.currentTarget.querySelector('.gradient-header').style.transform = 'scaleX(1)';
                 }}>
-                  {/* Gradient Header */}
+                  {}
                   <div 
                     className="gradient-header"
                     style={{
@@ -791,8 +762,7 @@ const HomePage = () => {
                       </div>
                     </div>
                   </div>
-                  
-                  {/* Content */}
+                  {}
                   <div style={{ padding: '2rem' }}>
                     <h3 style={{
                       fontSize: '1.5rem',
@@ -803,7 +773,6 @@ const HomePage = () => {
                     }}>
                       {card.title}
                     </h3>
-                    
                     <p style={{
                       fontSize: '1rem',
                       color: '#64748b',
@@ -813,8 +782,7 @@ const HomePage = () => {
                     }}>
                       {card.description}
                     </p>
-                    
-                    {/* Feature Badge */}
+                    {}
                     <div style={{
                       marginTop: '1.5rem',
                       display: 'inline-flex',
@@ -833,8 +801,7 @@ const HomePage = () => {
                       Verified Technology
                     </div>
                   </div>
-                  
-                  {/* Decorative Element */}
+                  {}
                   <div style={{
                     position: 'absolute',
                     top: '-20px',
@@ -850,8 +817,7 @@ const HomePage = () => {
               );
             })}
           </div>
-          
-          {/* Trust Indicators */}
+          {}
           <div style={{
             marginTop: '4rem',
             textAlign: 'center'
@@ -864,7 +830,6 @@ const HomePage = () => {
             }}>
               Trusted by educational institutions worldwide
             </p>
-            
             <div style={{
               display: 'flex',
               justifyContent: 'center',
@@ -908,8 +873,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* Features Section */}
+      {}
       <section style={{
         padding: '6rem 2rem',
         backgroundColor: 'white'
@@ -936,7 +900,6 @@ const HomePage = () => {
               security, reliability, and user experience.
             </p>
           </div>
-
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -975,7 +938,6 @@ const HomePage = () => {
                 }}>
                   <feature.icon size={40} style={{ color: feature.color }} />
                 </div>
-
                 <h3 style={{
                   fontSize: '1.375rem',
                   fontWeight: '600',
@@ -985,7 +947,6 @@ const HomePage = () => {
                 }}>
                   {feature.title}
                 </h3>
-
                 <p style={{
                   fontSize: '1rem',
                   color: '#64748b',
@@ -1000,8 +961,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* How It Works Section */}
+      {}
       <section style={{
         padding: '6rem 2rem',
         backgroundColor: '#f8fafc'
@@ -1028,7 +988,6 @@ const HomePage = () => {
               advanced blockchain technology.
             </p>
           </div>
-
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -1085,7 +1044,6 @@ const HomePage = () => {
                 }}>
                   {step.step}
                 </div>
-
                 <div style={{
                   width: '64px',
                   height: '64px',
@@ -1107,7 +1065,6 @@ const HomePage = () => {
                 }}>
                   <step.icon size={32} style={{ color: '#3b82f6' }} />
                 </div>
-
                 <h3 style={{
                   fontSize: '1.25rem',
                   fontWeight: '600',
@@ -1117,7 +1074,6 @@ const HomePage = () => {
                 }}>
                   {step.title}
                 </h3>
-
                 <p style={{
                   fontSize: '1rem',
                   color: '#64748b',
@@ -1132,8 +1088,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
+      {}
       <section style={{
         padding: '6rem 2rem',
         background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
@@ -1149,7 +1104,6 @@ const HomePage = () => {
           }}>
             Ready to Get Started?
           </h2>
-
           <p style={{
             fontSize: '1.25rem',
             marginBottom: '3rem',
@@ -1160,7 +1114,6 @@ const HomePage = () => {
             Join educational institutions worldwide using CertifyChain for secure, 
             reliable certificate verification and management.
           </p>
-
           <button
             onClick={handleGetStarted}
             style={{
@@ -1193,8 +1146,7 @@ const HomePage = () => {
           </button>
         </div>
       </section>
-
-      {/* Footer */}
+      {}
       <footer style={{
         backgroundColor: '#0f172a',
         color: 'white',
@@ -1231,7 +1183,6 @@ const HomePage = () => {
               CertifyChain
             </h3>
           </div>
-
           <p style={{
             fontSize: '1rem',
             color: '#94a3b8',
@@ -1243,7 +1194,6 @@ const HomePage = () => {
             Secure, trusted, and efficient certificate verification powered by blockchain technology. 
             Building the future of educational credential management.
           </p>
-
           <div style={{
             borderTop: '1px solid #334155',
             paddingTop: '2rem'
@@ -1262,5 +1212,4 @@ const HomePage = () => {
     </div>
   );
 };
-
 export default HomePage;

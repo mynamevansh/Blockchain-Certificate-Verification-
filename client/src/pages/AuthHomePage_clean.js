@@ -4,36 +4,28 @@ import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
 import useNavigateWithLoading from '../hooks/useNavigateWithLoading';
 import { ShieldCheck, GraduationCap, Users, FileCheck, ChevronRight } from 'lucide-react';
-
 const AuthHomePage = () => {
   const navigate = useNavigate();
   const navigateWithLoading = useNavigateWithLoading();
   const { hideLoading } = useLoading();
   const [signingInAsAdmin, setSigningInAsAdmin] = useState(false);
   const [signingInAsStudent, setSigningInAsStudent] = useState(false);
-
   useEffect(() => {
     hideLoading();
-    
     return () => {
       toast.dismiss();
     };
   }, [hideLoading]);
-
   const handleAdminSignIn = async () => {
     if (signingInAsAdmin || signingInAsStudent) return;
-    
     try {
       setSigningInAsAdmin(true);
-      
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
       localStorage.setItem('userType', 'admin');
       localStorage.setItem('adminId', 'admin_001');
       localStorage.setItem('adminName', 'Dr. Sarah Wilson');
       localStorage.setItem('adminDepartment', 'Academic Affairs');
       localStorage.setItem('adminRole', 'Registrar');
-      
       toast.success('Admin signed in successfully!', {
         autoClose: 2500,
         hideProgressBar: false,
@@ -42,36 +34,26 @@ const AuthHomePage = () => {
         draggable: true,
         toastId: 'admin-signin'
       });
-      
       setSigningInAsAdmin(false);
-      
       await new Promise(resolve => setTimeout(resolve, 800));
-      
       toast.dismiss('admin-signin');
-      
       navigateWithLoading('/admin-dashboard', 1000);
-      
     } catch (error) {
       setSigningInAsAdmin(false);
       toast.error('Admin sign-in failed. Please try again.');
     }
   };
-
   const handleStudentSignIn = async () => {
     if (signingInAsAdmin || signingInAsStudent) return;
-    
     try {
       setSigningInAsStudent(true);
-      
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
       localStorage.setItem('userType', 'student');
       localStorage.setItem('studentId', 'student_001');
       localStorage.setItem('studentName', 'Vansh Ranawat');
       localStorage.setItem('studentEmail', 'john.smith@university.edu');
       localStorage.setItem('studentDepartment', 'Computer Science');
       localStorage.setItem('studentYear', 'Senior');
-      
       toast.success('Student signed in successfully!', {
         autoClose: 2500,
         hideProgressBar: false,
@@ -80,25 +62,18 @@ const AuthHomePage = () => {
         draggable: true,
         toastId: 'student-signin'
       });
-      
       setSigningInAsStudent(false);
-      
       await new Promise(resolve => setTimeout(resolve, 800));
-      
       toast.dismiss('student-signin');
-      
       navigateWithLoading('/student-dashboard', 1000);
-      
     } catch (error) {
       setSigningInAsStudent(false);
       toast.error('Student sign-in failed. Please try again.');
     }
   };
-
   const handleBackToHome = () => {
     navigateWithLoading('/', 500);
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -117,26 +92,22 @@ const AuthHomePage = () => {
                   Secure, transparent, and tamper-proof certificates for the digital age.
                 </p>
               </div>
-
               <div className="grid sm:grid-cols-2 gap-6">
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
                   <ShieldCheck className="w-12 h-12 text-blue-600 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Blockchain Secured</h3>
                   <p className="text-gray-600 text-sm">Every certificate is protected by cryptographic hashing</p>
                 </div>
-
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
                   <FileCheck className="w-12 h-12 text-green-600 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Instant Verification</h3>
                   <p className="text-gray-600 text-sm">Verify authenticity in seconds, not days</p>
                 </div>
-
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
                   <Users className="w-12 h-12 text-purple-600 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Multi-User Platform</h3>
                   <p className="text-gray-600 text-sm">Separate dashboards for administrators and students</p>
                 </div>
-
                 <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-300">
                   <GraduationCap className="w-12 h-12 text-indigo-600 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Academic Excellence</h3>
@@ -144,13 +115,11 @@ const AuthHomePage = () => {
                 </div>
               </div>
             </div>
-
             <div className="bg-white/90 backdrop-blur-lg rounded-2xl shadow-2xl p-8 border border-gray-200">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Choose Your Role</h2>
                 <p className="text-gray-600">Access your personalized dashboard</p>
               </div>
-
               <div className="space-y-4">
                 <button
                   onClick={handleAdminSignIn}
@@ -170,7 +139,6 @@ const AuthHomePage = () => {
                     </div>
                   )}
                 </button>
-
                 <button
                   onClick={handleStudentSignIn}
                   disabled={signingInAsAdmin || signingInAsStudent}
@@ -190,7 +158,6 @@ const AuthHomePage = () => {
                   )}
                 </button>
               </div>
-
               <div className="mt-6 pt-6 border-t border-gray-200">
                 <button
                   onClick={handleBackToHome}
@@ -199,7 +166,6 @@ const AuthHomePage = () => {
                   ← Back to Home
                 </button>
               </div>
-
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-500">
                   Demo credentials are automatically loaded for testing purposes
@@ -212,5 +178,4 @@ const AuthHomePage = () => {
     </div>
   );
 };
-
 export default AuthHomePage;

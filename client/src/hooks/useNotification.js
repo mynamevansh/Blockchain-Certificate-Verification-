@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { toast } from 'react-toastify';
 import { NOTIFICATION_TYPES } from '../constants';
-
 export const useNotification = () => {
   const showNotification = useCallback((type, message, options = {}) => {
     const defaultOptions = {
@@ -13,7 +12,6 @@ export const useNotification = () => {
       draggable: true,
       ...options,
     };
-
     switch (type) {
       case NOTIFICATION_TYPES.SUCCESS:
         toast.success(message, defaultOptions);
@@ -31,23 +29,18 @@ export const useNotification = () => {
         toast(message, defaultOptions);
     }
   }, []);
-
   const showSuccess = useCallback((message, options) => {
     showNotification(NOTIFICATION_TYPES.SUCCESS, message, options);
   }, [showNotification]);
-
   const showError = useCallback((message, options) => {
     showNotification(NOTIFICATION_TYPES.ERROR, message, options);
   }, [showNotification]);
-
   const showWarning = useCallback((message, options) => {
     showNotification(NOTIFICATION_TYPES.WARNING, message, options);
   }, [showNotification]);
-
   const showInfo = useCallback((message, options) => {
     showNotification(NOTIFICATION_TYPES.INFO, message, options);
   }, [showNotification]);
-
   return {
     showNotification,
     showSuccess,

@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-
 const WebSocketContext = createContext();
-
 export const useWebSocket = () => {
   const context = useContext(WebSocketContext);
   if (!context) {
@@ -9,9 +7,7 @@ export const useWebSocket = () => {
   }
   return context;
 };
-
 export const WebSocketProvider = ({ children }) => {
-  // Suppress WebSocket connection errors in development
   React.useEffect(() => {
     if (process.env.NODE_ENV === 'development') {
       const originalError = console.error;
@@ -22,17 +18,14 @@ export const WebSocketProvider = ({ children }) => {
         }
         originalError.apply(console, args);
       };
-      
       return () => {
         console.error = originalError;
       };
     }
   }, []);
-
   const [socket] = useState(null);
   const [isConnected] = useState(false); // Set to false since no backend
   const [notifications, setNotifications] = useState([
-    // Mock notifications for demo purposes
     {
       id: '1',
       type: 'success',
@@ -55,20 +48,15 @@ export const WebSocketProvider = ({ children }) => {
       timestamp: new Date(Date.now() - 120000).toISOString(),
     }
   ]);
-
-  // Mock functions for when backend is not available
   const connect = () => {
     console.log('WebSocket connection will be established when backend is ready');
   };
-
   const disconnect = () => {
     console.log('WebSocket disconnection');
   };
-
   const emit = (event, data) => {
     console.log('Would emit:', event, data);
   };
-
   const addNotification = (notification) => {
     const newNotification = {
       ...notification,
@@ -77,15 +65,12 @@ export const WebSocketProvider = ({ children }) => {
     };
     setNotifications(prev => [newNotification, ...prev]);
   };
-
   const removeNotification = (id) => {
     setNotifications(prev => prev.filter(notif => notif.id !== id));
   };
-
   const clearNotifications = () => {
     setNotifications([]);
   };
-
   const value = {
     socket,
     isConnected,
@@ -97,7 +82,6 @@ export const WebSocketProvider = ({ children }) => {
     removeNotification,
     clearNotifications,
   };
-
   return (
     <WebSocketContext.Provider value={value}>
       {children}

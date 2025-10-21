@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
 const Home = () => {
   const { isAuthenticated, user } = useAuth();
-
   const features = [
     {
       icon: '🔐',
@@ -27,17 +25,15 @@ const Home = () => {
       description: 'Simple, intuitive interface designed for both institutions and individuals.',
     },
   ];
-
   const stats = [
     { value: '10K+', label: 'Certificates Issued' },
     { value: '500+', label: 'Institutions' },
     { value: '99.9%', label: 'Uptime' },
     { value: '50K+', label: 'Verifications' },
   ];
-
   return (
     <div className="fade-in">
-      {/* Hero Section */}
+      {}
       <section className="p-8 text-center">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -46,7 +42,6 @@ const Home = () => {
           <p className="text-2xl text-gray-600 mb-8 leading-relaxed">
             The future of certificate verification is here. Secure, instant, and globally accessible blockchain-based certificate management.
           </p>
-          
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             {isAuthenticated ? (
               <>
@@ -70,8 +65,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* Stats Section */}
+      {}
       <section className="p-8">
         <div className="dashboard-grid max-w-6xl mx-auto">
           {stats.map((stat, index) => (
@@ -82,12 +76,10 @@ const Home = () => {
           ))}
         </div>
       </section>
-
-      {/* Features Section */}
+      {}
       <section className="p-8">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">Why Choose CertVerify?</h2>
-          
           <div className="dashboard-grid">
             {features.map((feature, index) => (
               <div key={index} className="modern-card text-center slide-in" style={{ animationDelay: `${index * 0.15}s` }}>
@@ -101,12 +93,10 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* How It Works */}
+      {}
       <section className="p-8">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-4xl font-bold text-center mb-12">How It Works</h2>
-          
           <div className="dashboard-grid">
             <div className="modern-card text-center">
               <div className="stat-icon primary mb-6" style={{ margin: '0 auto 1.5rem' }}>
@@ -117,7 +107,6 @@ const Home = () => {
                 Institutions upload certificates to our secure blockchain network with cryptographic signatures.
               </p>
             </div>
-            
             <div className="modern-card text-center">
               <div className="stat-icon success mb-6" style={{ margin: '0 auto 1.5rem' }}>
                 2️⃣
@@ -127,7 +116,6 @@ const Home = () => {
                 Certificates are permanently stored on the blockchain, ensuring immutability and transparency.
               </p>
             </div>
-            
             <div className="modern-card text-center">
               <div className="stat-icon error mb-6" style={{ margin: '0 auto 1.5rem' }}>
                 3️⃣
@@ -140,15 +128,13 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
+      {}
       <section className="p-8">
         <div className="modern-card text-center max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-6">Ready to Secure Your Certificates?</h2>
           <p className="text-gray-600 mb-8 text-lg">
             Join thousands of institutions already using CertVerify to issue and verify tamper-proof certificates.
           </p>
-          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {isAuthenticated ? (
               <Link to="/upload" className="btn-modern btn-primary text-lg px-8 py-4">
@@ -168,5 +154,4 @@ const Home = () => {
     </div>
   );
 };
-
 export default Home;

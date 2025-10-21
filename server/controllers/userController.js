@@ -1,44 +1,35 @@
 const User = require('../models/User');
 const { generateToken } = require('../middleware/auth');
-
 const userLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
       });
     }
-
     const user = await User.findActiveByEmail(email);
-    
     if (!user) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
-
     const isPasswordValid = await user.comparePassword(password);
-    
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
-
     await user.updateLastLogin();
-
     const token = generateToken({
       id: user._id,
       email: user.email,
       role: user.role,
       studentId: user.studentId
     });
-
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -59,7 +50,6 @@ const userLogin = async (req, res) => {
         }
       }
     });
-
   } catch (error) {
     console.error('User login error:', error);
     res.status(500).json({
@@ -68,7 +58,6 @@ const userLogin = async (req, res) => {
     });
   }
 };
-
 const userRegister = async (req, res) => {
   try {
     const { 
@@ -83,29 +72,24 @@ const userRegister = async (req, res) => {
       phoneNumber,
       address 
     } = req.body;
-
     if (!name || !email || !password || !studentId || !program || !department || !enrollmentDate || !expectedGraduation) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
       });
     }
-
-    // Check if user already exists
     const existingUser = await User.findOne({
       $or: [
         { email: email.toLowerCase() },
         { studentId: studentId.toUpperCase() }
       ]
     });
-    
     if (existingUser) {
       return res.status(400).json({
         success: false,
         message: 'User with this email or student ID already exists'
       });
     }
-
     const newUser = new User({
       name,
       email,
@@ -119,16 +103,13 @@ const userRegister = async (req, res) => {
       address,
       status: 'active'
     });
-
     await newUser.save();
-
     const token = generateToken({
       id: newUser._id,
       email: newUser.email,
       role: newUser.role,
       studentId: newUser.studentId
     });
-
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -148,38 +129,31 @@ const userRegister = async (req, res) => {
         }
       }
     });
-
   } catch (error) {
     console.error('User registration error:', error);
-    
     if (error.name === 'ValidationError') {
       return res.status(400).json({
         success: false,
         message: error.message
       });
     }
-    
     res.status(500).json({
       success: false,
       message: 'Internal server error'
     });
   }
 };
-
-// Get User Profile
 const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
       .select('-password')
       .populate('certificates.certificateId', 'certificateId course degree issuedDate status');
-    
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
-
     res.status(200).json({
       success: true,
       data: {
@@ -203,7 +177,6 @@ const getUserProfile = async (req, res) => {
         }
       }
     });
-
   } catch (error) {
     console.error('Get user profile error:', error);
     res.status(500).json({
@@ -212,30 +185,24 @@ const getUserProfile = async (req, res) => {
     });
   }
 };
-
-// Update User Profile
 const updateUserProfile = async (req, res) => {
   try {
     const { name, phoneNumber, address } = req.body;
     const updates = {};
-    
     if (name) updates.name = name;
     if (phoneNumber) updates.phoneNumber = phoneNumber;
     if (address) updates.address = address;
-
     const user = await User.findByIdAndUpdate(
       req.user._id,
       updates,
       { new: true, runValidators: true }
     ).select('-password');
-
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
-
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
@@ -253,7 +220,6 @@ const updateUserProfile = async (req, res) => {
         }
       }
     });
-
   } catch (error) {
     console.error('Update user profile error:', error);
     res.status(500).json({
@@ -262,26 +228,19 @@ const updateUserProfile = async (req, res) => {
     });
   }
 };
-
-// Get All Users (Admin only)
 const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 10, status, program, department } = req.query;
     const query = { isActive: true };
-    
-    // Add filters
     if (status) query.status = status;
     if (program) query.program = new RegExp(program, 'i');
     if (department) query.department = new RegExp(department, 'i');
-
     const users = await User.find(query)
       .select('-password')
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .sort({ createdAt: -1 });
-
     const total = await User.countDocuments(query);
-
     res.status(200).json({
       success: true,
       count: users.length,
@@ -304,7 +263,6 @@ const getAllUsers = async (req, res) => {
         }))
       }
     });
-
   } catch (error) {
     console.error('Get all users error:', error);
     res.status(500).json({
@@ -313,14 +271,10 @@ const getAllUsers = async (req, res) => {
     });
   }
 };
-
-// Get User Certificates
 const getUserCertificates = async (req, res) => {
   try {
     const Certificate = require('../models/Certificate');
-    
     const certificates = await Certificate.findValidByStudent(req.user._id);
-
     res.status(200).json({
       success: true,
       count: certificates.length,
@@ -328,7 +282,6 @@ const getUserCertificates = async (req, res) => {
         certificates
       }
     });
-
   } catch (error) {
     console.error('Get user certificates error:', error);
     res.status(500).json({
@@ -337,7 +290,6 @@ const getUserCertificates = async (req, res) => {
     });
   }
 };
-
 module.exports = {
   userLogin,
   userRegister,

@@ -1,31 +1,25 @@
 import React from 'react';
-
 export const LoadingSpinner = ({ size = 'md', className = '' }) => {
   const sizeClasses = {
     sm: 'w-4 h-4',
     md: 'w-8 h-8',
     lg: 'w-12 h-12'
   };
-
   return (
     <div className={`animate-spin rounded-full border-4 border-primary-600 border-t-transparent ${sizeClasses[size]} ${className}`}></div>
   );
 };
-
 export const ErrorBoundary = ({ children, fallback }) => {
   const [hasError, setHasError] = React.useState(false);
   const [error, setError] = React.useState(null);
-
   React.useEffect(() => {
     const handleError = (error) => {
       setHasError(true);
       setError(error);
     };
-
     window.addEventListener('error', handleError);
     return () => window.removeEventListener('error', handleError);
   }, []);
-
   if (hasError) {
     return fallback || (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -49,10 +43,8 @@ export const ErrorBoundary = ({ children, fallback }) => {
       </div>
     );
   }
-
   return children;
 };
-
 export const EmptyState = ({ icon, title, description, action }) => (
   <div className="text-center py-12">
     <div className="w-16 h-16 bg-gray-100 text-gray-400 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -63,7 +55,6 @@ export const EmptyState = ({ icon, title, description, action }) => (
     {action && action}
   </div>
 );
-
 export const StatusBadge = ({ status, children }) => {
   const getStatusClass = (status) => {
     switch (status) {
@@ -77,17 +68,14 @@ export const StatusBadge = ({ status, children }) => {
         return 'status-pending';
     }
   };
-
   return (
     <span className={getStatusClass(status)}>
       {children || status}
     </span>
   );
 };
-
 export const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', danger = false }) => {
   if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
@@ -111,7 +99,6 @@ export const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, 
     </div>
   );
 };
-
 export default {
   LoadingSpinner,
   ErrorBoundary,

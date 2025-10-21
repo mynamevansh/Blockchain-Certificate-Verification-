@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-
 export const useLocalStorage = (key, initialValue) => {
   const [storedValue, setStoredValue] = useState(() => {
     try {
@@ -10,7 +9,6 @@ export const useLocalStorage = (key, initialValue) => {
       return initialValue;
     }
   });
-
   const setValue = useCallback((value) => {
     try {
       const valueToStore = value instanceof Function ? value(storedValue) : value;
@@ -20,7 +18,6 @@ export const useLocalStorage = (key, initialValue) => {
       console.error(`Error setting localStorage key "${key}":`, error);
     }
   }, [key, storedValue]);
-
   const removeValue = useCallback(() => {
     try {
       window.localStorage.removeItem(key);
@@ -29,7 +26,6 @@ export const useLocalStorage = (key, initialValue) => {
       console.error(`Error removing localStorage key "${key}":`, error);
     }
   }, [key, initialValue]);
-
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === key && e.newValue !== null) {
@@ -40,10 +36,8 @@ export const useLocalStorage = (key, initialValue) => {
         }
       }
     };
-
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [key]);
-
   return [storedValue, setValue, removeValue];
 };

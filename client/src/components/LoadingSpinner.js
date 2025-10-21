@@ -1,9 +1,7 @@
 import React from 'react';
 import { ShieldCheck } from 'lucide-react';
-
 const LoadingSpinner = ({ show, message = "Loading..." }) => {
   if (!show) return null;
-
   return (
     <div style={{
       position: 'fixed',
@@ -20,7 +18,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
       zIndex: 9999,
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif'
     }}>
-      
       <div 
         className="loading-brand-logo"
         style={{
@@ -52,13 +49,10 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           CertifyChain
         </h1>
       </div>
-
-      
       <div style={{
         position: 'relative',
         marginBottom: '1.5rem'
       }}>
-        
         <div style={{
           width: '64px',
           height: '64px',
@@ -67,8 +61,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           borderRadius: '50%',
           animation: 'spin 1s linear infinite'
         }}></div>
-        
-        
         <div style={{
           position: 'absolute',
           top: '8px',
@@ -80,8 +72,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           borderRadius: '50%',
           animation: 'spin 1.5s linear infinite reverse'
         }}></div>
-
-        
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -94,8 +84,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           animation: 'pulse 1s ease-in-out infinite'
         }}></div>
       </div>
-
-      
       <p style={{
         fontSize: 'clamp(0.875rem, 3vw, 1rem)',
         color: '#6b7280',
@@ -108,8 +96,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
       }}>
         {message}
       </p>
-
-      
       <div style={{
         width: '200px',
         height: '2px',
@@ -126,8 +112,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           animation: 'progressSlide 2s ease-in-out infinite'
         }}></div>
       </div>
-
-      
       <div style={{
         display: 'flex',
         gap: '0.5rem',
@@ -146,15 +130,12 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
           ></div>
         ))}
       </div>
-
-      
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-
           @keyframes pulse {
             0%, 100% { 
               opacity: 1;
@@ -165,7 +146,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
               transform: scale(0.95);
             }
           }
-
           @keyframes bounce {
             0%, 100% { 
               transform: translateY(0);
@@ -176,7 +156,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
               opacity: 1;
             }
           }
-
           @keyframes fadeIn {
             0% { 
               opacity: 0;
@@ -185,7 +164,6 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
               opacity: 1;
             }
           }
-
           @keyframes fadeInUp {
             0% { 
               opacity: 0;
@@ -196,13 +174,11 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
               transform: translateY(0);
             }
           }
-
           @keyframes progressSlide {
             0% { transform: translateX(-100%); }
             50% { transform: translateX(200%); }
             100% { transform: translateX(300%); }
           }
-
           @media (max-width: 640px) {
             .loading-brand-logo {
               flex-direction: column !important;
@@ -214,5 +190,4 @@ const LoadingSpinner = ({ show, message = "Loading..." }) => {
     </div>
   );
 };
-
 export default LoadingSpinner;

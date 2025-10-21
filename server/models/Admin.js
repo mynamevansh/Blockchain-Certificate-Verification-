@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-
 const adminSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -51,10 +50,8 @@ const adminSchema = new mongoose.Schema({
     default: Date.now
   }
 });
-
 adminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
   try {
     const hashedPassword = await bcrypt.hash(this.password, 12);
     this.password = hashedPassword;
@@ -63,23 +60,18 @@ adminSchema.pre('save', async function(next) {
     next(error);
   }
 });
-
 adminSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
 adminSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
-
 adminSchema.methods.updateLastLogin = async function() {
   this.lastLogin = new Date();
   return await this.save();
 };
-
 adminSchema.statics.findActiveByEmail = function(email) {
   return this.findOne({ email: email.toLowerCase(), isActive: true });
 };
-
 module.exports = mongoose.model('Admin', adminSchema);

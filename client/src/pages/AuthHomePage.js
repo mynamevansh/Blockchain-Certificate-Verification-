@@ -4,12 +4,10 @@ import { useLoading } from '../context/LoadingContext';
 import { useAuth } from '../context/AuthContext';
 import useNavigateWithLoading from '../hooks/useNavigateWithLoading';
 import { ShieldCheck, GraduationCap, Users, FileCheck, Eye, EyeOff } from 'lucide-react';
-
 const AuthHomePage = () => {
   const navigateWithLoading = useNavigateWithLoading();
   const { hideLoading } = useLoading();
   const { loginAsAdmin, loginAsUser, isLoading } = useAuth();
-  
   const [activeTab, setActiveTab] = useState('admin');
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,19 +15,14 @@ const AuthHomePage = () => {
     password: '',
     rememberMe: false
   });
-
   useEffect(() => {
     hideLoading();
   }, [hideLoading]);
-
   useEffect(() => {
-    // Cleanup: dismiss all auth-related toasts when component unmounts (page change)
     return () => {
       toast.dismiss();
     };
   }, []);
-
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -37,16 +30,12 @@ const AuthHomePage = () => {
       [name]: type === 'checkbox' ? checked : value
     }));
   };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!formData.email || !formData.password) {
       toast.error('Please fill in all required fields');
       return;
     }
-
     try {
       if (activeTab === 'admin') {
         await loginAsAdmin(formData.email, formData.password, formData.rememberMe);
@@ -62,11 +51,8 @@ const AuthHomePage = () => {
         });
       }
     } catch (error) {
-      // Error is already handled in the auth context
     }
   };
-
-  // Quick fill demo credentials
   const fillDemoCredentials = () => {
     if (activeTab === 'admin') {
       setFormData({
@@ -82,10 +68,9 @@ const AuthHomePage = () => {
       });
     }
   };
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* Top Navbar */}
+      {}
       <nav style={{
         backgroundColor: 'white',
         borderBottom: '1px solid #e2e8f0',
@@ -113,14 +98,13 @@ const AuthHomePage = () => {
           </div>
         </div>
       </nav>
-
-      {/* Main Content */}
+      {}
       <main style={{
         maxWidth: '900px',
         margin: '0 auto',
         padding: '4rem 1.5rem'
       }}>
-        {/* Welcome Section */}
+        {}
         <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
           <h2 style={{
             fontSize: '2.75rem',
@@ -143,8 +127,7 @@ const AuthHomePage = () => {
             Secure, blockchain-powered certificate verification and management platform.
             Issue, verify, and manage academic credentials with complete transparency and authenticity.
           </p>
-
-          {/* Feature Highlights */}
+          {}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -171,7 +154,6 @@ const AuthHomePage = () => {
                 Verify certificates in seconds with blockchain technology
               </p>
             </div>
-
             <div style={{ textAlign: 'center' }}>
               <ShieldCheck size={32} style={{ color: '#3b82f6', margin: '0 auto 0.75rem auto' }} />
               <h4 style={{
@@ -192,7 +174,6 @@ const AuthHomePage = () => {
                 Immutable records ensure authenticity
               </p>
             </div>
-
             <div style={{ textAlign: 'center' }}>
               <Users size={32} style={{ color: '#8b5cf6', margin: '0 auto 0.75rem auto' }} />
               <h4 style={{
@@ -215,8 +196,7 @@ const AuthHomePage = () => {
             </div>
           </div>
         </div>
-
-        {/* Login Form */}
+        {}
         <div style={{
           maxWidth: '500px',
           margin: '0 auto',
@@ -226,7 +206,7 @@ const AuthHomePage = () => {
           boxShadow: '0 8px 25px rgba(0, 0, 0, 0.1)',
           border: '1px solid #e2e8f0'
         }}>
-          {/* Tab Navigation */}
+          {}
           <div style={{
             display: 'flex',
             backgroundColor: '#f1f5f9',
@@ -279,8 +259,7 @@ const AuthHomePage = () => {
               Student
             </button>
           </div>
-
-          {/* Form Header */}
+          {}
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <div style={{
               width: '64px',
@@ -317,10 +296,9 @@ const AuthHomePage = () => {
               }
             </p>
           </div>
-
-          {/* Login Form */}
+          {}
           <form onSubmit={handleSubmit}>
-            {/* Email Input */}
+            {}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
@@ -351,8 +329,7 @@ const AuthHomePage = () => {
                 onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
               />
             </div>
-
-            {/* Password Input */}
+            {}
             <div style={{ marginBottom: '1.5rem' }}>
               <label style={{
                 display: 'block',
@@ -402,8 +379,7 @@ const AuthHomePage = () => {
                 </button>
               </div>
             </div>
-
-            {/* Remember Me */}
+            {}
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
               <input
                 type="checkbox"
@@ -421,8 +397,7 @@ const AuthHomePage = () => {
                 Remember me
               </label>
             </div>
-
-            {/* Submit Button */}
+            {}
             <button
               type="submit"
               disabled={isLoading}
@@ -459,8 +434,7 @@ const AuthHomePage = () => {
                 `Sign In as ${activeTab === 'admin' ? 'Administrator' : 'Student'}`
               )}
             </button>
-
-            {/* Demo Credentials Button */}
+            {}
             <button
               type="button"
               onClick={fillDemoCredentials}
@@ -491,8 +465,7 @@ const AuthHomePage = () => {
           </form>
         </div>
       </main>
-
-      {/* CSS Animation for spinner */}
+      {}
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
@@ -502,5 +475,4 @@ const AuthHomePage = () => {
     </div>
   );
 };
-
 export default AuthHomePage;

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { certificateAPI } from '../services/api';
 import blockchainService from '../services/blockchain';
 import { toast } from 'react-toastify';
-
 const Verify = () => {
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
@@ -10,7 +9,6 @@ const Verify = () => {
   const [verificationResult, setVerificationResult] = useState(null);
   const [certificateId, setCertificateId] = useState('');
   const [verificationMethod, setVerificationMethod] = useState('file'); // 'file' or 'id'
-
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -20,19 +18,15 @@ const Verify = () => {
       setDragActive(false);
     }
   };
-
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
   };
-
   const handleFileSelect = (selectedFile) => {
-    // Validate file type
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
@@ -41,48 +35,35 @@ const Verify = () => {
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
-    
     if (!allowedTypes.includes(selectedFile.type)) {
       toast.error('Please select a valid certificate file (PDF, DOC, DOCX, JPG, PNG)');
       return;
     }
-
-    // Check file size (max 10MB)
     if (selectedFile.size > 10 * 1024 * 1024) {
       toast.error('File size must be less than 10MB');
       return;
     }
-
     setFile(selectedFile);
     setVerificationResult(null);
     toast.success('File selected successfully');
   };
-
   const handleFileInputChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       handleFileSelect(e.target.files[0]);
     }
   };
-
   const verifyByFile = async () => {
     if (!file) {
       toast.error('Please select a certificate file');
       return;
     }
-
     setVerifying(true);
     setVerificationResult(null);
-
     try {
-      // Step 1: Generate file hash
       toast.info('Generating certificate hash...');
       const fileHash = await blockchainService.generateFileHash(file);
-      
-      // Step 2: Check blockchain for certificate
       toast.info('Checking blockchain records...');
       const blockchainResult = await blockchainService.verifyCertificate(fileHash);
-      
-      // Step 3: Get additional details from backend
       let apiResult = null;
       try {
         const formData = new FormData();
@@ -91,8 +72,6 @@ const Verify = () => {
       } catch (error) {
         console.warn('Backend verification failed, using blockchain data only:', error);
       }
-
-      // Step 4: Combine results
       const result = {
         isValid: blockchainResult.isValid,
         status: blockchainResult.status,
@@ -105,9 +84,7 @@ const Verify = () => {
         fileName: file.name,
         fileSize: file.size
       };
-
       setVerificationResult(result);
-      
       if (result.isValid && result.status === 'active') {
         toast.success('Certificate is valid and active!');
       } else if (result.isValid && result.status === 'revoked') {
@@ -115,7 +92,6 @@ const Verify = () => {
       } else {
         toast.error('Certificate is not valid');
       }
-
     } catch (error) {
       console.error('Error verifying certificate:', error);
       toast.error(error.message || 'Failed to verify certificate');
@@ -130,30 +106,22 @@ const Verify = () => {
       setVerifying(false);
     }
   };
-
   const verifyById = async () => {
     if (!certificateId.trim()) {
       toast.error('Please enter a certificate ID');
       return;
     }
-
     setVerifying(true);
     setVerificationResult(null);
-
     try {
-      // Step 1: Get certificate details from blockchain
       toast.info('Retrieving certificate details...');
       const blockchainResult = await blockchainService.getCertificateDetails(certificateId);
-      
-      // Step 2: Get additional details from backend
       let apiResult = null;
       try {
         apiResult = await certificateAPI.getCertificate(certificateId);
       } catch (error) {
         console.warn('Backend lookup failed, using blockchain data only:', error);
       }
-
-      // Step 3: Combine results
       const result = {
         isValid: blockchainResult.status === 'active',
         status: blockchainResult.status,
@@ -164,9 +132,7 @@ const Verify = () => {
         },
         verificationTime: new Date().toISOString()
       };
-
       setVerificationResult(result);
-      
       if (result.status === 'active') {
         toast.success('Certificate found and is active!');
       } else if (result.status === 'revoked') {
@@ -174,7 +140,6 @@ const Verify = () => {
       } else {
         toast.error('Certificate not found or invalid');
       }
-
     } catch (error) {
       console.error('Error verifying certificate by ID:', error);
       toast.error(error.message || 'Failed to verify certificate');
@@ -188,7 +153,6 @@ const Verify = () => {
       setVerifying(false);
     }
   };
-
   const handleVerification = () => {
     if (verificationMethod === 'file') {
       verifyByFile();
@@ -196,18 +160,15 @@ const Verify = () => {
       verifyById();
     }
   };
-
   const resetVerification = () => {
     setFile(null);
     setCertificateId('');
     setVerificationResult(null);
   };
-
   const getStatusBadge = (status, isValid) => {
     if (!isValid) {
       return <span className="status-revoked">Invalid</span>;
     }
-    
     switch (status) {
       case 'active':
         return <span className="status-active">Valid & Active</span>;
@@ -217,7 +178,6 @@ const Verify = () => {
         return <span className="status-pending">Unknown</span>;
     }
   };
-
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
@@ -226,10 +186,9 @@ const Verify = () => {
           Upload a certificate file or enter a certificate ID to verify its authenticity and status on the blockchain.
         </p>
       </div>
-
       {!verificationResult ? (
         <div className="space-y-6">
-          {/* Verification Method Selection */}
+          {}
           <div className="card">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Verification Method</h2>
             <div className="flex space-x-4">
@@ -257,12 +216,9 @@ const Verify = () => {
               </label>
             </div>
           </div>
-
           {verificationMethod === 'file' ? (
-            /* File Upload Section */
             <div className="card">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Certificate</h2>
-              
               <div
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
                   dragActive 
@@ -328,7 +284,6 @@ const Verify = () => {
               </div>
             </div>
           ) : (
-            /* Certificate ID Section */
             <div className="card">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Certificate ID</h2>
               <div className="space-y-4">
@@ -351,8 +306,7 @@ const Verify = () => {
               </div>
             </div>
           )}
-
-          {/* Verify Button */}
+          {}
           <div className="flex justify-center">
             <button
               onClick={handleVerification}
@@ -379,14 +333,12 @@ const Verify = () => {
           </div>
         </div>
       ) : (
-        /* Verification Results */
         <div className="space-y-6">
           <div className="card">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Verification Result</h2>
               {getStatusBadge(verificationResult.status, verificationResult.isValid)}
             </div>
-
             {verificationResult.error ? (
               <div className="bg-red-50 border border-red-200 rounded-lg p-6">
                 <div className="flex items-center">
@@ -403,7 +355,7 @@ const Verify = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Main verification status */}
+                {}
                 <div className={`border rounded-lg p-6 ${
                   verificationResult.isValid && verificationResult.status === 'active' 
                     ? 'bg-green-50 border-green-200' 
@@ -454,8 +406,7 @@ const Verify = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* Certificate details */}
+                {}
                 <div className="bg-gray-50 rounded-lg p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Certificate Details</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -489,8 +440,7 @@ const Verify = () => {
                     )}
                   </div>
                 </div>
-
-                {/* Blockchain information */}
+                {}
                 {verificationResult.verification?.blockchain && (
                   <div className="bg-gray-50 rounded-lg p-6">
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Blockchain Information</h3>
@@ -525,8 +475,7 @@ const Verify = () => {
               </div>
             )}
           </div>
-
-          {/* Action buttons */}
+          {}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={resetVerification}
@@ -546,5 +495,4 @@ const Verify = () => {
     </div>
   );
 };
-
 export default Verify;

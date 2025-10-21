@@ -10,10 +10,8 @@ import {
   Lock,
   ArrowRight
 } from 'lucide-react';
-
 const ProfessionalHome = () => {
   const { user } = useAuth();
-
   const features = [
     {
       icon: Shield,
@@ -46,21 +44,19 @@ const ProfessionalHome = () => {
       description: 'Once issued, certificates cannot be tampered with or falsified.',
     },
   ];
-
   const stats = [
     { value: '10,000+', label: 'Certificates Issued' },
     { value: '500+', label: 'Institutions' },
     { value: '99.9%', label: 'Uptime' },
     { value: '24/7', label: 'Support' },
   ];
-
   return (
     <div style={{ 
       minHeight: '100vh', 
       backgroundColor: 'var(--background-secondary)',
       fontFamily: 'Inter, sans-serif'
     }}>
-      {/* Header */}
+      {}
       <header style={{
         backgroundColor: 'var(--background-primary)',
         borderBottom: '1px solid var(--border-color)',
@@ -85,7 +81,6 @@ const ProfessionalHome = () => {
               CertifyChain
             </h1>
           </div>
-          
           <nav style={{ display: 'flex', gap: 'var(--spacing-lg)', alignItems: 'center' }}>
             {user ? (
               <>
@@ -114,8 +109,7 @@ const ProfessionalHome = () => {
           </nav>
         </div>
       </header>
-
-      {/* Hero Section */}
+      {}
       <section style={{
         padding: 'var(--spacing-2xl) 0',
         backgroundColor: 'var(--background-primary)'
@@ -146,7 +140,6 @@ const ProfessionalHome = () => {
             Issue, verify, and manage certificates with blockchain technology. 
             Ensure authenticity and prevent fraud with our secure platform.
           </p>
-          
           <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link to="/upload" className="btn btn-primary" style={{ padding: 'var(--spacing-md) var(--spacing-xl)' }}>
               <Upload size={20} />
@@ -159,8 +152,7 @@ const ProfessionalHome = () => {
           </div>
         </div>
       </section>
-
-      {/* Stats Section */}
+      {}
       <section style={{
         padding: 'var(--spacing-2xl) 0',
         backgroundColor: 'var(--background-secondary)',
@@ -200,8 +192,7 @@ const ProfessionalHome = () => {
           </div>
         </div>
       </section>
-
-      {/* Features Section */}
+      {}
       <section style={{ padding: 'var(--spacing-2xl) 0' }}>
         <div style={{
           maxWidth: '1200px',
@@ -227,7 +218,6 @@ const ProfessionalHome = () => {
               for complete certificate lifecycle management.
             </p>
           </div>
-
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -268,8 +258,7 @@ const ProfessionalHome = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
+      {}
       <section style={{
         padding: 'var(--spacing-2xl) 0',
         backgroundColor: 'var(--background-primary)',
@@ -296,7 +285,6 @@ const ProfessionalHome = () => {
           }}>
             Join thousands of institutions already using CertifyChain for secure certificate management.
           </p>
-          
           <Link to="/dashboard" className="btn btn-primary" style={{ 
             padding: 'var(--spacing-md) var(--spacing-xl)',
             fontSize: '1rem'
@@ -306,8 +294,7 @@ const ProfessionalHome = () => {
           </Link>
         </div>
       </section>
-
-      {/* Footer */}
+      {}
       <footer style={{
         backgroundColor: 'var(--background-secondary)',
         borderTop: '1px solid var(--border-color)',
@@ -333,5 +320,4 @@ const ProfessionalHome = () => {
     </div>
   );
 };
-
 export default ProfessionalHome;

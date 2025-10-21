@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { API_BASE_URL, ERROR_MESSAGES } from '../constants';
-
 class APIError extends Error {
   constructor(message, status, code, details) {
     super(message);
@@ -10,7 +9,6 @@ class APIError extends Error {
     this.details = details;
   }
 }
-
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 30000, // Increased timeout for file uploads
@@ -18,24 +16,16 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// Request interceptor to add auth token and request logging
 api.interceptors.request.use(
   (config) => {
-    // Add auth token
     const token = localStorage.getItem('auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // Add request timestamp for performance monitoring
     config.metadata = { startTime: Date.now() };
-
-    // Log requests in development
     if (process.env.NODE_ENV === 'development') {
       console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
     }
-
     return config;
   },
   (error) => {
@@ -48,22 +38,16 @@ api.interceptors.request.use(
     ));
   }
 );
-
-// Response interceptor for error handling and logging
 api.interceptors.response.use(
   (response) => {
-    // Log response time in development
     if (process.env.NODE_ENV === 'development' && response.config.metadata) {
       const duration = Date.now() - response.config.metadata.startTime;
       console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} (${duration}ms)`);
     }
-
     return response.data;
   },
   (error) => {
     const { response, request, message } = error;
-
-    // Log error in development
     if (process.env.NODE_ENV === 'development') {
       console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`, {
         status: response?.status,
@@ -71,16 +55,10 @@ api.interceptors.response.use(
         data: response?.data,
       });
     }
-
-    // Handle different error scenarios
     if (response) {
-      // Server responded with error status
       const { status, data } = response;
-      
-      // Handle specific status codes
       switch (status) {
         case 401:
-          // Unauthorized - clear token and redirect
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user_data');
           window.dispatchEvent(new Event('auth:logout'));
@@ -90,7 +68,6 @@ api.interceptors.response.use(
             'UNAUTHORIZED',
             data
           );
-        
         case 403:
           throw new APIError(
             data?.message || 'Access forbidden',
@@ -98,7 +75,6 @@ api.interceptors.response.use(
             'FORBIDDEN',
             data
           );
-        
         case 404:
           throw new APIError(
             data?.message || 'Resource not found',
@@ -106,7 +82,6 @@ api.interceptors.response.use(
             'NOT_FOUND',
             data
           );
-        
         case 422:
           throw new APIError(
             data?.message || 'Validation error',
@@ -114,7 +89,6 @@ api.interceptors.response.use(
             'VALIDATION_ERROR',
             data?.errors || data
           );
-        
         case 429:
           throw new APIError(
             'Too many requests. Please try again later.',
@@ -122,7 +96,6 @@ api.interceptors.response.use(
             'RATE_LIMIT',
             data
           );
-        
         case 500:
           throw new APIError(
             'Internal server error. Please try again later.',
@@ -130,7 +103,6 @@ api.interceptors.response.use(
             'SERVER_ERROR',
             data
           );
-        
         default:
           throw new APIError(
             data?.message || `HTTP ${status} Error`,
@@ -140,7 +112,6 @@ api.interceptors.response.use(
           );
       }
     } else if (request) {
-      // Network error - no response received
       throw new APIError(
         ERROR_MESSAGES.NETWORK_ERROR,
         0,
@@ -148,7 +119,6 @@ api.interceptors.response.use(
         { message }
       );
     } else {
-      // Something else happened
       throw new APIError(
         message || 'An unexpected error occurred',
         0,
@@ -158,11 +128,8 @@ api.interceptors.response.use(
     }
   }
 );
-
-// Helper function to create form data
 const createFormData = (data) => {
   const formData = new FormData();
-  
   Object.keys(data).forEach(key => {
     const value = data[key];
     if (value instanceof File) {
@@ -173,13 +140,9 @@ const createFormData = (data) => {
       formData.append(key, value);
     }
   });
-  
   return formData;
 };
-
-// Certificate API endpoints with comprehensive error handling
 export const certificateAPI = {
-  // Upload a new certificate
   upload: async (certificateData) => {
     try {
       const formData = createFormData(certificateData);
@@ -194,8 +157,6 @@ export const certificateAPI = {
       throw error;
     }
   },
-
-  // Verify a certificate
   verify: async (fileData) => {
     try {
       const formData = createFormData({ file: fileData });
@@ -210,8 +171,6 @@ export const certificateAPI = {
       throw error;
     }
   },
-
-  // Revoke a certificate
   revoke: async (certificateId, reason, signature) => {
     try {
       return await api.post(`/certificates/${certificateId}/revoke`, {
@@ -224,8 +183,6 @@ export const certificateAPI = {
       throw error;
     }
   },
-
-  // Get certificate by ID
   getById: async (certificateId) => {
     try {
       return await api.get(`/certificates/${certificateId}`);
@@ -234,8 +191,6 @@ export const certificateAPI = {
       throw error;
     }
   },
-
-  // Get certificates by issuer with pagination
   getByIssuer: async (issuerAddress, options = {}) => {
     try {
       const { page = 1, limit = 10, status, sortBy = 'createdAt', sortOrder = 'desc' } = options;
@@ -254,8 +209,6 @@ export const certificateAPI = {
       throw error;
     }
   },
-
-  // Search certificates with advanced filters
   search: async (query, filters = {}) => {
     try {
       const {
@@ -268,7 +221,6 @@ export const certificateAPI = {
         sortBy = 'createdAt',
         sortOrder = 'desc',
       } = filters;
-
       return await api.get('/certificates/search', {
         params: {
           q: query,
@@ -287,8 +239,6 @@ export const certificateAPI = {
       throw error;
     }
   },
-
-  // Get certificate statistics
   getStats: async (timeRange = '30d') => {
     try {
       return await api.get('/certificates/stats', {
@@ -299,8 +249,6 @@ export const certificateAPI = {
       throw error;
     }
   },
-
-  // Upload certificate (for professional upload page)
   uploadCertificate: async (certificateData) => {
     try {
       const formData = createFormData(certificateData);
@@ -312,7 +260,6 @@ export const certificateAPI = {
       });
     } catch (error) {
       console.error('Certificate upload failed:', error);
-      // Return mock success response for demo
       return {
         success: true,
         data: {
@@ -324,14 +271,11 @@ export const certificateAPI = {
       };
     }
   },
-
-  // Verify certificate by ID or email
   verifyCertificate: async (searchData) => {
     try {
       return await api.post('/certificates/verify', searchData);
     } catch (error) {
       console.error('Certificate verification failed:', error);
-      // Return not found response - no fake data
       return {
         data: {
           isValid: false,
@@ -341,28 +285,22 @@ export const certificateAPI = {
       };
     }
   },
-
-  // Get certificate by ID
   getCertificateById: async (certificateId) => {
     try {
       return await api.get(`/certificates/${certificateId}`);
     } catch (error) {
       console.error(`Failed to fetch certificate ${certificateId}:`, error);
-      // Return null response - no fake data
       return {
         data: null,
         error: 'Certificate not found'
       };
     }
   },
-
-  // Revoke certificate
   revokeCertificate: async (revocationData) => {
     try {
       return await api.post(`/certificates/${revocationData.certificateId}/revoke`, revocationData);
     } catch (error) {
       console.error('Certificate revocation failed:', error);
-      // Return mock success response for demo
       return {
         success: true,
         data: {
@@ -373,8 +311,6 @@ export const certificateAPI = {
       };
     }
   },
-
-  // Get user certificates
   getUserCertificates: async (options = {}) => {
     try {
       const { page = 1, limit = 10, status } = options;
@@ -383,21 +319,17 @@ export const certificateAPI = {
       });
     } catch (error) {
       console.error('Failed to fetch user certificates:', error);
-      // Return empty data for demo - no fake users
       return {
         data: []
       };
     }
   },
-
-  // Batch operations
   batchVerify: async (files) => {
     try {
       const formData = new FormData();
       files.forEach((file, index) => {
         formData.append(`files[${index}]`, file);
       });
-      
       return await api.post('/certificates/batch-verify', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -410,10 +342,7 @@ export const certificateAPI = {
     }
   },
 };
-
-// Authentication API endpoints
 export const authAPI = {
-  // Admin login
   adminLogin: async (email, password) => {
     try {
       const response = await api.post('/admin/login', { email, password });
@@ -428,8 +357,6 @@ export const authAPI = {
       throw error;
     }
   },
-
-  // User login
   userLogin: async (email, password) => {
     try {
       const response = await api.post('/users/login', { email, password });
@@ -444,8 +371,6 @@ export const authAPI = {
       throw error;
     }
   },
-
-  // Admin registration
   adminRegister: async (userData) => {
     try {
       return await api.post('/admin/register', userData);
@@ -454,8 +379,6 @@ export const authAPI = {
       throw error;
     }
   },
-
-  // User registration
   userRegister: async (userData) => {
     try {
       return await api.post('/users/register', userData);
@@ -464,8 +387,6 @@ export const authAPI = {
       throw error;
     }
   },
-
-  // Get admin profile
   getAdminProfile: async () => {
     try {
       return await api.get('/admin/profile');
@@ -474,8 +395,6 @@ export const authAPI = {
       throw error;
     }
   },
-
-  // Get user profile
   getUserProfile: async () => {
     try {
       return await api.get('/users/profile');
@@ -484,35 +403,24 @@ export const authAPI = {
       throw error;
     }
   },
-
-  // Logout
   logout: () => {
     localStorage.removeItem('auth_token');
     localStorage.removeItem('userType');
     localStorage.removeItem('user_data');
     window.dispatchEvent(new Event('auth:logout'));
   },
-
-  // Check if user is authenticated
   isAuthenticated: () => {
     return !!localStorage.getItem('auth_token');
   },
-
-  // Get current user data
   getCurrentUser: () => {
     const userData = localStorage.getItem('user_data');
     return userData ? JSON.parse(userData) : null;
   },
-
-  // Get current user type
   getUserType: () => {
     return localStorage.getItem('userType');
   },
 };
-
-// User API endpoints
 export const userAPI = {
-  // Get user profile
   getProfile: async () => {
     try {
       return await authAPI.getUserProfile();
@@ -521,8 +429,6 @@ export const userAPI = {
       throw error;
     }
   },
-
-  // Update user profile
   updateProfile: async (userData) => {
     try {
       return await api.put('/users/profile', userData);
@@ -531,8 +437,6 @@ export const userAPI = {
       throw error;
     }
   },
-
-  // Get user activity with pagination
   getActivity: async (options = {}) => {
     try {
       const { page = 1, limit = 10, type, dateFrom, dateTo } = options;
@@ -544,8 +448,6 @@ export const userAPI = {
       throw error;
     }
   },
-
-  // Get user notifications
   getNotifications: async (options = {}) => {
     try {
       const { page = 1, limit = 10, unreadOnly = false } = options;
@@ -557,8 +459,6 @@ export const userAPI = {
       throw error;
     }
   },
-
-  // Mark notifications as read
   markNotificationsRead: async (notificationIds) => {
     try {
       return await api.post('/users/notifications/read', {
@@ -570,10 +470,7 @@ export const userAPI = {
     }
   },
 };
-
-// Blockchain API endpoints
 export const blockchainAPI = {
-  // Get network status
   getNetworkStatus: async () => {
     try {
       return await api.get('/blockchain/status');
@@ -582,8 +479,6 @@ export const blockchainAPI = {
       throw error;
     }
   },
-
-  // Get transaction by hash
   getTransaction: async (txHash) => {
     try {
       return await api.get(`/blockchain/transaction/${txHash}`);
@@ -592,8 +487,6 @@ export const blockchainAPI = {
       throw error;
     }
   },
-
-  // Get gas price estimate
   getGasEstimate: async (operation, data = {}) => {
     try {
       return await api.post('/blockchain/gas-estimate', {
@@ -605,8 +498,6 @@ export const blockchainAPI = {
       throw error;
     }
   },
-
-  // Get block information
   getBlock: async (blockNumber) => {
     try {
       return await api.get(`/blockchain/block/${blockNumber}`);
@@ -615,8 +506,6 @@ export const blockchainAPI = {
       throw error;
     }
   },
-
-  // Get contract events
   getEvents: async (options = {}) => {
     try {
       const { fromBlock, toBlock, eventType, address } = options;
@@ -629,8 +518,6 @@ export const blockchainAPI = {
     }
   },
 };
-
-// Health check endpoint
 export const healthAPI = {
   check: async () => {
     try {
@@ -641,10 +528,7 @@ export const healthAPI = {
     }
   },
 };
-
-// Stats API - wraps certificate stats and other analytics
 export const statsAPI = {
-  // Get dashboard statistics
   getDashboardStats: async (timeRange = '30d') => {
     try {
       const stats = await certificateAPI.getStats(timeRange);
@@ -661,7 +545,6 @@ export const statsAPI = {
       };
     } catch (error) {
       console.error('Failed to fetch dashboard stats:', error);
-      // Return mock data as fallback
       return {
         data: {
           totalCertificates: 0,
@@ -675,8 +558,6 @@ export const statsAPI = {
       };
     }
   },
-
-  // Get analytics data for charts
   getAnalytics: async (timeRange = '30d', granularity = 'day') => {
     try {
       return await api.get('/analytics', {
@@ -687,8 +568,6 @@ export const statsAPI = {
       throw error;
     }
   },
-
-  // Get performance metrics
   getMetrics: async () => {
     try {
       return await api.get('/metrics');
@@ -698,7 +577,5 @@ export const statsAPI = {
     }
   },
 };
-
-// Export API error class for error handling
 export { APIError };
 export default api;

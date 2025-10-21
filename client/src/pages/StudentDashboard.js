@@ -15,29 +15,23 @@ import {
   Award,
   Clock
 } from 'lucide-react';
-
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const { hideLoading } = useLoading();
   const { user, logout, isAuthenticated, hasRole } = useAuth();
   const [certificates, setCertificates] = useState([]);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     hideLoading();
-    
     if (!isAuthenticated || !hasRole('student')) {
       navigate('/auth');
       return;
     }
-    
     loadStudentData();
   }, [hideLoading, isAuthenticated, hasRole, navigate]);
-
   const loadStudentData = async () => {
     try {
       setLoading(true);
-      
       try {
         const certificatesResponse = await fetch('/api/certificates/user', {
           headers: {
@@ -45,7 +39,6 @@ const StudentDashboard = () => {
             'Content-Type': 'application/json'
           }
         });
-        
         if (certificatesResponse.ok) {
           const certificatesData = await certificatesResponse.json();
           setCertificates(certificatesData.data || []);
@@ -54,7 +47,6 @@ const StudentDashboard = () => {
         console.warn('Certificate endpoint not available yet:', certError);
         setCertificates([]);
       }
-      
     } catch (error) {
       console.error('Failed to load student data:', error);
       toast.error('Failed to load your certificates');
@@ -62,7 +54,6 @@ const StudentDashboard = () => {
       setLoading(false);
     }
   };
-
   const handleSignOut = async () => {
     try {
       await logout();
@@ -71,15 +62,12 @@ const StudentDashboard = () => {
       toast.error('Sign out failed. Please try again.');
     }
   };
-
   const handleDownloadCertificate = (certificateId) => {
     toast.success(`Downloading certificate ${certificateId}...`);
   };
-
   const handleViewCertificate = (certificateId) => {
     toast.info(`Opening certificate ${certificateId} in new window...`);
   };
-
   const getStatusBadge = (status) => {
     const isValid = status === 'Valid';
     return (
@@ -99,7 +87,6 @@ const StudentDashboard = () => {
       </span>
     );
   };
-
   const getGradeBadge = (grade) => {
     const colors = {
       'A': { bg: '#dcfce7', color: '#166534' },
@@ -110,9 +97,7 @@ const StudentDashboard = () => {
       'C+': { bg: '#fecaca', color: '#dc2626' },
       'C': { bg: '#fecaca', color: '#dc2626' }
     };
-    
     const colorScheme = colors[grade] || { bg: '#f3f4f6', color: '#374151' };
-    
     return (
       <span style={{
         display: 'inline-flex',
@@ -127,7 +112,6 @@ const StudentDashboard = () => {
       </span>
     );
   };
-
   if (loading || !user) {
     return (
       <div style={{
@@ -152,10 +136,9 @@ const StudentDashboard = () => {
       </div>
     );
   }
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
-      {/* Top Navigation */}
+      {}
       <nav style={{
         backgroundColor: 'white',
         borderBottom: '1px solid #e2e8f0',
@@ -181,7 +164,6 @@ const StudentDashboard = () => {
               Student Portal
             </h1>
           </div>
-          
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{
               fontSize: '0.875rem',
@@ -212,13 +194,12 @@ const StudentDashboard = () => {
           </div>
         </div>
       </nav>
-
       <main style={{
         maxWidth: '1200px',
         margin: '0 auto',
         padding: '2rem 1.5rem'
       }}>
-        {/* Student Info Card */}
+        {}
         <div style={{
           backgroundColor: 'white',
           padding: '2rem',
@@ -271,7 +252,6 @@ const StudentDashboard = () => {
                 </div>
               </div>
             </div>
-            
             <div style={{ textAlign: 'center' }}>
               <div style={{
                 width: '80px',
@@ -294,8 +274,7 @@ const StudentDashboard = () => {
             </div>
           </div>
         </div>
-
-        {/* Certificates Section */}
+        {}
         <div style={{ marginBottom: '2rem' }}>
           <div style={{
             display: 'flex',
@@ -324,8 +303,7 @@ const StudentDashboard = () => {
               Last updated: {new Date().toLocaleDateString()}
             </div>
           </div>
-
-          {/* Certificates Grid */}
+          {}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
@@ -348,7 +326,7 @@ const StudentDashboard = () => {
                 e.target.style.transform = 'translateY(0)';
                 e.target.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
               }}>
-                {/* Certificate Header */}
+                {}
                 <div style={{
                   background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                   padding: '1.25rem',
@@ -372,7 +350,6 @@ const StudentDashboard = () => {
                     </div>
                     {getStatusBadge(cert.status)}
                   </div>
-                  
                   <h4 style={{
                     fontSize: '1.125rem',
                     fontWeight: '600',
@@ -382,7 +359,6 @@ const StudentDashboard = () => {
                   }}>
                     {cert.courseName}
                   </h4>
-                  
                   <p style={{
                     fontSize: '0.875rem',
                     color: '#64748b',
@@ -392,8 +368,7 @@ const StudentDashboard = () => {
                     {cert.courseCode} • {cert.creditHours} Credit Hours
                   </p>
                 </div>
-
-                {/* Certificate Body */}
+                {}
                 <div style={{ padding: '1.25rem' }}>
                   <div style={{
                     display: 'grid',
@@ -419,7 +394,6 @@ const StudentDashboard = () => {
                         {new Date(cert.issueDate).toLocaleDateString()}
                       </div>
                     </div>
-                    
                     <div>
                       <div style={{
                         fontSize: '0.75rem',
@@ -433,7 +407,6 @@ const StudentDashboard = () => {
                         {getGradeBadge(cert.grade)}
                       </div>
                     </div>
-                    
                     <div>
                       <div style={{
                         fontSize: '0.75rem',
@@ -452,7 +425,6 @@ const StudentDashboard = () => {
                         {new Date(cert.expiryDate).toLocaleDateString()}
                       </div>
                     </div>
-                    
                     <div>
                       <div style={{
                         fontSize: '0.75rem',
@@ -472,7 +444,6 @@ const StudentDashboard = () => {
                       </div>
                     </div>
                   </div>
-
                   <p style={{
                     fontSize: '0.875rem',
                     color: '#64748b',
@@ -482,8 +453,7 @@ const StudentDashboard = () => {
                   }}>
                     {cert.description}
                   </p>
-
-                  {/* Actions */}
+                  {}
                   <div style={{
                     display: 'flex',
                     gap: '0.5rem',
@@ -515,7 +485,6 @@ const StudentDashboard = () => {
                       <Eye size={14} />
                       View
                     </button>
-                    
                     <button
                       onClick={() => handleDownloadCertificate(cert.id)}
                       style={{
@@ -541,7 +510,6 @@ const StudentDashboard = () => {
                       <Download size={14} />
                       Download
                     </button>
-                    
                     <button
                       onClick={() => toast.info('Generating verification link...')}
                       style={{
@@ -567,8 +535,7 @@ const StudentDashboard = () => {
               </div>
             ))}
           </div>
-
-          {/* Empty State */}
+          {}
           {certificates.length === 0 && (
             <div style={{
               backgroundColor: 'white',
@@ -599,8 +566,7 @@ const StudentDashboard = () => {
           )}
         </div>
       </main>
-
-      {/* CSS Animation */}
+      {}
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
@@ -610,5 +576,4 @@ const StudentDashboard = () => {
     </div>
   );
 };
-
 export default StudentDashboard;

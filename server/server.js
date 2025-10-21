@@ -4,13 +4,11 @@ const dotenv = require('dotenv');
 const { connectDB, seedInitialData } = require('./config/database');
 dotenv.config();
 const app = express();
-
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:3001',
   process.env.CLIENT_URL
 ].filter(Boolean);
-
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.some(allowed => origin.startsWith(allowed.replace('*', '')))) {

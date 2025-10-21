@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
-
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI);
@@ -10,20 +9,15 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-
 const updateStudentName = async () => {
   try {
     await connectDB();
-    
     const User = require('./models/User');
-    
     const newName = 'Vansh Ranawat';
-    
     const result = await User.updateOne(
       { email: 'student@university.edu' },
       { name: newName }
     );
-    
     if (result.modifiedCount > 0) {
       console.log('✅ Student name updated successfully');
       console.log('📧 Email: student@university.edu');
@@ -35,8 +29,6 @@ const updateStudentName = async () => {
     } else {
       console.log('⚠️  No student found with email student@university.edu');
     }
-    
-    // Verify the update
     const updatedUser = await User.findOne({ email: 'student@university.edu' });
     if (updatedUser) {
       console.log('🔍 Verification - Current student data:');
@@ -44,7 +36,6 @@ const updateStudentName = async () => {
       console.log('   Email:', updatedUser.email);
       console.log('   Student ID:', updatedUser.studentId);
     }
-    
   } catch (error) {
     console.error('❌ Error updating student name:', error);
   } finally {
@@ -52,5 +43,4 @@ const updateStudentName = async () => {
     console.log('🔌 Database connection closed');
   }
 };
-
 updateStudentName();

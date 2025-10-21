@@ -12,7 +12,6 @@ import {
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-
 const ProfessionalVerify = () => {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,40 +20,19 @@ const ProfessionalVerify = () => {
   const [verifying, setVerifying] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
-
   const handleVerification = async (e) => {
     e.preventDefault();
-    
     if (!searchQuery.trim()) {
       toast.error('Please enter a certificate ID');
       return;
     }
-
     setVerifying(true);
     setVerificationResult(null);
-
     try {
-      // Certificate database structure for verification
       const certificateDatabase = {
-        // Certificate entries would be populated from blockchain/database
-        // Example structure:
-        // 'CERT-YYYY-XXX': {
-        //   id: 'CERT-YYYY-XXX',
-        //   recipientName: 'Recipient Name',
-        //   courseName: 'Course Name',
-        //   institution: 'Institution Name',
-        //   issueDate: 'YYYY-MM-DD',
-        //   expiryDate: 'YYYY-MM-DD',
-        //   status: 'Valid' | 'Revoked',
-        //   issuer: 'Issuer Name'
-        // }
       };
-
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-
       const certificate = certificateDatabase[searchQuery.trim().toUpperCase()];
-      
       if (certificate) {
         setVerificationResult({
           isValid: true,
@@ -65,22 +43,18 @@ const ProfessionalVerify = () => {
         });
         toast.success('Certificate found and verified');
       } else {
-        // For demo purposes - in real implementation, this would query blockchain/database
         setVerificationResult({
           isValid: false,
           error: 'Certificate not found in database. Please verify the certificate ID is correct.'
         });
         toast.error('Certificate not found');
       }
-
-      // Add to search history
       const historyEntry = {
         query: searchQuery,
         timestamp: new Date().toISOString(),
         result: certificate ? 'Valid' : 'Not Found'
       };
       setSearchHistory(prev => [historyEntry, ...prev.slice(0, 4)]);
-
     } catch (error) {
       console.error('Verification failed:', error);
       toast.error('Verification failed. Please try again.');
@@ -92,19 +66,16 @@ const ProfessionalVerify = () => {
       setVerifying(false);
     }
   };
-
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
       <div className="main-content">
         <TopNavbar 
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)} 
           user={user}
         />
-        
         <div className="content-area">
-          {/* Header */}
+          {}
           <div style={{ marginBottom: 'var(--spacing-xl)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
               <Link to="/dashboard" className="btn btn-secondary">
@@ -119,9 +90,8 @@ const ProfessionalVerify = () => {
               Verify the authenticity of certificates using blockchain technology.
             </p>
           </div>
-
           <div className="grid grid-cols-2">
-            {/* Verification Form */}
+            {}
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">Verify Certificate</h3>
@@ -155,7 +125,6 @@ const ProfessionalVerify = () => {
                       <option value="email">Recipient Email</option>
                     </select>
                   </div>
-
                   <div style={{ marginBottom: 'var(--spacing-lg)' }}>
                     <label style={{ 
                       display: 'block', 
@@ -196,7 +165,6 @@ const ProfessionalVerify = () => {
                       />
                     </div>
                   </div>
-
                   <button
                     type="submit"
                     className="btn btn-primary"
@@ -223,8 +191,7 @@ const ProfessionalVerify = () => {
                     )}
                   </button>
                 </form>
-
-                {/* Search History */}
+                {}
                 {searchHistory.length > 0 && (
                   <div style={{ marginTop: 'var(--spacing-xl)' }}>
                     <h4 style={{ fontSize: '0.875rem', fontWeight: '500', color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
@@ -261,8 +228,7 @@ const ProfessionalVerify = () => {
                 )}
               </div>
             </div>
-
-            {/* Verification Instructions */}
+            {}
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">How It Works</h3>
@@ -292,7 +258,6 @@ const ProfessionalVerify = () => {
                       </p>
                     </div>
                   </div>
-
                   <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
                     <div style={{
                       width: '32px',
@@ -315,7 +280,6 @@ const ProfessionalVerify = () => {
                       </p>
                     </div>
                   </div>
-
                   <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
                     <div style={{
                       width: '32px',
@@ -339,7 +303,6 @@ const ProfessionalVerify = () => {
                     </div>
                   </div>
                 </div>
-
                 <div style={{ 
                   marginTop: 'var(--spacing-xl)', 
                   padding: 'var(--spacing-md)', 
@@ -360,8 +323,7 @@ const ProfessionalVerify = () => {
               </div>
             </div>
           </div>
-
-          {/* Verification Results */}
+          {}
           {verificationResult && (
             <div className="card" style={{ marginTop: 'var(--spacing-xl)' }}>
               <div className="card-header">
@@ -382,7 +344,6 @@ const ProfessionalVerify = () => {
                   }
                 </p>
               </div>
-              
               {verificationResult.isValid && verificationResult.certificate ? (
                 <div className="card-content">
                   <table style={{ 
@@ -408,7 +369,6 @@ const ProfessionalVerify = () => {
                           {verificationResult.certificate.id}
                         </td>
                       </tr>
-                      
                       <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -425,7 +385,6 @@ const ProfessionalVerify = () => {
                           {verificationResult.certificate.recipientName}
                         </td>
                       </tr>
-                      
                       <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -442,7 +401,6 @@ const ProfessionalVerify = () => {
                           {verificationResult.certificate.courseName}
                         </td>
                       </tr>
-                      
                       <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -459,7 +417,6 @@ const ProfessionalVerify = () => {
                           {verificationResult.certificate.institution}
                         </td>
                       </tr>
-                      
                       <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -480,7 +437,6 @@ const ProfessionalVerify = () => {
                           })}
                         </td>
                       </tr>
-                      
                       <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -501,7 +457,6 @@ const ProfessionalVerify = () => {
                           })}
                         </td>
                       </tr>
-                      
                       <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -518,7 +473,6 @@ const ProfessionalVerify = () => {
                           {verificationResult.certificate.issuer}
                         </td>
                       </tr>
-                      
                       <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -546,7 +500,6 @@ const ProfessionalVerify = () => {
                           )}
                         </td>
                       </tr>
-                      
                       <tr>
                         <td style={{ 
                           padding: 'var(--spacing-sm) 0', 
@@ -594,5 +547,4 @@ const ProfessionalVerify = () => {
     </div>
   );
 };
-
 export default ProfessionalVerify;

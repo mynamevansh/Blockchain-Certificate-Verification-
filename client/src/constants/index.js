@@ -1,12 +1,10 @@
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 export const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:5000';
-
 export const BLOCKCHAIN_CONFIG = {
   NETWORK_ID: process.env.REACT_APP_NETWORK_ID || '1337',
   CONTRACT_ADDRESS: process.env.REACT_APP_CONTRACT_ADDRESS || '',
   IPFS_GATEWAY: process.env.REACT_APP_IPFS_GATEWAY || 'https://ipfs.io/ipfs/',
 };
-
 export const APP_CONFIG = {
   NAME: 'CertVerify',
   DESCRIPTION: 'Tamper-Proof Certificate Verification System',
@@ -14,21 +12,18 @@ export const APP_CONFIG = {
   MAX_FILE_SIZE: 10 * 1024 * 1024,
   SUPPORTED_FILE_TYPES: ['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx'],
 };
-
 export const CERTIFICATE_STATUS = {
   ACTIVE: 'active',
   REVOKED: 'revoked',
   PENDING: 'pending',
   EXPIRED: 'expired',
 };
-
 export const NOTIFICATION_TYPES = {
   SUCCESS: 'success',
   ERROR: 'error',
   WARNING: 'warning',
   INFO: 'info',
 };
-
 export const ROUTES = {
   HOME: '/',
   UPLOAD: '/upload',
@@ -36,7 +31,6 @@ export const ROUTES = {
   REVOKE: '/revoke',
   DASHBOARD: '/dashboard',
 };
-
 export const ERROR_MESSAGES = {
   WALLET_NOT_CONNECTED: 'Please connect your wallet to continue',
   FILE_TOO_LARGE: 'File size exceeds maximum limit',
@@ -46,7 +40,6 @@ export const ERROR_MESSAGES = {
   CERTIFICATE_NOT_FOUND: 'Certificate not found',
   UNAUTHORIZED: 'You are not authorized to perform this action',
 };
-
 export const SUCCESS_MESSAGES = {
   CERTIFICATE_UPLOADED: 'Certificate uploaded successfully',
   CERTIFICATE_VERIFIED: 'Certificate verified successfully',
@@ -54,7 +47,6 @@ export const SUCCESS_MESSAGES = {
   WALLET_CONNECTED: 'Wallet connected successfully',
   WALLET_DISCONNECTED: 'Wallet disconnected successfully',
 };
-
 export const LOADING_MESSAGES = {
   CONNECTING_WALLET: 'Connecting wallet...',
   UPLOADING_CERTIFICATE: 'Uploading certificate...',
@@ -62,13 +54,11 @@ export const LOADING_MESSAGES = {
   REVOKING_CERTIFICATE: 'Revoking certificate...',
   LOADING_DATA: 'Loading data...',
 };
-
 export const ANIMATION_DURATION = {
   FAST: 150,
   NORMAL: 300,
   SLOW: 500,
 };
-
 export const BREAKPOINTS = {
   SM: '640px',
   MD: '768px',
@@ -76,7 +66,6 @@ export const BREAKPOINTS = {
   XL: '1280px',
   '2XL': '1536px',
 };
-
 export const COLORS = {
   PRIMARY: {
     50: '#eff6ff',

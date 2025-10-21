@@ -22,7 +22,6 @@ import {
   Activity,
   AlertCircle
 } from 'lucide-react';
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
@@ -40,7 +39,6 @@ const AdminDashboard = () => {
     pendingRequests: 0,
     monthlyIssued: 0
   });
-
   useEffect(() => {
     const sampleCertificates = [
       {
@@ -71,7 +69,6 @@ const AdminDashboard = () => {
         issuer: 'Dr. Lisa Chen'
       }
     ];
-    
     setCertificates(sampleCertificates);
     setUsers([]);
     setStats({
@@ -83,14 +80,12 @@ const AdminDashboard = () => {
       monthlyIssued: 12
     });
   }, []);
-
   const handleSignOut = () => {
     localStorage.removeItem('userType');
     localStorage.removeItem('user');
     toast.success('Signed out successfully');
     navigate('/auth');
   };
-
   const handleRevokeCertificate = (certificateId) => {
     setCertificates(prev => 
       prev.map(cert => 
@@ -99,7 +94,6 @@ const AdminDashboard = () => {
           : cert
       )
     );
-    // Update stats
     setStats(prev => ({
       ...prev,
       activeCertificates: prev.activeCertificates - 1,
@@ -107,35 +101,29 @@ const AdminDashboard = () => {
     }));
     toast.success(`Certificate ${certificateId} has been revoked`);
   };
-
   const handleRevocationForm = async (e) => {
     e.preventDefault();
     if (!revokeId.trim()) {
       toast.error('Please enter a certificate ID');
       return;
     }
-
     setRevoking(true);
     setRevocationResult(null);
-
     setTimeout(() => {
       const certificateIndex = certificates.findIndex(c => 
         c.id.toLowerCase() === revokeId.trim().toLowerCase()
       );
-      
       if (certificateIndex !== -1) {
         const certificate = certificates[certificateIndex];
         if (certificate.status === 'Valid') {
           const updatedCertificates = [...certificates];
           updatedCertificates[certificateIndex] = { ...certificate, status: 'Revoked' };
           setCertificates(updatedCertificates);
-          
           setStats(prev => ({
             ...prev,
             activeCertificates: prev.activeCertificates - 1,
             revokedCertificates: prev.revokedCertificates + 1
           }));
-          
           setRevocationResult({
             success: true,
             message: `Certificate ${certificate.id} has been successfully revoked`,
@@ -160,7 +148,6 @@ const AdminDashboard = () => {
       setRevokeId('');
     }, 1200);
   };
-
   const getStatusBadge = (status) => {
     const isValid = status === 'Valid';
     return (
@@ -180,7 +167,6 @@ const AdminDashboard = () => {
       </span>
     );
   };
-
   const StatCard = ({ icon, title, value, subtitle, color }) => (
     <div style={{
       backgroundColor: 'white',
@@ -233,7 +219,6 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-
   return (
     <div style={{ 
       display: 'flex', 
@@ -241,7 +226,7 @@ const AdminDashboard = () => {
       backgroundColor: '#f8fafc',
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif'
     }}>
-      {/* Sidebar */}
+      {}
       <div style={{
         width: sidebarOpen ? '280px' : '80px',
         backgroundColor: 'white',
@@ -252,7 +237,7 @@ const AdminDashboard = () => {
         zIndex: 10,
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
       }}>
-        {/* Sidebar Header */}
+        {}
         <div style={{
           padding: '1.5rem',
           borderBottom: '1px solid #e5e7eb',
@@ -306,8 +291,7 @@ const AdminDashboard = () => {
             <Menu size={16} />
           </button>
         </div>
-
-        {/* Sidebar Navigation */}
+        {}
         <nav style={{ padding: '1rem' }}>
           {[
             { id: 'overview', icon: Home, label: 'Overview' },
@@ -352,8 +336,7 @@ const AdminDashboard = () => {
             </button>
           ))}
         </nav>
-
-        {/* Sidebar Footer */}
+        {}
         {sidebarOpen && (
           <div style={{
             position: 'absolute',
@@ -424,14 +407,13 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Main Content */}
+      {}
       <div style={{
         flex: 1,
         marginLeft: sidebarOpen ? '280px' : '80px',
         transition: 'margin-left 0.3s ease'
       }}>
-        {/* Top Bar */}
+        {}
         <header style={{
           backgroundColor: 'white',
           borderBottom: '1px solid #e5e7eb',
@@ -462,7 +444,6 @@ const AdminDashboard = () => {
               {activeTab === 'settings' && 'System configuration'}
             </p>
           </div>
-          
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{
               display: 'flex',
@@ -483,7 +464,6 @@ const AdminDashboard = () => {
             </div>
           </div>
         </header>
-          
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <span style={{
               fontSize: '0.875rem',
@@ -513,8 +493,7 @@ const AdminDashboard = () => {
             </button>
           </div>
         </div>
-
-      {/* Tab Navigation */}
+      {}
       <div style={{
         maxWidth: '1400px',
         margin: '0 auto',
@@ -559,17 +538,16 @@ const AdminDashboard = () => {
           })}
         </div>
       </div>
-
-      {/* Main Content */}
+      {}
       <main style={{
         maxWidth: '1400px',
         margin: '0 auto',
         padding: '0 1.5rem 3rem 1.5rem'
       }}>
-        {/* Overview Tab */}
+        {}
         {activeTab === 'overview' && (
           <div>
-            {/* Stats Grid */}
+            {}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -605,8 +583,7 @@ const AdminDashboard = () => {
                 color="#8b5cf6"
               />
             </div>
-
-            {/* Quick Actions */}
+            {}
             <div style={{
               backgroundColor: 'white',
               padding: '1.5rem',
@@ -647,7 +624,6 @@ const AdminDashboard = () => {
                   <Plus size={20} style={{ color: '#3b82f6' }} />
                   <span style={{ fontSize: '0.875rem', color: '#374151' }}>Issue New Certificate</span>
                 </button>
-                
                 <button
                   onClick={() => setActiveTab('certificates')}
                   style={{
@@ -668,7 +644,6 @@ const AdminDashboard = () => {
                   <Search size={20} style={{ color: '#10b981' }} />
                   <span style={{ fontSize: '0.875rem', color: '#374151' }}>Verify Certificate</span>
                 </button>
-                
                 <button
                   onClick={() => setActiveTab('users')}
                   style={{
@@ -693,8 +668,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* Certificates Tab */}
+        {}
         {activeTab === 'certificates' && (
           <div>
             <div style={{
@@ -730,7 +704,6 @@ const AdminDashboard = () => {
                 Issue Certificate
               </button>
             </div>
-
             <div style={{
               backgroundColor: 'white',
               borderRadius: '12px',
@@ -804,8 +777,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* Users Tab */}
+        {}
         {activeTab === 'users' && (
           <div>
             <div style={{
@@ -824,7 +796,6 @@ const AdminDashboard = () => {
                 User Management
               </h2>
             </div>
-
             <div style={{
               backgroundColor: 'white',
               borderRadius: '12px',
@@ -869,8 +840,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* Revoke Certificate Tab */}
+        {}
         {activeTab === 'revoke' && (
           <div style={{ padding: '2rem' }}>
             <div style={{
@@ -894,7 +864,6 @@ const AdminDashboard = () => {
                 <XCircle size={24} style={{ color: '#dc2626' }} />
                 Revoke Certificate
               </h2>
-              
               <form onSubmit={handleRevocationForm} style={{ marginBottom: '2rem' }}>
                 <div style={{
                   display: 'grid',
@@ -932,7 +901,6 @@ const AdminDashboard = () => {
                       onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
                     />
                   </div>
-                  
                   <button
                     type="submit"
                     disabled={revoking}
@@ -972,8 +940,7 @@ const AdminDashboard = () => {
                   </button>
                 </div>
               </form>
-
-              {/* Revocation Result */}
+              {}
               {revocationResult && (
                 <div style={{
                   backgroundColor: revocationResult.success ? '#f0fdf4' : '#fef2f2',
@@ -1002,7 +969,6 @@ const AdminDashboard = () => {
                       {revocationResult.success ? 'Certificate Revoked Successfully' : 'Revocation Failed'}
                     </h3>
                   </div>
-                  
                   <p style={{
                     color: revocationResult.success ? '#166534' : '#dc2626',
                     margin: '0 0 1rem 0',
@@ -1011,7 +977,6 @@ const AdminDashboard = () => {
                   }}>
                     {revocationResult.message}
                   </p>
-                  
                   {revocationResult.success && revocationResult.certificate && (
                     <div style={{
                       backgroundColor: 'white',
@@ -1056,8 +1021,7 @@ const AdminDashboard = () => {
                   )}
                 </div>
               )}
-              
-              {/* Instructions */}
+              {}
               <div style={{
                 backgroundColor: '#f8fafc',
                 border: '1px solid #e2e8f0',
@@ -1088,7 +1052,6 @@ const AdminDashboard = () => {
                   <li>The certificate status will be updated to "Revoked" immediately</li>
                   <li>Revoked certificates cannot be restored to valid status</li>
                 </ol>
-                
                 <div style={{
                   marginTop: '1rem',
                   padding: '0.75rem',
@@ -1107,8 +1070,7 @@ const AdminDashboard = () => {
                   </p>
                 </div>
               </div>
-
-              {/* Current Valid Certificates for Quick Reference */}
+              {}
               <div style={{
                 backgroundColor: 'white',
                 border: '1px solid #e2e8f0',
@@ -1188,8 +1150,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
-
-        {/* Settings Tab */}
+        {}
         {activeTab === 'settings' && (
           <div>
             <h2 style={{
@@ -1201,7 +1162,6 @@ const AdminDashboard = () => {
             }}>
               System Settings
             </h2>
-            
             <div style={{
               backgroundColor: 'white',
               padding: '2rem',
@@ -1234,5 +1194,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;

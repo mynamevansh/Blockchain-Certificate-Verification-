@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-
 const LoadingContext = createContext();
-
 export const useLoading = () => {
   const context = useContext(LoadingContext);
   if (!context) {
@@ -9,32 +7,26 @@ export const useLoading = () => {
   }
   return context;
 };
-
 export const LoadingProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Loading...');
-
   const showLoading = (message = 'Loading...') => {
     setLoadingMessage(message);
     setIsLoading(true);
   };
-
   const hideLoading = () => {
     setIsLoading(false);
   };
-
   const value = {
     isLoading,
     loadingMessage,
     showLoading,
     hideLoading
   };
-
   return (
     <LoadingContext.Provider value={value}>
       {children}
     </LoadingContext.Provider>
   );
 };
-
 export default LoadingContext;

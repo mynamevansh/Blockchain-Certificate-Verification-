@@ -15,7 +15,6 @@ import {
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
 import LoadingDashboard from '../components/LoadingDashboard';
-
 const ProfessionalDashboard = () => {
   const { user } = useAuth();
   useWebSocket(); // For potential future use
@@ -30,7 +29,6 @@ const ProfessionalDashboard = () => {
   });
   const [recentCertificates, setRecentCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
@@ -38,7 +36,6 @@ const ProfessionalDashboard = () => {
         statsAPI.getDashboardStats(),
         certificateAPI.getUserCertificates()
       ]);
-
       setStats(statsResponse.data || {
         totalCertificates: 0,
         activeCertificates: 0,
@@ -47,7 +44,6 @@ const ProfessionalDashboard = () => {
         monthlyGrowth: 0,
         totalUsers: 0
       });
-
       setRecentCertificates(certificatesResponse.data?.slice(0, 5) || []);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -55,11 +51,9 @@ const ProfessionalDashboard = () => {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     loadDashboardData();
   }, [loadDashboardData]);
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -67,7 +61,6 @@ const ProfessionalDashboard = () => {
       day: 'numeric'
     });
   };
-
   const getStatusBadge = (status) => {
     const statusMap = {
       'Valid': { 
@@ -91,7 +84,6 @@ const ProfessionalDashboard = () => {
         icon: '✔️'
       }
     };
-    
     const statusInfo = statusMap[status] || { class: 'pending', text: 'Unknown', icon: '❓' };
     return (
       <span className={`status-badge ${statusInfo.class}`} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -100,23 +92,19 @@ const ProfessionalDashboard = () => {
       </span>
     );
   };
-
   if (loading) {
     return <LoadingDashboard />;
   }
-
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
       <div className="main-content">
         <TopNavbar 
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)} 
           user={user}
         />
-        
         <div className="content-area">
-          {/* Stats Overview */}
+          {}
           <div className="stats-grid">
             <div className="stat-card">
               <div className="stat-icon primary">
@@ -128,7 +116,6 @@ const ProfessionalDashboard = () => {
                 +{stats.monthlyGrowth}% this month
               </div>
             </div>
-
             <div className="stat-card">
               <div className="stat-icon success">
                 <CheckCircle size={20} />
@@ -139,7 +126,6 @@ const ProfessionalDashboard = () => {
                 {((stats.activeCertificates / stats.totalCertificates) * 100).toFixed(1)}% of total
               </div>
             </div>
-
             <div className="stat-card">
               <div className="stat-icon warning">
                 <Clock size={20} />
@@ -150,7 +136,6 @@ const ProfessionalDashboard = () => {
                 Requires attention
               </div>
             </div>
-
             <div className="stat-card">
               <div className="stat-icon info">
                 <Users size={20} />
@@ -162,9 +147,8 @@ const ProfessionalDashboard = () => {
               </div>
             </div>
           </div>
-
           <div className="grid grid-cols-2">
-            {/* Recent Certificates Table */}
+            {}
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">Recent Certificates</h3>
@@ -221,8 +205,7 @@ const ProfessionalDashboard = () => {
                 )}
               </div>
             </div>
-
-            {/* System Status */}
+            {}
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">System Status</h3>
@@ -237,7 +220,6 @@ const ProfessionalDashboard = () => {
                     </div>
                     <span className="status-badge active">Operational</span>
                   </div>
-                  
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
                       <TrendingUp size={16} style={{ color: 'var(--success-color)' }} />
@@ -245,7 +227,6 @@ const ProfessionalDashboard = () => {
                     </div>
                     <span className="status-badge active">Healthy</span>
                   </div>
-                  
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
                       <Calendar size={16} style={{ color: 'var(--warning-color)' }} />
@@ -253,7 +234,6 @@ const ProfessionalDashboard = () => {
                     </div>
                     <span className="status-badge pending">Scheduled</span>
                   </div>
-                  
                   <div style={{ marginTop: 'var(--spacing-md)' }}>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 'var(--spacing-xs)' }}>
                       Server Uptime
@@ -266,8 +246,7 @@ const ProfessionalDashboard = () => {
               </div>
             </div>
           </div>
-
-          {/* Quick Actions */}
+          {}
           <div className="card" style={{ marginTop: 'var(--spacing-xl)' }}>
             <div className="card-header">
               <h3 className="card-title">Quick Actions</h3>
@@ -299,5 +278,4 @@ const ProfessionalDashboard = () => {
     </div>
   );
 };
-
 export default ProfessionalDashboard;

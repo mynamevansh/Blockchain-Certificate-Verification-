@@ -1,10 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
 const Home = () => {
   const { isAuthenticated } = useAuth();
-
   const features = [
     {
       icon: (
@@ -61,17 +59,15 @@ const Home = () => {
       description: 'Track certificate issuance, verification statistics, and system usage with comprehensive analytics.',
     },
   ];
-
   const stats = [
     { label: 'Certificates Issued', value: '10,000+' },
     { label: 'Verifications Completed', value: '50,000+' },
     { label: 'Institutions Using', value: '500+' },
     { label: 'Success Rate', value: '99.9%' },
   ];
-
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {}
       <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
@@ -108,8 +104,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* Stats Section */}
+      {}
       <section className="py-16 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -124,8 +119,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* Features Section */}
+      {}
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -137,7 +131,6 @@ const Home = () => {
               transparency, and reliability for certificate verification.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="card animate-fade-in hover:shadow-xl transition-shadow duration-300">
@@ -155,8 +148,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* How It Works Section */}
+      {}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -167,9 +159,8 @@ const Home = () => {
               Simple, secure, and transparent certificate verification in just a few steps
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Step 1 */}
+            {}
             <div className="text-center">
               <div className="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 1
@@ -181,8 +172,7 @@ const Home = () => {
                 University or institution uploads the certificate file. System generates SHA-512 hash and stores on IPFS.
               </p>
             </div>
-
-            {/* Step 2 */}
+            {}
             <div className="text-center">
               <div className="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 2
@@ -194,8 +184,7 @@ const Home = () => {
                 Certificate hash is recorded on Ethereum blockchain via smart contract, ensuring immutability.
               </p>
             </div>
-
-            {/* Step 3 */}
+            {}
             <div className="text-center">
               <div className="w-16 h-16 bg-primary-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 3
@@ -210,8 +199,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
+      {}
       <section className="py-20 bg-primary-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -220,7 +208,6 @@ const Home = () => {
           <p className="text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
             Join hundreds of institutions already using our platform to issue and verify tamper-proof certificates.
           </p>
-          
           {isAuthenticated ? (
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -246,5 +233,4 @@ const Home = () => {
     </div>
   );
 };
-
 export default Home;

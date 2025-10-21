@@ -4,11 +4,9 @@ import { useWebSocket } from '../context/SimpleWebSocketContext';
 import { certificateAPI } from '../services/api';
 import blockchainService from '../services/blockchain';
 import { toast } from 'react-toastify';
-
 const Revoke = () => {
   const { user, isAuthenticated } = useAuth();
   const { emitEvent } = useWebSocket();
-  
   const [certificateId, setCertificateId] = useState('');
   const [reason, setReason] = useState('');
   const [certificate, setCertificate] = useState(null);
@@ -16,8 +14,6 @@ const Revoke = () => {
   const [revoking, setRevoking] = useState(false);
   const [userCertificates, setUserCertificates] = useState([]);
   const [loadingUserCertificates, setLoadingUserCertificates] = useState(false);
-
-  // Revocation reasons
   const revocationReasons = [
     'Certificate issued in error',
     'Information on certificate is incorrect',
@@ -27,23 +23,19 @@ const Revoke = () => {
     'Administrative error',
     'Other'
   ];
-
   useEffect(() => {
     if (isAuthenticated && user) {
       loadUserCertificates();
     }
   }, [isAuthenticated, user]);
-
   const loadUserCertificates = async () => {
     setLoadingUserCertificates(true);
     try {
       const certificates = await certificateAPI.getUserCertificates(user.address);
-      // Filter only active certificates that can be revoked
       const activeCertificates = certificates.filter(cert => cert.status === 'active');
       setUserCertificates(activeCertificates);
     } catch (error) {
       console.error('Error loading user certificates:', error);
-      // Create mock data for demonstration
       const mockCertificates = [
         {
           certificateId: 'cert_1698765432_abc123',
@@ -67,50 +59,39 @@ const Revoke = () => {
       setLoadingUserCertificates(false);
     }
   };
-
   const searchCertificate = async () => {
     if (!certificateId.trim()) {
       toast.error('Please enter a certificate ID');
       return;
     }
-
     setLoading(true);
     setCertificate(null);
-
     try {
-      // First try to get from backend
       let cert = null;
       try {
         cert = await certificateAPI.getCertificate(certificateId);
       } catch (error) {
         console.warn('Backend lookup failed, trying blockchain:', error);
       }
-
-      // If backend fails, try blockchain
       if (!cert) {
         const blockchainResult = await blockchainService.getCertificateDetails(certificateId);
         cert = {
           certificateId,
           ...blockchainResult,
-          // Mock additional details for demo
           recipientName: 'Certificate Holder',
           courseName: 'Unknown Course',
           institution: 'Unknown Institution',
           issueDate: blockchainResult.issuedAt || new Date().toISOString(),
         };
       }
-
       if (cert) {
-        // Check if user has permission to revoke (must be issuer)
         if (cert.issuer && cert.issuer.toLowerCase() !== user.address.toLowerCase()) {
           toast.error('You do not have permission to revoke this certificate');
           return;
         }
-
         if (cert.status === 'revoked') {
           toast.warning('This certificate has already been revoked');
         }
-
         setCertificate(cert);
         toast.success('Certificate found');
       } else {
@@ -123,46 +104,34 @@ const Revoke = () => {
       setLoading(false);
     }
   };
-
   const handleRevoke = async () => {
     if (!certificate) {
       toast.error('No certificate selected for revocation');
       return;
     }
-
     if (!reason.trim()) {
       toast.error('Please provide a reason for revocation');
       return;
     }
-
     setRevoking(true);
-
     try {
-      // Step 1: Revoke on blockchain
       toast.info('Revoking certificate on blockchain...');
       const blockchainResult = await blockchainService.revokeCertificate(
         certificate.certificateId,
         reason
       );
-
-      // Step 2: Update backend
       try {
         await certificateAPI.revokeCertificate(certificate.certificateId, reason);
       } catch (error) {
         console.warn('Backend revocation failed, blockchain revocation succeeded:', error);
       }
-
-      // Step 3: Emit WebSocket event
       emitEvent('certificateRevoked', {
         certificateId: certificate.certificateId,
         revokedBy: user.address,
         reason: reason,
         timestamp: new Date().toISOString()
       });
-
       toast.success('Certificate revoked successfully!');
-      
-      // Update certificate status
       setCertificate({
         ...certificate,
         status: 'revoked',
@@ -170,10 +139,7 @@ const Revoke = () => {
         revokedBy: user.address,
         revokedAt: new Date().toISOString()
       });
-
-      // Reload user certificates
       loadUserCertificates();
-
     } catch (error) {
       console.error('Error revoking certificate:', error);
       toast.error(error.message || 'Failed to revoke certificate');
@@ -181,18 +147,15 @@ const Revoke = () => {
       setRevoking(false);
     }
   };
-
   const selectCertificateFromList = (cert) => {
     setCertificateId(cert.certificateId);
     setCertificate(cert);
   };
-
   const resetForm = () => {
     setCertificateId('');
     setReason('');
     setCertificate(null);
   };
-
   if (!isAuthenticated) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -210,7 +173,6 @@ const Revoke = () => {
       </div>
     );
   }
-
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
@@ -220,13 +182,11 @@ const Revoke = () => {
           This action is permanent and will be recorded on the blockchain.
         </p>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left Column - Your Certificates */}
+        {}
         <div className="space-y-6">
           <div className="card">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Active Certificates</h2>
-            
             {loadingUserCertificates ? (
               <div className="text-center py-8">
                 <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -272,10 +232,9 @@ const Revoke = () => {
             )}
           </div>
         </div>
-
-        {/* Right Column - Revocation Form */}
+        {}
         <div className="space-y-6">
-          {/* Certificate ID Input */}
+          {}
           <div className="card">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Find Certificate</h2>
             <div className="space-y-4">
@@ -303,8 +262,7 @@ const Revoke = () => {
               </div>
             </div>
           </div>
-
-          {/* Certificate Details */}
+          {}
           {certificate && (
             <div className="card">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Certificate Details</h2>
@@ -351,8 +309,7 @@ const Revoke = () => {
               </div>
             </div>
           )}
-
-          {/* Revocation Form */}
+          {}
           {certificate && certificate.status === 'active' && (
             <div className="card">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Revoke Certificate</h2>
@@ -376,7 +333,6 @@ const Revoke = () => {
                     ))}
                   </select>
                 </div>
-
                 {reason === 'Other' && (
                   <div>
                     <label htmlFor="customReason" className="block text-sm font-medium text-gray-700 mb-2">
@@ -393,7 +349,6 @@ const Revoke = () => {
                     />
                   </div>
                 )}
-
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                   <div className="flex items-start">
                     <div className="flex-shrink-0">
@@ -410,7 +365,6 @@ const Revoke = () => {
                     </div>
                   </div>
                 </div>
-
                 <div className="flex space-x-4">
                   <button
                     onClick={handleRevoke}
@@ -449,5 +403,4 @@ const Revoke = () => {
     </div>
   );
 };
-
 export default Revoke;

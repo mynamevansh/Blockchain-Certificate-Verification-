@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
 const Navbar = () => {
   const { user, isConnected, connectWallet, disconnectWallet, isLoading } = useAuth();
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
   const navItems = [
     { path: '/', label: 'Home', icon: '🏠' },
     { path: '/dashboard', label: 'Dashboard', icon: '📊' },
@@ -14,7 +12,6 @@ const Navbar = () => {
     { path: '/verify', label: 'Verify', icon: '🔍' },
     { path: '/revoke', label: 'Revoke', icon: '🚫' },
   ];
-
   const handleWalletAction = async () => {
     if (isConnected) {
       await disconnectWallet();
@@ -22,20 +19,16 @@ const Navbar = () => {
       await connectWallet();
     }
   };
-
   const truncateAddress = (address) => {
     if (!address) return '';
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
-
   return (
     <nav className="modern-nav">
       <div className="nav-content">
         <Link to="/" className="nav-logo">
           🔗 CertVerify
         </Link>
-
-        
         <ul className="nav-links hidden md:flex">
           {navItems.map((item) => (
             <li key={item.path}>
@@ -49,8 +42,6 @@ const Navbar = () => {
             </li>
           ))}
         </ul>
-
-        
         <div className="flex items-center gap-4">
           {isConnected && user?.address && (
             <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg">
@@ -60,7 +51,6 @@ const Navbar = () => {
               </span>
             </div>
           )}
-
           <button
             onClick={handleWalletAction}
             disabled={isLoading}
@@ -83,8 +73,6 @@ const Navbar = () => {
               </>
             )}
           </button>
-
-          
           <button
             className="md:hidden btn-modern btn-secondary"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -93,8 +81,6 @@ const Navbar = () => {
           </button>
         </div>
       </div>
-
-      
       {isMobileMenuOpen && (
         <div className="md:hidden mt-4 pb-4 border-t border-gray-200">
           <ul className="flex flex-col gap-2 pt-4">
@@ -115,7 +101,6 @@ const Navbar = () => {
               </li>
             ))}
           </ul>
-          
           {isConnected && user?.address && (
             <div className="flex items-center gap-3 px-4 py-3 mt-4 bg-gray-50 rounded-lg">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -129,5 +114,4 @@ const Navbar = () => {
     </nav>
   );
 };
-
 export default Navbar;

@@ -14,14 +14,11 @@ import {
   Zap,
   Lock
 } from 'lucide-react';
-
 const HomePage = () => {
   const navigate = useNavigate();
-
   const handleGetStarted = () => {
     navigate('/auth');
   };
-
   const features = [
     {
       icon: ShieldCheck,
@@ -48,7 +45,6 @@ const HomePage = () => {
       color: '#f59e0b'
     }
   ];
-
   const workflowSteps = [
     {
       step: '01',
@@ -75,14 +71,13 @@ const HomePage = () => {
       icon: Globe
     }
   ];
-
   return (
     <div style={{ 
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif',
       backgroundColor: '#ffffff',
       minHeight: '100vh'
     }}>
-      {/* Navigation Header */}
+      {}
       <header style={{
         backgroundColor: 'white',
         borderBottom: '1px solid #e5e7eb',
@@ -121,7 +116,6 @@ const HomePage = () => {
               CertifyChain
             </h1>
           </div>
-
           <button
             onClick={handleGetStarted}
             style={{
@@ -153,8 +147,7 @@ const HomePage = () => {
           </button>
         </div>
       </header>
-
-      {/* Hero Section */}
+      {}
       <section style={{
         background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
         padding: '6rem 2rem',
@@ -177,7 +170,6 @@ const HomePage = () => {
             <CheckCircle size={16} />
             Trusted by Educational Institutions Worldwide
           </div>
-
           <h1 style={{
             fontSize: 'clamp(2.5rem, 5vw, 4rem)',
             fontWeight: '900',
@@ -188,7 +180,6 @@ const HomePage = () => {
           }}>
             Sसंरक्षपत्र
           </h1>
-
           <p style={{
             fontSize: '1.25rem',
             color: '#64748b',
@@ -200,7 +191,6 @@ const HomePage = () => {
             Verify certificate authenticity and manage certificate lifecycle with 
             blockchain technology.
           </p>
-
           <div style={{
             display: 'flex',
             gap: '1rem',
@@ -238,7 +228,6 @@ const HomePage = () => {
               <Play size={20} />
               Start Verification
             </button>
-
             <button
               style={{
                 padding: '1rem 2.5rem',
@@ -267,8 +256,7 @@ const HomePage = () => {
               Learn More
             </button>
           </div>
-
-          {/* Hero Stats */}
+          {}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
@@ -311,8 +299,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* Features Section */}
+      {}
       <section style={{
         padding: '6rem 2rem',
         backgroundColor: 'white'
@@ -339,7 +326,6 @@ const HomePage = () => {
               security, reliability, and user experience.
             </p>
           </div>
-
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
@@ -378,7 +364,6 @@ const HomePage = () => {
                 }}>
                   <feature.icon size={40} style={{ color: feature.color }} />
                 </div>
-
                 <h3 style={{
                   fontSize: '1.375rem',
                   fontWeight: '600',
@@ -388,7 +373,6 @@ const HomePage = () => {
                 }}>
                   {feature.title}
                 </h3>
-
                 <p style={{
                   fontSize: '1rem',
                   color: '#64748b',
@@ -403,8 +387,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* How It Works Section */}
+      {}
       <section style={{
         padding: '6rem 2rem',
         backgroundColor: '#f8fafc'
@@ -431,7 +414,6 @@ const HomePage = () => {
               advanced blockchain technology.
             </p>
           </div>
-
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -467,7 +449,6 @@ const HomePage = () => {
                 }}>
                   {step.step}
                 </div>
-
                 <div style={{
                   width: '64px',
                   height: '64px',
@@ -480,7 +461,6 @@ const HomePage = () => {
                 }}>
                   <step.icon size={32} style={{ color: '#3b82f6' }} />
                 </div>
-
                 <h3 style={{
                   fontSize: '1.25rem',
                   fontWeight: '600',
@@ -490,7 +470,6 @@ const HomePage = () => {
                 }}>
                   {step.title}
                 </h3>
-
                 <p style={{
                   fontSize: '1rem',
                   color: '#64748b',
@@ -505,8 +484,7 @@ const HomePage = () => {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
+      {}
       <section style={{
         padding: '6rem 2rem',
         background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
@@ -522,7 +500,6 @@ const HomePage = () => {
           }}>
             Ready to Get Started?
           </h2>
-
           <p style={{
             fontSize: '1.25rem',
             marginBottom: '3rem',
@@ -533,7 +510,6 @@ const HomePage = () => {
             Join educational institutions worldwide using CertifyChain for secure, 
             reliable certificate verification and management.
           </p>
-
           <button
             onClick={handleGetStarted}
             style={{
@@ -566,8 +542,7 @@ const HomePage = () => {
           </button>
         </div>
       </section>
-
-      {/* Footer */}
+      {}
       <footer style={{
         backgroundColor: '#0f172a',
         color: 'white',
@@ -595,7 +570,6 @@ const HomePage = () => {
               CertifyChain
             </h3>
           </div>
-
           <p style={{
             fontSize: '1rem',
             color: '#94a3b8',
@@ -607,7 +581,6 @@ const HomePage = () => {
             Secure, trusted, and efficient certificate verification powered by blockchain technology. 
             Building the future of educational credential management.
           </p>
-
           <div style={{
             borderTop: '1px solid #334155',
             paddingTop: '2rem'
@@ -626,5 +599,4 @@ const HomePage = () => {
     </div>
   );
 };
-
 export default HomePage;

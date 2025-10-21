@@ -3,39 +3,32 @@ import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/SimpleWebSocketContext';
 import { certificateAPI, statsAPI } from '../services/api';
 import { Link } from 'react-router-dom';
-
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { notifications, isConnected: wsConnected } = useWebSocket();
-  
   const [stats, setStats] = useState({
     totalCertificates: 0,
     activeCertificates: 0,
     revokedCertificates: 0,
     totalVerifications: 0,
   });
-  
   const [recentCertificates, setRecentCertificates] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('30d');
-
   useEffect(() => {
     if (isAuthenticated && user?.address) {
       loadDashboardData();
     }
   }, [isAuthenticated, user, period, loadDashboardData]);
-
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      // Load statistics
       try {
         const statsData = await statsAPI.getDashboardStats();
         setStats(statsData);
       } catch (error) {
         console.warn('Failed to load stats from API, using mock data:', error);
-        // Mock data for demonstration
         setStats({
           totalCertificates: 156,
           activeCertificates: 142,
@@ -43,14 +36,11 @@ const Dashboard = () => {
           totalVerifications: 1247,
         });
       }
-
-      // Load recent certificates
       try {
         const certificates = await certificateAPI.getByIssuer(user.address, { limit: 5 });
         setRecentCertificates(certificates.data || certificates); // Handle paginated response
       } catch (error) {
         console.warn('Failed to load certificates from API, using mock data:', error);
-        // Mock data for demonstration
         setRecentCertificates([
           {
             certificateId: 'cert_1698765432_abc123',
@@ -94,8 +84,6 @@ const Dashboard = () => {
           }
         ]);
       }
-
-      // Generate recent activity from notifications and certificates
       const activity = [
         ...notifications.slice(0, 3).map(notif => ({
           id: notif.id,
@@ -114,16 +102,13 @@ const Dashboard = () => {
           icon: getActivityIcon('certificate', cert.status)
         }))
       ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
-
       setRecentActivity(activity);
-
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
   }, [user?.address, statsAPI, certificateAPI]);
-
   const getActivityIcon = (type, subType) => {
     if (type === 'notification') {
       switch (subType) {
@@ -137,7 +122,6 @@ const Dashboard = () => {
     }
     return '📋';
   };
-
   const StatCard = ({ title, value, subtitle, color = 'primary', icon }) => (
     <div className="card">
       <div className="flex items-center">
@@ -152,7 +136,6 @@ const Dashboard = () => {
       </div>
     </div>
   );
-
   const QuickActionCard = ({ title, description, link, icon, color = 'primary' }) => (
     <Link to={link} className="block">
       <div className="card hover:shadow-lg transition-shadow duration-200 cursor-pointer">
@@ -171,7 +154,6 @@ const Dashboard = () => {
       </div>
     </Link>
   );
-
   if (!isConnected) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -189,10 +171,9 @@ const Dashboard = () => {
       </div>
     );
   }
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
+      {}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -221,7 +202,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
       {loading ? (
         <div className="text-center py-12">
           <div className="animate-spin w-12 h-12 border-4 border-primary-600 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -229,7 +209,7 @@ const Dashboard = () => {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Stats Grid */}
+          {}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
               title="Total Certificates"
@@ -275,8 +255,7 @@ const Dashboard = () => {
               }
             />
           </div>
-
-          {/* Quick Actions */}
+          {}
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -314,9 +293,8 @@ const Dashboard = () => {
               />
             </div>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Certificates */}
+            {}
             <div className="card">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">Recent Certificates</h2>
@@ -324,7 +302,6 @@ const Dashboard = () => {
                   View All
                 </Link>
               </div>
-              
               {recentCertificates.length > 0 ? (
                 <div className="space-y-3">
                   {recentCertificates.map((cert) => (
@@ -358,11 +335,9 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-
-            {/* Recent Activity */}
+            {}
             <div className="card">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
-              
               {recentActivity.length > 0 ? (
                 <div className="space-y-4">
                   {recentActivity.map((activity) => (
@@ -388,8 +363,7 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-
-          {/* System Status */}
+          {}
           <div className="card">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">System Status</h2>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -421,5 +395,4 @@ const Dashboard = () => {
     </div>
   );
 };
-
 export default Dashboard;

@@ -21,7 +21,6 @@ import {
   UserCheck,
   Activity
 } from 'lucide-react';
-
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const { hideLoading } = useLoading();
@@ -53,13 +52,11 @@ const AdminDashboard = () => {
     monthlyIssued: 0,
     systemUptime: '99.9%'
   });
-
   const loadDashboardData = useCallback(async () => {
     try {
       const token = localStorage.getItem('auth_token');
       const userType = localStorage.getItem('userType');
       const userData = localStorage.getItem('user_data');
-      
       console.log('🔍 Debug Auth Status:', {
         hasToken: !!token,
         userType,
@@ -67,37 +64,29 @@ const AdminDashboard = () => {
         isAuthenticated,
         hasAdminRole: hasRole('admin')
       });
-      
       if (!token) {
         console.error('❌ No auth token found');
         toast.error('Please log in to access admin features');
         navigate('/auth');
         return;
       }
-      
-      // Load certificates from backend
       try {
         console.log('📡 Making request to /api/certificates/admin with token:', token.substring(0, 20) + '...');
-        
         const certificatesResponse = await fetch('/api/certificates/admin', {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
         });
-        
         console.log('📈 Response Status:', certificatesResponse.status, certificatesResponse.statusText);
-        
         if (certificatesResponse.ok) {
           const certificatesData = await certificatesResponse.json();
           console.log('✅ Certificates loaded:', certificatesData);
           setCertificates(certificatesData.data || []);
           updateStats(certificatesData.data || []);
         } else {
-          // Handle different error types
           const errorData = await certificatesResponse.text();
           console.error('❌ API Error:', certificatesResponse.status, errorData);
-          
           if (certificatesResponse.status === 401) {
             toast.error('Session expired. Please log in again.');
             logout();
@@ -116,21 +105,16 @@ const AdminDashboard = () => {
         toast.error('Network error loading certificates');
         setCertificates([]);
       }
-      
-      // Load users (placeholder for now)
       setUsers([]);
-      
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       toast.error('Failed to load dashboard data');
     }
   }, [isAuthenticated, hasRole, navigate, logout]);
-
   const updateStats = (certificatesData) => {
     const total = certificatesData.length;
     const active = certificatesData.filter(cert => cert.status === 'Valid').length;
     const revoked = certificatesData.filter(cert => cert.status === 'Revoked').length;
-    
     setStats(prev => ({
       ...prev,
       totalCertificates: total,
@@ -144,17 +128,13 @@ const AdminDashboard = () => {
       }).length
     }));
   };
-
   useEffect(() => {
     hideLoading();
-    
     if (!isAuthenticated || !hasRole('admin')) {
       navigate('/auth');
       return;
     }
-    
     loadDashboardData();
-    
     const timer = setTimeout(() => {
       if (user && user.name) {
         toast.success(`Welcome back, ${user.name}!`, {
@@ -167,30 +147,24 @@ const AdminDashboard = () => {
         });
       }
     }, 800);
-    
     return () => {
       clearTimeout(timer);
       toast.dismiss('dashboard-welcome');
     };
   }, [hideLoading, isAuthenticated, hasRole, navigate, user, loadDashboardData]);
-
   const handleFormChange = (field, value) => {
     setCertificateForm(prev => ({
       ...prev,
       [field]: value
     }));
   };
-
   const handleIssueCertificate = async () => {
     if (!certificateForm.studentName || !certificateForm.course || !certificateForm.degree) {
       toast.error('Please fill in all required fields');
       return;
     }
-
     setIssuingCertificate(true);
-
     try {
-      // Prepare certificate data for backend
       const certificateData = {
         studentName: certificateForm.studentName,
         studentId: certificateForm.studentId,
@@ -205,8 +179,6 @@ const AdminDashboard = () => {
         issuer: user.email,
         issuerId: user._id
       };
-
-      // Call backend API to create certificate
       const response = await fetch('/api/certificates/upload', {
         method: 'POST',
         headers: {
@@ -215,14 +187,9 @@ const AdminDashboard = () => {
         },
         body: JSON.stringify(certificateData)
       });
-      
       const result = await response.json();
-      
       if (result.success) {
-        // Refresh certificates list
         await loadDashboardData();
-        
-        // Reset form and close modal
         setCertificateForm({
           studentName: '',
           studentId: '',
@@ -236,7 +203,6 @@ const AdminDashboard = () => {
           registrar: 'Mary Johnson'
         });
         setShowIssueModal(false);
-
         toast.success(`Certificate issued successfully!`);
       } else {
         throw new Error(result.message || 'Failed to issue certificate');
@@ -248,13 +214,11 @@ const AdminDashboard = () => {
       setIssuingCertificate(false);
     }
   };
-
   const handleDownloadCertificate = (certificate) => {
     const certificateData = {
       ...certificate,
       downloadedAt: new Date().toISOString()
     };
-    
     const blob = new Blob([JSON.stringify(certificateData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -264,25 +228,17 @@ const AdminDashboard = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
     toast.success(`Certificate ${certificate.id} downloaded successfully`);
   };
-
   const handleSignOut = async () => {
     try {
       await logout();
-      
-      // Wait for user to see the message before navigating
       await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      // Navigate to sign in page
       navigate('/auth');
-      
     } catch (error) {
       toast.error('Sign out failed. Please try again.');
     }
   };
-
   const handleRevokeCertificate = (certificateId) => {
     setCertificates(prev => 
       prev.map(cert => 
@@ -293,7 +249,6 @@ const AdminDashboard = () => {
     );
     toast.success(`Certificate ${certificateId} has been revoked`);
   };
-
   const getStatusBadge = (status) => {
     const isValid = status === 'Valid';
     return (
@@ -312,10 +267,8 @@ const AdminDashboard = () => {
       </span>
     );
   };
-
   const IssueModal = () => {
     if (!showIssueModal) return null;
-
     return (
       <div style={{
         position: 'fixed',
@@ -366,7 +319,6 @@ const AdminDashboard = () => {
               ✕
             </button>
           </div>
-
           <div style={{ padding: '1.5rem' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
@@ -402,7 +354,6 @@ const AdminDashboard = () => {
                 />
               </div>
             </div>
-
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Student Email</label>
               <input
@@ -419,7 +370,6 @@ const AdminDashboard = () => {
                 placeholder="Enter student email"
               />
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Course *</label>
@@ -467,7 +417,6 @@ const AdminDashboard = () => {
                 </select>
               </div>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>GPA</label>
@@ -504,7 +453,6 @@ const AdminDashboard = () => {
                 />
               </div>
             </div>
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: '500', color: '#374151', marginBottom: '0.5rem' }}>Dean</label>
@@ -539,7 +487,6 @@ const AdminDashboard = () => {
                 />
               </div>
             </div>
-
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setShowIssueModal(false)}
@@ -599,7 +546,6 @@ const AdminDashboard = () => {
       </div>
     );
   };
-
   const StatCard = ({ icon, title, value, subtitle, color, trend }) => (
     <div style={{
       backgroundColor: 'white',
@@ -675,10 +621,9 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-
   const renderOverview = () => (
     <div style={{ padding: '2rem' }}>
-      {/* Stats Grid */}
+      {}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -714,9 +659,8 @@ const AdminDashboard = () => {
           color="#eff6ff"
         />
       </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
-        {/* Recent Certificates Section */}
+        {}
         <div style={{
           backgroundColor: 'white',
           borderRadius: '12px',
@@ -750,7 +694,6 @@ const AdminDashboard = () => {
               Latest certificate issuances and updates
             </p>
           </div>
-          
           {certificates.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {certificates.slice(0, 3).map((cert, index) => (
@@ -820,7 +763,6 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               ))}
-              
               <button
                 onClick={() => setActiveTab('certificates')}
                 style={{
@@ -869,8 +811,7 @@ const AdminDashboard = () => {
             </div>
           )}
         </div>
-
-        {/* System Status Section */}
+        {}
         <div style={{
           backgroundColor: 'white',
           borderRadius: '12px',
@@ -904,7 +845,6 @@ const AdminDashboard = () => {
               Current system health and metrics
             </p>
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -933,7 +873,6 @@ const AdminDashboard = () => {
                 OPERATIONAL
               </span>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
@@ -961,7 +900,6 @@ const AdminDashboard = () => {
                 HEALTHY
               </span>
             </div>
-
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{
@@ -989,7 +927,6 @@ const AdminDashboard = () => {
                 SCHEDULED
               </span>
             </div>
-
             <div style={{
               marginTop: '1rem',
               paddingTop: '1rem',
@@ -1015,8 +952,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* Quick Actions */}
+      {}
       <div style={{
         backgroundColor: 'white',
         borderRadius: '12px',
@@ -1050,7 +986,6 @@ const AdminDashboard = () => {
             Frequently used certificate management functions
           </p>
         </div>
-        
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -1087,7 +1022,6 @@ const AdminDashboard = () => {
               <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Create and issue certificates</div>
             </div>
           </button>
-          
           <button
             onClick={() => setActiveTab('certificates')}
             style={{
@@ -1120,7 +1054,6 @@ const AdminDashboard = () => {
               <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Check certificate validity</div>
             </div>
           </button>
-          
           <button
             onClick={() => setActiveTab('users')}
             style={{
@@ -1157,7 +1090,6 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-
   const renderCertificates = () => (
     <div style={{ padding: '2rem' }}>
       <div style={{
@@ -1210,7 +1142,6 @@ const AdminDashboard = () => {
             Issue Certificate
           </button>
         </div>
-        
         {certificates.length > 0 ? (
           <div style={{ overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -1356,7 +1287,6 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-
   const renderUsers = () => (
     <div style={{ padding: '2rem' }}>
       <div style={{
@@ -1408,7 +1338,6 @@ const AdminDashboard = () => {
             Add User
           </button>
         </div>
-        
         {users.length > 0 ? (
           <div style={{ overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -1556,7 +1485,6 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-
   const renderSettings = () => (
     <div style={{ padding: '2rem' }}>
       <div style={{
@@ -1594,7 +1522,6 @@ const AdminDashboard = () => {
               Configure university name, logo, and contact information
             </p>
           </div>
-          
           <div>
             <h4 style={{
               fontSize: '0.875rem',
@@ -1612,7 +1539,6 @@ const AdminDashboard = () => {
               Manage certificate designs and layouts
             </p>
           </div>
-          
           <div>
             <h4 style={{
               fontSize: '0.875rem',
@@ -1634,7 +1560,6 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
-
   return (
     <div style={{ 
       display: 'flex', 
@@ -1643,7 +1568,7 @@ const AdminDashboard = () => {
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif'
     }}>
       <IssueModal />
-      {/* Sidebar */}
+      {}
       <div style={{
         width: sidebarOpen ? '280px' : '80px',
         backgroundColor: 'white',
@@ -1654,7 +1579,7 @@ const AdminDashboard = () => {
         zIndex: 10,
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
       }}>
-        {/* Sidebar Header */}
+        {}
         <div style={{
           padding: '1.5rem',
           borderBottom: '1px solid #e5e7eb',
@@ -1729,8 +1654,7 @@ const AdminDashboard = () => {
             <Menu size={16} />
           </button>
         </div>
-
-        {/* Sidebar Navigation */}
+        {}
         <nav style={{ padding: '1rem' }}>
           {[
             { id: 'overview', icon: Home, label: 'Overview' },
@@ -1778,8 +1702,7 @@ const AdminDashboard = () => {
             </button>
           ))}
         </nav>
-
-        {/* Sidebar Footer */}
+        {}
         {sidebarOpen && (
           <div style={{
             position: 'absolute',
@@ -1861,14 +1784,13 @@ const AdminDashboard = () => {
           </div>
         )}
       </div>
-
-      {/* Main Content */}
+      {}
       <div style={{
         flex: 1,
         marginLeft: sidebarOpen ? '280px' : '80px',
         transition: 'margin-left 0.3s ease'
       }}>
-        {/* Top Bar */}
+        {}
         <header style={{
           backgroundColor: 'white',
           borderBottom: '1px solid #e5e7eb',
@@ -1898,7 +1820,6 @@ const AdminDashboard = () => {
               {activeTab === 'settings' && 'System configuration'}
             </p>
           </div>
-          
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{
               display: 'flex',
@@ -1919,8 +1840,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </header>
-
-        {/* Content Area */}
+        {}
         <main style={{ backgroundColor: '#f8fafc', minHeight: 'calc(100vh - 73px)' }}>
           {activeTab === 'overview' && renderOverview()}
           {activeTab === 'certificates' && renderCertificates()}
@@ -1928,8 +1848,7 @@ const AdminDashboard = () => {
           {activeTab === 'settings' && renderSettings()}
         </main>
       </div>
-      
-      {/* CSS Animations */}
+      {}
       <style>{`
         @keyframes spin {
           0% { transform: rotate(0deg); }
@@ -1939,5 +1858,4 @@ const AdminDashboard = () => {
     </div>
   );
 };
-
 export default AdminDashboard;

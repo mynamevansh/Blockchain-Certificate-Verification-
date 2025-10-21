@@ -3,33 +3,27 @@ import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/SimpleWebSocketContext';
 import { certificateAPI, statsAPI } from '../services/api';
 import { Link } from 'react-router-dom';
-
 const Dashboard = () => {
   const { user, isAuthenticated } = useAuth();
   const { notifications, isConnected: wsConnected } = useWebSocket();
-  
   const [stats, setStats] = useState({
     totalCertificates: 0,
     activeCertificates: 0,
     revokedCertificates: 0,
     totalVerifications: 0,
   });
-  
   const [recentCertificates, setRecentCertificates] = useState([]);
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('30d');
-
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
-      // Load statistics
       try {
         const statsData = await statsAPI.getDashboardStats();
         setStats(statsData);
       } catch (error) {
         console.warn('Failed to load stats from API, using mock data:', error);
-        // Mock data for demonstration
         setStats({
           totalCertificates: 156,
           activeCertificates: 142,
@@ -37,14 +31,11 @@ const Dashboard = () => {
           totalVerifications: 1247,
         });
       }
-
-      // Load recent certificates
       try {
         const certificates = await certificateAPI.getByIssuer(user.address, { limit: 5 });
         setRecentCertificates(certificates.data || certificates);
       } catch (error) {
         console.warn('Failed to load certificates from API, using mock data:', error);
-        // Mock data for demonstration
         setRecentCertificates([
           {
             certificateId: 'cert_1698765432_abc123',
@@ -72,8 +63,6 @@ const Dashboard = () => {
           }
         ]);
       }
-
-      // Generate recent activity
       const activity = [
         ...notifications.slice(0, 3).map(notif => ({
           id: notif.id,
@@ -92,22 +81,18 @@ const Dashboard = () => {
           icon: getActivityIcon('certificate', cert.status)
         }))
       ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
-
       setRecentActivity(activity);
-
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
   }, [user?.address, notifications, recentCertificates]);
-
   useEffect(() => {
     if (isAuthenticated && user) {
       loadDashboardData();
     }
   }, [isAuthenticated, user, period, loadDashboardData]);
-
   const getActivityIcon = (type, subType) => {
     if (type === 'notification') {
       switch (subType) {
@@ -121,7 +106,6 @@ const Dashboard = () => {
     }
     return '📋';
   };
-
   if (!isAuthenticated) {
     return (
       <div className="p-8">
@@ -140,10 +124,9 @@ const Dashboard = () => {
       </div>
     );
   }
-
   return (
     <div className="p-8 fade-in">
-      {/* Header */}
+      {}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
@@ -173,7 +156,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
       {loading ? (
         <div className="text-center py-12">
           <div className="loading-spinner mx-auto mb-4" style={{ width: '48px', height: '48px', borderWidth: '4px' }}></div>
@@ -181,7 +163,7 @@ const Dashboard = () => {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Stats Grid */}
+          {}
           <div className="dashboard-grid">
             <div className="stat-card slide-in">
               <div className="stat-icon primary">
@@ -190,7 +172,6 @@ const Dashboard = () => {
               <div className="stat-value">{stats.totalCertificates}</div>
               <div className="stat-label">Total Certificates</div>
             </div>
-            
             <div className="stat-card slide-in">
               <div className="stat-icon success">
                 ✅
@@ -198,7 +179,6 @@ const Dashboard = () => {
               <div className="stat-value">{stats.activeCertificates}</div>
               <div className="stat-label">Active Certificates</div>
             </div>
-            
             <div className="stat-card slide-in">
               <div className="stat-icon error">
                 ❌
@@ -206,7 +186,6 @@ const Dashboard = () => {
               <div className="stat-value">{stats.revokedCertificates}</div>
               <div className="stat-label">Revoked</div>
             </div>
-            
             <div className="stat-card slide-in">
               <div className="stat-icon primary">
                 ⚡
@@ -215,8 +194,7 @@ const Dashboard = () => {
               <div className="stat-label">Verifications</div>
             </div>
           </div>
-
-          {/* Quick Actions */}
+          {}
           <div className="modern-card">
             <h2 className="text-xl font-semibold mb-6">Quick Actions</h2>
             <div className="dashboard-grid">
@@ -229,7 +207,6 @@ const Dashboard = () => {
                   <p className="text-sm text-gray-600">Upload and issue a new certificate</p>
                 </div>
               </Link>
-              
               <Link to="/verify" className="block">
                 <div className="modern-card" style={{ padding: 'var(--space-6)' }}>
                   <div className="stat-icon success mb-4" style={{ width: '40px', height: '40px' }}>
@@ -239,7 +216,6 @@ const Dashboard = () => {
                   <p className="text-sm text-gray-600">Check certificate authenticity</p>
                 </div>
               </Link>
-              
               <Link to="/revoke" className="block">
                 <div className="modern-card" style={{ padding: 'var(--space-6)' }}>
                   <div className="stat-icon error mb-4" style={{ width: '40px', height: '40px' }}>
@@ -251,10 +227,9 @@ const Dashboard = () => {
               </Link>
             </div>
           </div>
-
-          {/* Recent Activity */}
+          {}
           <div className="dashboard-grid" style={{ gridTemplateColumns: '1fr 1fr' }}>
-            {/* Recent Certificates */}
+            {}
             <div className="modern-card">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Recent Certificates</h2>
@@ -262,7 +237,6 @@ const Dashboard = () => {
                   View All
                 </Link>
               </div>
-              
               {recentCertificates.length > 0 ? (
                 <div className="space-y-4">
                   {recentCertificates.map((cert) => (
@@ -291,11 +265,9 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-
-            {/* Recent Activity */}
+            {}
             <div className="modern-card">
               <h2 className="text-xl font-semibold mb-6">Recent Activity</h2>
-              
               {recentActivity.length > 0 ? (
                 <div className="space-y-4">
                   {recentActivity.map((activity) => (
@@ -321,8 +293,7 @@ const Dashboard = () => {
               )}
             </div>
           </div>
-
-          {/* System Status */}
+          {}
           <div className="modern-card">
             <h2 className="text-xl font-semibold mb-6">System Status</h2>
             <div className="dashboard-grid">
@@ -354,5 +325,4 @@ const Dashboard = () => {
     </div>
   );
 };
-
 export default Dashboard;

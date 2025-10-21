@@ -4,11 +4,9 @@ import { useWebSocket } from '../context/SimpleWebSocketContext';
 import { certificateAPI } from '../services/api';
 import blockchainService from '../services/blockchain';
 import { toast } from 'react-toastify';
-
 const Upload = () => {
   const { user, isAuthenticated } = useAuth();
   const { emitEvent } = useWebSocket();
-  
   const [formData, setFormData] = useState({
     recipientName: '',
     recipientEmail: '',
@@ -17,14 +15,11 @@ const Upload = () => {
     issueDate: '',
     description: '',
   });
-  
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedCertificate, setUploadedCertificate] = useState(null);
-
   const canSubmit = useMemo(() => !uploading && file && isAuthenticated, [uploading, file, isAuthenticated]);
-
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -32,9 +27,7 @@ const Upload = () => {
       [name]: value
     }));
   }, []);
-
   const handleFileSelect = useCallback((selectedFile) => {
-    // Validate file type (allow common certificate formats)
     const allowedTypes = [
       'application/pdf',
       'image/jpeg',
@@ -43,22 +36,17 @@ const Upload = () => {
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ];
-    
     if (!allowedTypes.includes(selectedFile.type)) {
       toast.error('Please select a valid certificate file (PDF, DOC, DOCX, JPG, PNG)');
       return;
     }
-
-    // Check file size (max 10MB)
     if (selectedFile.size > 10 * 1024 * 1024) {
       toast.error('File size must be less than 10MB');
       return;
     }
-
     setFile(selectedFile);
     toast.success('File selected successfully');
   }, []);
-
   const handleDrag = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -68,63 +56,46 @@ const Upload = () => {
       setDragActive(false);
     }
   }, []);
-
   const handleDrop = useCallback((e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
   }, [handleFileSelect]);
-
   const handleFileInputChange = useCallback((e) => {
     if (e.target.files && e.target.files[0]) {
       handleFileSelect(e.target.files[0]);
     }
   }, [handleFileSelect]);
-
   const validateForm = useCallback(() => {
     const required = ['recipientName', 'recipientEmail', 'courseName', 'institution', 'issueDate'];
     const missing = required.filter(field => !formData[field]);
-    
     if (missing.length > 0) {
       toast.error(`Please fill in all required fields: ${missing.join(', ')}`);
       return false;
     }
-
     if (!file) {
       toast.error('Please select a certificate file');
       return false;
     }
-
     return true;
   }, [formData, file]);
-
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
-    
     if (!isAuthenticated) {
       toast.error('Please log in first');
       return;
     }
-
     if (!validateForm()) {
       return;
     }
-
     setUploading(true);
-
     try {
-      // Step 1: Generate file hash
       toast.info('Generating certificate hash...');
       const fileHash = await blockchainService.generateFileHash(file);
-      
-      // Step 2: Initialize blockchain service
       await blockchainService.initialize();
-      
-      // Step 3: Prepare certificate data
       const certificateData = {
         ...formData,
         hash: fileHash,
@@ -137,12 +108,8 @@ const Upload = () => {
           uploadTimestamp: new Date().toISOString()
         }
       };
-
-      // Step 4: Issue certificate on blockchain (mock for now)
       toast.info('Recording certificate on blockchain...');
       const blockchainResult = await blockchainService.issueCertificate(certificateData);
-      
-      // Step 5: Upload to backend
       const uploadFormData = new FormData();
       uploadFormData.append('file', file);
       uploadFormData.append('certificateData', JSON.stringify({
@@ -150,20 +117,14 @@ const Upload = () => {
         certificateId: blockchainResult.certificateId,
         transactionHash: blockchainResult.transactionHash
       }));
-
       toast.info('Uploading certificate file...');
       const apiResult = await certificateAPI.uploadCertificate(uploadFormData);
-      
-      // Step 6: Success
       const completeCertificate = {
         ...apiResult,
         ...blockchainResult,
         formData
       };
-      
       setUploadedCertificate(completeCertificate);
-      
-      // Emit WebSocket event
       if (emitEvent) {
         emitEvent('certificateUploaded', {
           certificateId: completeCertificate.certificateId,
@@ -171,10 +132,7 @@ const Upload = () => {
           recipient: formData.recipientName
         });
       }
-      
       toast.success('Certificate issued successfully!');
-      
-      // Reset form
       setFormData({
         recipientName: '',
         recipientEmail: '',
@@ -184,7 +142,6 @@ const Upload = () => {
         description: '',
       });
       setFile(null);
-      
     } catch (error) {
       console.error('Error uploading certificate:', error);
       toast.error(error.message || 'Failed to upload certificate');
@@ -192,7 +149,6 @@ const Upload = () => {
       setUploading(false);
     }
   }, [isAuthenticated, validateForm, file, formData, user, emitEvent]);
-
   if (!isAuthenticated) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -210,7 +166,6 @@ const Upload = () => {
       </div>
     );
   }
-
   if (uploadedCertificate) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -220,9 +175,7 @@ const Upload = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Certificate Issued Successfully!</h2>
-          
           <div className="bg-gray-50 rounded-lg p-6 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
               <div>
@@ -247,7 +200,6 @@ const Upload = () => {
               </div>
             </div>
           </div>
-          
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               onClick={() => setUploadedCertificate(null)}
@@ -266,7 +218,6 @@ const Upload = () => {
       </div>
     );
   }
-
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
@@ -275,12 +226,10 @@ const Upload = () => {
           Upload and issue tamper-proof certificates that will be stored on the blockchain and IPFS.
         </p>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* File Upload Section */}
+        {}
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Certificate File</h2>
-          
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
               dragActive 
@@ -345,11 +294,9 @@ const Upload = () => {
             )}
           </div>
         </div>
-
-        {/* Certificate Information */}
+        {}
         <div className="card">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">Certificate Information</h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div key="recipientName-field">
               <label htmlFor="recipientName" className="block text-sm font-medium text-gray-700 mb-2">
@@ -367,7 +314,6 @@ const Upload = () => {
                 key="recipientName-input"
               />
             </div>
-
             <div key="recipientEmail-field">
               <label htmlFor="recipientEmail" className="block text-sm font-medium text-gray-700 mb-2">
                 Recipient Email *
@@ -384,7 +330,6 @@ const Upload = () => {
                 key="recipientEmail-input"
               />
             </div>
-
             <div key="courseName-field">
               <label htmlFor="courseName" className="block text-sm font-medium text-gray-700 mb-2">
                 Course/Program Name *
@@ -401,7 +346,6 @@ const Upload = () => {
                 key="courseName-input"
               />
             </div>
-
             <div key="institution-field">
               <label htmlFor="institution" className="block text-sm font-medium text-gray-700 mb-2">
                 Issuing Institution *
@@ -418,7 +362,6 @@ const Upload = () => {
                 key="institution-input"
               />
             </div>
-
             <div key="issueDate-field">
               <label htmlFor="issueDate" className="block text-sm font-medium text-gray-700 mb-2">
                 Issue Date *
@@ -434,7 +377,6 @@ const Upload = () => {
                 key="issueDate-input"
               />
             </div>
-
             <div className="md:col-span-2" key="description-field">
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Description (Optional)
@@ -452,8 +394,7 @@ const Upload = () => {
             </div>
           </div>
         </div>
-
-        {/* Submit Button */}
+        {}
         <div className="flex justify-end">
           <button
             type="submit"
@@ -477,5 +418,4 @@ const Upload = () => {
     </div>
   );
 };
-
 export default Upload;

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -103,10 +102,8 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 });
-
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
   try {
     const hashedPassword = await bcrypt.hash(this.password, 12);
     this.password = hashedPassword;
@@ -115,21 +112,17 @@ userSchema.pre('save', async function(next) {
     next(error);
   }
 });
-
 userSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
-
 userSchema.methods.updateLastLogin = async function() {
   this.lastLogin = new Date();
   return await this.save();
 };
-
 userSchema.methods.addCertificate = async function(certificateId) {
   this.certificates.push({
     certificateId,
@@ -138,13 +131,10 @@ userSchema.methods.addCertificate = async function(certificateId) {
   });
   return await this.save();
 };
-
 userSchema.statics.findActiveByEmail = function(email) {
   return this.findOne({ email: email.toLowerCase(), isActive: true });
 };
-
 userSchema.statics.findByStudentId = function(studentId) {
   return this.findOne({ studentId: studentId.toUpperCase(), isActive: true });
 };
-
 module.exports = mongoose.model('User', userSchema);

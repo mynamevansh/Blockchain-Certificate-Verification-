@@ -1,12 +1,9 @@
-// Alternative approach - AuthContext without useNavigate (EXAMPLE ONLY)
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useNotification } from '../hooks/useNotification';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { SUCCESS_MESSAGES, ERROR_MESSAGES } from '../constants';
 import { authAPI } from '../services/api';
-
 const AuthContext = createContext();
-
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -14,11 +11,7 @@ export const useAuth = () => {
   }
   return context;
 };
-
 export const AuthProvider = ({ children }) => {
-  // ... other state and functions ...
-
-  // Alternative logout that accepts navigate function as parameter
   const logout = useCallback(async (navigate) => {
     try {
       authAPI.logout();
@@ -30,7 +23,6 @@ export const AuthProvider = ({ children }) => {
         setUserPreferences(prev => ({ ...prev, rememberMe: false }));
       }
       showSuccess('Successfully logged out');
-      // Use passed navigate function
       if (navigate) {
         navigate('/auth');
       }
@@ -42,11 +34,4 @@ export const AuthProvider = ({ children }) => {
       }
     }
   }, [userPreferences.rememberMe, setUserPreferences, showSuccess, showError]);
-
-  // ... rest of the context
 };
-
-// Usage in components:
-// const { logout } = useAuth();
-// const navigate = useNavigate();
-// const handleLogout = () => logout(navigate);

@@ -16,7 +16,6 @@ import {
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-
 const ProfessionalRevoke = () => {
   const { user } = useAuth();
   const { emitEvent } = useWebSocket();
@@ -29,13 +28,10 @@ const ProfessionalRevoke = () => {
   const [confirmationStep, setConfirmationStep] = useState(false);
   const [userCertificates, setUserCertificates] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const loadUserCertificates = useCallback(async () => {
     try {
       setLoading(true);
       const response = await certificateAPI.getUserCertificates();
-      
-      // No fake data - use empty array
       setUserCertificates(response.data || []);
     } catch (error) {
       console.error('Failed to load certificates:', error);
@@ -44,44 +40,22 @@ const ProfessionalRevoke = () => {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
     loadUserCertificates();
   }, [loadUserCertificates]);
-
   const handleSearch = async (e) => {
     e.preventDefault();
-    
     if (!searchQuery.trim()) {
       toast.error('Please enter a certificate ID');
       return;
     }
-
     setSearching(true);
     setSelectedCertificate(null);
-
     try {
-      // Certificate database structure for revocation
       const certificateDatabase = {
-        // Certificate entries would be populated from blockchain/database
-        // Example structure:
-        // 'CERT-YYYY-XXX': {
-        //   id: 'CERT-YYYY-XXX',
-        //   recipientName: 'Recipient Name',
-        //   courseName: 'Course Name',
-        //   institution: 'Institution Name',
-        //   issueDate: 'YYYY-MM-DD',
-        //   expiryDate: 'YYYY-MM-DD',
-        //   status: 'Valid' | 'Revoked',
-        //   issuer: 'Issuer Name'
-        // }
       };
-
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 800));
-
       const certificate = certificateDatabase[searchQuery.trim().toUpperCase()];
-      
       if (certificate) {
         if (certificate.status === 'Valid') {
           setSelectedCertificate(certificate);
@@ -91,7 +65,6 @@ const ProfessionalRevoke = () => {
           setSelectedCertificate(null);
         }
       } else {
-        // For demo purposes - in real implementation, this would query blockchain/database
         toast.error('Certificate not found in database. Please verify the certificate ID is correct.');
         setSelectedCertificate(null);
       }
@@ -103,20 +76,14 @@ const ProfessionalRevoke = () => {
       setSearching(false);
     }
   };
-
   const handleRevocation = async () => {
     if (!selectedCertificate || !revocationReason.trim()) {
       toast.error('Please provide a reason for revocation');
       return;
     }
-
     setRevoking(true);
-
     try {
-      // Simulate revocation process
       await new Promise(resolve => setTimeout(resolve, 1500));
-
-      // Update certificate status
       const updatedCertificate = {
         ...selectedCertificate,
         status: 'Revoked',
@@ -128,10 +95,7 @@ const ProfessionalRevoke = () => {
         revocationReason: revocationReason,
         revokedBy: user?.name || 'System Administrator'
       };
-
       toast.success(`Certificate ${selectedCertificate.id} has been successfully revoked`);
-      
-      // Update local state
       setUserCertificates(prev => 
         prev.map(cert => 
           cert.id === selectedCertificate.id 
@@ -139,12 +103,8 @@ const ProfessionalRevoke = () => {
             : cert
         )
       );
-      
-      // Show revocation confirmation with updated certificate
       setSelectedCertificate(updatedCertificate);
       setConfirmationStep('completed');
-      
-      // Emit WebSocket event
       if (emitEvent) {
         emitEvent('certificateRevoked', {
           certificateId: selectedCertificate.id,
@@ -158,7 +118,6 @@ const ProfessionalRevoke = () => {
       setRevoking(false);
     }
   };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -166,32 +125,26 @@ const ProfessionalRevoke = () => {
       day: 'numeric'
     });
   };
-
   const getStatusBadge = (status) => {
     const statusMap = {
       active: { class: 'active', text: 'Active' },
       revoked: { class: 'revoked', text: 'Revoked' },
       expired: { class: 'pending', text: 'Expired' }
     };
-    
     const statusInfo = statusMap[status] || { class: 'pending', text: 'Unknown' };
     return <span className={`status-badge ${statusInfo.class}`}>{statusInfo.text}</span>;
   };
-
   const activeCertificates = userCertificates.filter(cert => cert.status === 'active');
-
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
       <div className="main-content">
         <TopNavbar 
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)} 
           user={user}
         />
-        
         <div className="content-area">
-          {/* Header */}
+          {}
           <div style={{ marginBottom: 'var(--spacing-xl)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
               <Link to="/dashboard" className="btn btn-secondary">
@@ -206,9 +159,8 @@ const ProfessionalRevoke = () => {
               Revoke certificates that are no longer valid or have been compromised.
             </p>
           </div>
-
           <div className="grid grid-cols-2">
-            {/* Revocation Form */}
+            {}
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">Find Certificate to Revoke</h3>
@@ -252,7 +204,6 @@ const ProfessionalRevoke = () => {
                       />
                     </div>
                   </div>
-
                   <button
                     type="submit"
                     className="btn btn-primary"
@@ -279,8 +230,7 @@ const ProfessionalRevoke = () => {
                     )}
                   </button>
                 </form>
-
-                {/* Certificate Found */}
+                {}
                 {selectedCertificate && (
                   <div style={{ 
                     padding: 'var(--spacing-lg)', 
@@ -294,7 +244,6 @@ const ProfessionalRevoke = () => {
                         Certificate Found
                       </h4>
                     </div>
-                    
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>ID:</span>
@@ -321,8 +270,7 @@ const ProfessionalRevoke = () => {
                     </div>
                   </div>
                 )}
-
-                {/* Revocation Form */}
+                {}
                 {selectedCertificate && selectedCertificate.status === 'active' && (
                   <div>
                     <div style={{ marginBottom: 'var(--spacing-lg)' }}>
@@ -350,7 +298,6 @@ const ProfessionalRevoke = () => {
                         }}
                       />
                     </div>
-
                     {!confirmationStep ? (
                       <button
                         className="btn btn-outline"
@@ -380,7 +327,6 @@ const ProfessionalRevoke = () => {
                             This action cannot be undone. The certificate will be permanently revoked.
                           </p>
                         </div>
-                        
                         <div style={{ display: 'flex', gap: 'var(--spacing-sm)' }}>
                           <button
                             className="btn btn-secondary"
@@ -423,7 +369,6 @@ const ProfessionalRevoke = () => {
                     )}
                   </div>
                 )}
-
                 {selectedCertificate && selectedCertificate.status === 'revoked' && (
                   <div style={{ 
                     padding: 'var(--spacing-md)', 
@@ -440,8 +385,7 @@ const ProfessionalRevoke = () => {
                 )}
               </div>
             </div>
-
-            {/* Active Certificates List */}
+            {}
             <div className="card">
               <div className="card-header">
                 <h3 className="card-title">Active Certificates</h3>
@@ -510,8 +454,7 @@ const ProfessionalRevoke = () => {
               </div>
             </div>
           </div>
-
-          {/* Information Panel */}
+          {}
           <div className="card" style={{ marginTop: 'var(--spacing-xl)' }}>
             <div className="card-header">
               <h3 className="card-title">Important Information</h3>
@@ -541,7 +484,6 @@ const ProfessionalRevoke = () => {
                     </p>
                   </div>
                 </div>
-
                 <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
                   <div style={{
                     width: '40px',
@@ -564,7 +506,6 @@ const ProfessionalRevoke = () => {
                     </p>
                   </div>
                 </div>
-
                 <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
                   <div style={{
                     width: '40px',
@@ -595,5 +536,4 @@ const ProfessionalRevoke = () => {
     </div>
   );
 };
-
 export default ProfessionalRevoke;

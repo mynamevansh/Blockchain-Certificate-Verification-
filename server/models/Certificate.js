@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const certificateSchema = new mongoose.Schema({
   certificateId: {
     type: String,
@@ -112,12 +111,10 @@ const certificateSchema = new mongoose.Schema({
     default: Date.now
   }
 });
-
 certificateSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();
 });
-
 certificateSchema.methods.revoke = async function(adminId, reason) {
   this.status = 'Revoked';
   this.revokedBy = adminId;
@@ -125,15 +122,12 @@ certificateSchema.methods.revoke = async function(adminId, reason) {
   this.revokeReason = reason;
   return await this.save();
 };
-
 certificateSchema.statics.generateCertificateId = function() {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000);
   return `CERT-${timestamp}-${random}`;
 };
-
 certificateSchema.statics.findValidByStudent = function(studentId) {
   return this.find({ studentId, status: 'Valid' }).populate('issuedBy', 'name email');
 };
-
 module.exports = mongoose.model('Certificate', certificateSchema);

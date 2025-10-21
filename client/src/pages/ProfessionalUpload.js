@@ -16,12 +16,10 @@ import {
 import { Link } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-
 const ProfessionalUpload = () => {
   const { user, isAuthenticated } = useAuth();
   useWebSocket(); // For potential future use
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
   const [formData, setFormData] = useState({
     recipientName: '',
     recipientEmail: '',
@@ -30,12 +28,10 @@ const ProfessionalUpload = () => {
     issueDate: '',
     description: '',
   });
-  
   const [file, setFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedCertificate, setUploadedCertificate] = useState(null);
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -43,7 +39,6 @@ const ProfessionalUpload = () => {
       [name]: value
     }));
   };
-
   const handleFileSelect = (selectedFile) => {
     if (selectedFile && selectedFile.type === 'application/pdf') {
       setFile(selectedFile);
@@ -52,7 +47,6 @@ const ProfessionalUpload = () => {
       toast.error('Please select a valid PDF file');
     }
   };
-
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -62,39 +56,28 @@ const ProfessionalUpload = () => {
       setDragActive(false);
     }
   };
-
   const handleDrop = (e) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       handleFileSelect(e.dataTransfer.files[0]);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     if (!file) {
       toast.error('Please select a certificate file');
       return;
     }
-    
     if (!formData.recipientName || !formData.courseName || !formData.institution) {
       toast.error('Please fill in all required fields');
       return;
     }
-
     setUploading(true);
-    
     try {
-      // Simulate certificate processing and blockchain registration
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate realistic certificate ID
       const certificateId = `CERT-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 999) + 1).padStart(3, '0')}`;
-      
       const certificateData = {
         id: certificateId,
         ...formData,
@@ -109,11 +92,8 @@ const ProfessionalUpload = () => {
         blockchainHash: '0x' + Math.random().toString(16).substr(2, 40),
         verified: true
       };
-      
       setUploadedCertificate(certificateData);
       toast.success(`Certificate ${certificateId} successfully registered on blockchain!`);
-      
-      // Reset form
       setFormData({
         recipientName: '',
         recipientEmail: '',
@@ -123,7 +103,6 @@ const ProfessionalUpload = () => {
         description: '',
       });
       setFile(null);
-
     } catch (error) {
       console.error('Upload failed:', error);
       toast.error('Failed to upload certificate. Please try again.');
@@ -131,19 +110,16 @@ const ProfessionalUpload = () => {
       setUploading(false);
     }
   };
-
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      
       <div className="main-content">
         <TopNavbar 
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)} 
           user={user}
         />
-        
         <div className="content-area">
-          {/* Header */}
+          {}
           <div style={{ marginBottom: 'var(--spacing-xl)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)', marginBottom: 'var(--spacing-md)' }}>
               <Link to="/dashboard" className="btn btn-secondary">
@@ -158,9 +134,7 @@ const ProfessionalUpload = () => {
               Upload and register a new certificate on the blockchain for secure verification.
             </p>
           </div>
-
           {uploadedCertificate ? (
-            // Success State
             <div className="card">
               <div className="card-content" style={{ textAlign: 'center', padding: 'var(--spacing-2xl)' }}>
                 <div style={{
@@ -175,15 +149,12 @@ const ProfessionalUpload = () => {
                 }}>
                   <CheckCircle size={32} style={{ color: 'var(--success-color)' }} />
                 </div>
-                
                 <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: 'var(--spacing-md)' }}>
                   Certificate Uploaded Successfully!
                 </h2>
-                
                 <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--spacing-lg)' }}>
                   The certificate has been registered on the blockchain and is now available for verification.
                 </p>
-                
                 <div style={{ 
                   backgroundColor: 'var(--background-tertiary)', 
                   padding: 'var(--spacing-lg)', 
@@ -211,7 +182,6 @@ const ProfessionalUpload = () => {
                     </div>
                   </div>
                 </div>
-                
                 <div style={{ display: 'flex', gap: 'var(--spacing-md)', justifyContent: 'center' }}>
                   <button 
                     className="btn btn-primary"
@@ -226,10 +196,9 @@ const ProfessionalUpload = () => {
               </div>
             </div>
           ) : (
-            // Upload Form
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-2" style={{ alignItems: 'flex-start' }}>
-                {/* Certificate Details */}
+                {}
                 <div className="card">
                   <div className="card-header">
                     <h3 className="card-title">Certificate Details</h3>
@@ -264,7 +233,6 @@ const ProfessionalUpload = () => {
                           placeholder="Enter recipient's full name"
                         />
                       </div>
-                      
                       <div>
                         <label style={{ 
                           display: 'block', 
@@ -291,7 +259,6 @@ const ProfessionalUpload = () => {
                           placeholder="recipient@example.com"
                         />
                       </div>
-                      
                       <div>
                         <label style={{ 
                           display: 'block', 
@@ -319,7 +286,6 @@ const ProfessionalUpload = () => {
                           placeholder="Enter course or program name"
                         />
                       </div>
-                      
                       <div>
                         <label style={{ 
                           display: 'block', 
@@ -347,7 +313,6 @@ const ProfessionalUpload = () => {
                           placeholder="Enter institution name"
                         />
                       </div>
-                      
                       <div>
                         <label style={{ 
                           display: 'block', 
@@ -373,7 +338,6 @@ const ProfessionalUpload = () => {
                           }}
                         />
                       </div>
-                      
                       <div>
                         <label style={{ 
                           display: 'block', 
@@ -403,8 +367,7 @@ const ProfessionalUpload = () => {
                     </div>
                   </div>
                 </div>
-
-                {/* File Upload */}
+                {}
                 <div className="card">
                   <div className="card-header">
                     <h3 className="card-title">Upload Certificate</h3>
@@ -434,7 +397,6 @@ const ProfessionalUpload = () => {
                         onChange={(e) => handleFileSelect(e.target.files[0])}
                         style={{ display: 'none' }}
                       />
-                      
                       {file ? (
                         <div>
                           <div style={{
@@ -479,7 +441,6 @@ const ProfessionalUpload = () => {
                         </div>
                       )}
                     </div>
-                    
                     {file && (
                       <button
                         type="button"
@@ -493,8 +454,7 @@ const ProfessionalUpload = () => {
                   </div>
                 </div>
               </div>
-
-              {/* Submit Button */}
+              {}
               <div style={{ marginTop: 'var(--spacing-xl)' }}>
                 <button
                   type="submit"
@@ -524,7 +484,6 @@ const ProfessionalUpload = () => {
                     </>
                   )}
                 </button>
-                
                 {!isAuthenticated && (
                   <div style={{ 
                     marginTop: 'var(--spacing-md)', 
@@ -550,5 +509,4 @@ const ProfessionalUpload = () => {
     </div>
   );
 };
-
 export default ProfessionalUpload;

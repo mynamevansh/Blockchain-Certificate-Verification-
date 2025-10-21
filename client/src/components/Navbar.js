@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/SimpleWebSocketContext';
-
 const Navbar = () => {
   const { user, isConnected, connectWallet, disconnectWallet } = useAuth();
   const { notifications } = useWebSocket();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-
   const navigation = [
     { name: 'Home', href: '/' },
     { name: 'Upload Certificate', href: '/upload' },
@@ -17,9 +15,7 @@ const Navbar = () => {
     { name: 'Revoke Certificate', href: '/revoke' },
     { name: 'Dashboard', href: '/dashboard' },
   ];
-
   const isActive = (path) => location.pathname === path;
-
   const handleConnectWallet = async () => {
     try {
       await connectWallet();
@@ -27,19 +23,15 @@ const Navbar = () => {
       console.error('Failed to connect wallet:', error);
     }
   };
-
   const formatAddress = (address) => {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
-
   const unreadNotifications = notifications.length;
-
   return (
     <nav className="bg-white shadow-lg border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link to="/" className="flex items-center">
@@ -51,7 +43,6 @@ const Navbar = () => {
                 <span className="ml-2 text-xl font-bold text-gradient">CertVerify</span>
               </Link>
             </div>
-            
             <div className="hidden md:ml-6 md:flex md:space-x-8">
               {navigation.map((item) => (
                 <Link
@@ -68,10 +59,7 @@ const Navbar = () => {
               ))}
             </div>
           </div>
-
-          
           <div className="hidden md:ml-6 md:flex md:items-center md:space-x-4">
-            
             <div className="relative">
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
@@ -86,8 +74,6 @@ const Navbar = () => {
                   </span>
                 )}
               </button>
-
-              
               {showNotifications && (
                 <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50">
                   <div className="py-1">
@@ -124,8 +110,6 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-
-            
             {isConnected ? (
               <div className="flex items-center space-x-3">
                 <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg">
@@ -150,8 +134,6 @@ const Navbar = () => {
               </button>
             )}
           </div>
-
-          
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -164,8 +146,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
-      
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-gray-50">
@@ -183,7 +163,6 @@ const Navbar = () => {
                 {item.name}
               </Link>
             ))}
-            
             <div className="px-3 py-2">
               {isConnected ? (
                 <div className="space-y-2">
@@ -221,5 +200,4 @@ const Navbar = () => {
     </nav>
   );
 };
-
 export default Navbar;
