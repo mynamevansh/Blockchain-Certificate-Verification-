@@ -119,6 +119,19 @@ process.on('uncaughtException', (err) => {
 if (require.main === module) {
   startServer();
 } else {
-  connectDB().then(() => seedInitialData()).catch(console.error);
+  let isConnected = false;
+  const initializeServerless = async () => {
+    if (!isConnected) {
+      try {
+        await connectDB();
+        await seedInitialData();
+        isConnected = true;
+        console.log('✅ Serverless function initialized');
+      } catch (error) {
+        console.error('❌ Serverless initialization error:', error);
+      }
+    }
+  };
+  initializeServerless();
 }
 module.exports = app;
