@@ -1,6 +1,7 @@
 {
   "short_name": "CertVerify",
-  "name": "Certificate Verification System", 
+  "name": "Certificate Verification System",
+  "description": "Blockchain-based tamper-proof certificate verification system",
   "icons": [
     {
       "src": "favicon.ico",
@@ -18,7 +19,7 @@
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png", 
+      "src": "logo512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
@@ -26,6 +27,5 @@
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#3b82f6",
-  "background_color": "#ffffff",
-  "description": "Blockchain-based tamper-proof certificate verification system"
+  "background_color": "#ffffff"
 }
