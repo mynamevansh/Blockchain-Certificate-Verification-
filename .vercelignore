@@ -18,3 +18,5 @@ ROUTER_V7_CHANGES.md
 STUDENT_NAME_UPDATE_GUIDE.md
 TESTING_GUIDE.md
 WEBSOCKET_ERROR_FIX.md
+server/node_modules
+client/node_modules
