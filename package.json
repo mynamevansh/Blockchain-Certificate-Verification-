@@ -1,14 +1,14 @@
 {
-  "name": "tamper-proof-certificate-verification",
+  "name": "blockchain-certify",
   "version": "1.0.0",
+  "private": true,
   "description": "Blockchain-based certificate verification system",
   "main": "api/index.js",
   "scripts": {
+    "build": "cd client && npm install && npm run build",
     "install-all": "npm install && cd client && npm install && cd ../server && npm install",
     "dev": "concurrently \"cd server && npm run dev\" \"cd client && npm start\"",
-    "build": "cd client && npm install && npm run build",
     "vercel-build": "npm install --prefix server && cd client && npm install && npm run build",
-    "test": "echo \"No tests specified\"",
     "start": "cd server && npm start"
   },
   "keywords": [
@@ -20,7 +20,7 @@
     "react",
     "nodejs"
   ],
-  "author": "Your Name",
+  "author": "",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.7.0",

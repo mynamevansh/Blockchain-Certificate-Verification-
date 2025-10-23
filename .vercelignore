@@ -1,8 +1,11 @@
 node_modules
+client/node_modules
+server/node_modules
+*.log
+.env
 .git
 .env.local
 .env.development
-*.log
 blockchain/
 *.bat
 *.sh
@@ -18,5 +21,3 @@ ROUTER_V7_CHANGES.md
 STUDENT_NAME_UPDATE_GUIDE.md
 TESTING_GUIDE.md
 WEBSOCKET_ERROR_FIX.md
-server/node_modules
-client/node_modules
