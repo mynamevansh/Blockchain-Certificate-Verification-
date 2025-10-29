@@ -15,14 +15,14 @@
   "env": {
     "CI": "false",
     "DISABLE_ESLINT_PLUGIN": "true",
-    "REACT_APP_API_URL": "/api",
+    "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com/api",
     "NODE_ENV": "production"
   },
   "build": {
     "env": {
       "CI": "false",
       "DISABLE_ESLINT_PLUGIN": "true",
-      "REACT_APP_API_URL": "/api"
+      "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com/api"
     }
   },
   "rewrites": [
