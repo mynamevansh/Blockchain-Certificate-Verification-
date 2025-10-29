@@ -1,81 +1,12 @@
 {
-  "version": 2,
-  "name": "blockchain-certificate-verification",
-  "buildCommand": "npm install && cd client && npm install && npm run build",
-  "outputDirectory": "client/build",
-  "installCommand": "npm install",
-  "devCommand": "cd client && npm start",
-  "framework": null,
-  "functions": {
-    "api/**/*.js": {
-      "memory": 1024,
-      "maxDuration": 10
-    }
-  },
-  "env": {
-    "CI": "false",
-    "DISABLE_ESLINT_PLUGIN": "true",
-    "REACT_APP_API_BASE_URL": "https://blockchain-certificate-verification-sj2j.onrender.com",
-    "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com",
-    "NODE_ENV": "production"
-  },
-  "build": {
-    "env": {
-      "CI": "false",
-      "DISABLE_ESLINT_PLUGIN": "true",
-      "REACT_APP_API_BASE_URL": "https://blockchain-certificate-verification-sj2j.onrender.com",
-      "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/index"
+      "destination": "https://blockchain-certificate-verification-sj2j.onrender.com/api/$1"
     },
     {
       "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/manifest.json",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/manifest+json"
-        }
-      ]
-    },
-    {
-      "source": "/static/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Access-Control-Allow-Credentials",
-          "value": "true"
-        },
-        {
-          "key": "Access-Control-Allow-Origin",
-          "value": "*"
-        },
-        {
-          "key": "Access-Control-Allow-Methods",
-          "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT"
-        },
-        {
-          "key": "Access-Control-Allow-Headers",
-          "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization"
-        }
-      ]
     }
   ]
 }
