@@ -1,4 +1,4 @@
-export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'https://blockchain-certificate-verification-sj2j.onrender.com/api';
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'https://blockchain-certificate-verification-sj2j.onrender.com';
 export const WS_URL = process.env.REACT_APP_WS_URL || 'https://blockchain-certificate-verification-sj2j.onrender.com';
 export const BLOCKCHAIN_CONFIG = {
   NETWORK_ID: process.env.REACT_APP_NETWORK_ID || '1337',

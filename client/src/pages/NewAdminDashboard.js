@@ -72,8 +72,8 @@ const AdminDashboard = () => {
         return;
       }
       try {
-        console.log('📡 Making request to', `${API_BASE_URL}/certificates/admin`, 'with token:', token.substring(0, 20) + '...');
-        const certificatesResponse = await fetch(`${API_BASE_URL}/certificates/admin`, {
+        console.log('📡 Making request to', `${API_BASE_URL}/api/certificates/admin`, 'with token:', token.substring(0, 20) + '...');
+        const certificatesResponse = await fetch(`${API_BASE_URL}/api/certificates/admin`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -180,7 +180,7 @@ const AdminDashboard = () => {
         issuer: user.email,
         issuerId: user._id
       };
-      const response = await fetch(`${API_BASE_URL}/certificates/upload`, {
+      const response = await fetch(`${API_BASE_URL}/api/certificates/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,

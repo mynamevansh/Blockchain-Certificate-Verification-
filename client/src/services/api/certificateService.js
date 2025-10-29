@@ -3,7 +3,7 @@ import api, { createFormData } from '../apiClient';
 export const certificateAPI = {
   upload: async (certificateData) => {
     const formData = createFormData(certificateData);
-    return await api.post('/certificates/upload', formData, {
+    return await api.post('/api/certificates/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -13,7 +13,7 @@ export const certificateAPI = {
 
   verify: async (fileData) => {
     const formData = createFormData({ file: fileData });
-    return await api.post('/certificates/verify', formData, {
+    return await api.post('/api/certificates/verify', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -22,7 +22,7 @@ export const certificateAPI = {
   },
 
   revoke: async (certificateId, reason, signature) => {
-    return await api.post(`/certificates/${certificateId}/revoke`, {
+    return await api.post(`/api/certificates/${certificateId}/revoke`, {
       reason,
       signature,
       timestamp: Date.now(),
@@ -30,12 +30,12 @@ export const certificateAPI = {
   },
 
   getById: async (certificateId) => {
-    return await api.get(`/certificates/${certificateId}`);
+    return await api.get(`/api/certificates/${certificateId}`);
   },
 
   getByIssuer: async (issuerAddress, options = {}) => {
     const { page = 1, limit = 10, status, sortBy = 'createdAt', sortOrder = 'desc' } = options;
-    return await api.get('/certificates/issuer', {
+    return await api.get('/api/certificates/issuer', {
       params: {
         issuerAddress,
         page,
@@ -58,7 +58,7 @@ export const certificateAPI = {
       sortBy = 'createdAt',
       sortOrder = 'desc',
     } = filters;
-    return await api.get('/certificates/search', {
+    return await api.get('/api/certificates/search', {
       params: {
         q: query,
         page,
@@ -74,7 +74,7 @@ export const certificateAPI = {
   },
 
   getStats: async (timeRange = '30d') => {
-    return await api.get('/certificates/stats', {
+    return await api.get('/api/certificates/stats', {
       params: { timeRange },
     });
   },
@@ -84,7 +84,7 @@ export const certificateAPI = {
     files.forEach((file, index) => {
       formData.append(`files[${index}]`, file);
     });
-    return await api.post('/certificates/batch-verify', formData, {
+    return await api.post('/api/certificates/batch-verify', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

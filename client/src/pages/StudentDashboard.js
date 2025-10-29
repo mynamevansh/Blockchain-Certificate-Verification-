@@ -34,7 +34,7 @@ const StudentDashboard = () => {
     try {
       setLoading(true);
       try {
-        const certificatesResponse = await fetch(`${API_BASE_URL}/certificates/user`, {
+        const certificatesResponse = await fetch(`${API_BASE_URL}/api/certificates/user`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
             'Content-Type': 'application/json'

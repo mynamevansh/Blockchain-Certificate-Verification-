@@ -15,16 +15,16 @@
   "env": {
     "CI": "false",
     "DISABLE_ESLINT_PLUGIN": "true",
-    "REACT_APP_API_BASE_URL": "https://blockchain-certificate-verification-sj2j.onrender.com/api",
-    "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com/api",
+    "REACT_APP_API_BASE_URL": "https://blockchain-certificate-verification-sj2j.onrender.com",
+    "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com",
     "NODE_ENV": "production"
   },
   "build": {
     "env": {
       "CI": "false",
       "DISABLE_ESLINT_PLUGIN": "true",
-      "REACT_APP_API_BASE_URL": "https://blockchain-certificate-verification-sj2j.onrender.com/api",
-      "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com/api"
+      "REACT_APP_API_BASE_URL": "https://blockchain-certificate-verification-sj2j.onrender.com",
+      "REACT_APP_API_URL": "https://blockchain-certificate-verification-sj2j.onrender.com"
     }
   },
   "rewrites": [
