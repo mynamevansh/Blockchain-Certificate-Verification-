@@ -1,12 +1,7 @@
 {
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "https://blockchain-certificate-verification-sj2j.onrender.com/api/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "version": 2,
+  "framework": "create-react-app",
+  "buildCommand": "npm install && cd client && npm install && npm run build",
+  "outputDirectory": "client/build",
+  "installCommand": "npm install"
 }
