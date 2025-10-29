@@ -4,16 +4,31 @@ services:
     env: node
     region: oregon
     plan: free
-    buildCommand: cd server && npm install
-    startCommand: cd server && npm start
+    buildCommand: npm install
+    startCommand: node api/index.js
     envVars:
+      # Run mode
       - key: NODE_ENV
         value: production
+
+      # Port Render will set; keep as example 10000
       - key: PORT
-        value: 5000
-      - key: MONGODB_URI
+        value: "10000"
+
+      # MongoDB connection string (replace placeholder with your real URI or set in Render dashboard)
+      - key: MONGO_URI
+        value: "mongodb+srv://vansh:password@cluster0.mongodb.net/certify"
         sync: false
+
+      # JWT secret - replace with a secure secret in production or set via Render dashboard (this is an example)
       - key: JWT_SECRET
-        generateValue: true
+        value: "supersecretkey123"
+        sync: false
+
+      # Token expiry (example)
       - key: JWT_EXPIRE
         value: 24h
+
+      # Frontend URL for CORS and redirects
+      - key: CLIENT_URL
+        value: "https://blockchain-certify-frontend.vercel.app"
