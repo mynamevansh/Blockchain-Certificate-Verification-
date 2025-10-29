@@ -1,5 +1,5 @@
-export const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api');
-export const WS_URL = process.env.REACT_APP_WS_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5000');
+export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'https://blockchain-certificate-verification-sj2j.onrender.com/api';
+export const WS_URL = process.env.REACT_APP_WS_URL || 'https://blockchain-certificate-verification-sj2j.onrender.com';
 export const BLOCKCHAIN_CONFIG = {
   NETWORK_ID: process.env.REACT_APP_NETWORK_ID || '1337',
   CONTRACT_ADDRESS: process.env.REACT_APP_CONTRACT_ADDRESS || '',

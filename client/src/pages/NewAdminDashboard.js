@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../constants';
 import { 
   FileText, 
   CheckCircle, 
@@ -71,8 +72,8 @@ const AdminDashboard = () => {
         return;
       }
       try {
-        console.log('📡 Making request to /api/certificates/admin with token:', token.substring(0, 20) + '...');
-        const certificatesResponse = await fetch('/api/certificates/admin', {
+        console.log('📡 Making request to', `${API_BASE_URL}/certificates/admin`, 'with token:', token.substring(0, 20) + '...');
+        const certificatesResponse = await fetch(`${API_BASE_URL}/certificates/admin`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
@@ -179,7 +180,7 @@ const AdminDashboard = () => {
         issuer: user.email,
         issuerId: user._id
       };
-      const response = await fetch('/api/certificates/upload', {
+      const response = await fetch(`${API_BASE_URL}/certificates/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,

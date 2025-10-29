@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useLoading } from '../context/LoadingContext';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../constants';
 import { 
   FileText, 
   Download, 
@@ -33,7 +34,7 @@ const StudentDashboard = () => {
     try {
       setLoading(true);
       try {
-        const certificatesResponse = await fetch('/api/certificates/user', {
+        const certificatesResponse = await fetch(`${API_BASE_URL}/certificates/user`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
             'Content-Type': 'application/json'
