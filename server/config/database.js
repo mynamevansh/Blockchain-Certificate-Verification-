@@ -13,7 +13,7 @@ const connectDB = async () => {
     };
 
     // ⚙️ Connect without deprecated options
-    const conn = await mongoose.connect(process.env.MONGODB_URI, options);
+    const conn = await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI, options);
 
     console.log(`✅ MongoDB Connected Successfully!`);
     console.log(`📊 Database: ${conn.connection.db.databaseName}`);
