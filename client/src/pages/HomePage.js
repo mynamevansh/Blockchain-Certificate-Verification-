@@ -568,7 +568,7 @@ const HomePage = () => {
             lineHeight: '1.1',
             fontFamily: 'Roboto, sans-serif'
           }}>
-            संरक्षपत्र
+            Tampered Proof Certificate Verification
           </h1>
           <p style={{
             fontSize: '1.25rem',
