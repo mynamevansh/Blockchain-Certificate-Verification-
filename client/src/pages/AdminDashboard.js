@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
@@ -61,7 +61,7 @@ const AdminDashboard = () => {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
-  const checkNetwork = async () => {
+  const checkNetwork = useCallback(async () => {
     if (!isMetaMaskInstalled()) return;
     try {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
@@ -74,7 +74,7 @@ const AdminDashboard = () => {
       setIsCorrectNetwork(false);
       return false;
     }
-  };
+  }, []);
   const switchToSepolia = async () => {
     if (!isMetaMaskInstalled()) {
       toast.error('MetaMask not installed');
