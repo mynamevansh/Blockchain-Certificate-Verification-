@@ -8,14 +8,11 @@ import {
   LogOut,
   GraduationCap,
   Shield,
-  ExternalLink,
   Award,
   CheckCircle,
   XCircle,
   AlertCircle,
-  Upload,
-  User,
-  Calendar
+  User
 } from 'lucide-react';
 import { API_BASE_URL } from '../constants';
 import { resolveIPFS } from '../utils/ipfs';
@@ -208,7 +205,7 @@ const StudentDashboard = () => {
   };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {}
+      { }
       <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40 shadow-sm">
         <div className="max-w-7xl mx-auto px-8 py-4">
           <div className="flex items-center justify-between">
@@ -242,9 +239,9 @@ const StudentDashboard = () => {
           </div>
         </div>
       </div>
-      {}
+      { }
       <div className="max-w-7xl mx-auto px-8 py-8">
-        {}
+        { }
         <DashboardCard className="mb-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0">
           <div className="flex items-center justify-between">
             <div>
@@ -258,7 +255,7 @@ const StudentDashboard = () => {
             </div>
           </div>
         </DashboardCard>
-        {}
+        { }
         <div className="mb-6 flex gap-2 border-b-2 border-gray-200 dark:border-gray-700">
           {[
             { id: 'all', label: 'All' },
@@ -268,17 +265,16 @@ const StudentDashboard = () => {
             <button
               key={tab.id}
               onClick={() => setFilterTab(tab.id)}
-              className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
-                filterTab === tab.id
+              className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${filterTab === tab.id
                   ? 'border-blue-600 text-blue-600 dark:text-blue-400'
                   : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
           ))}
         </div>
-        {}
+        { }
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
@@ -288,9 +284,9 @@ const StudentDashboard = () => {
           <DashboardCard className="text-center py-12">
             <Award size={64} className="mx-auto mb-4 text-gray-400" />
             <p className="text-gray-600 dark:text-gray-400">
-              {filterTab === 'active' ? 'No active certificates' : 
-               filterTab === 'revoked' ? 'No revoked certificates' : 
-               'No certificates issued yet'}
+              {filterTab === 'active' ? 'No active certificates' :
+                filterTab === 'revoked' ? 'No revoked certificates' :
+                  'No certificates issued yet'}
             </p>
           </DashboardCard>
         ) : (
@@ -310,7 +306,7 @@ const StudentDashboard = () => {
             ))}
           </div>
         )}
-        {}
+        { }
         {verifyResult && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <DashboardCard className="max-w-2xl w-full animate-slide-up max-h-[90vh] overflow-y-auto">
@@ -331,13 +327,12 @@ const StudentDashboard = () => {
                 </div>
               ) : (
                 <>
-                  <div className={`rounded-xl p-6 mb-6 ${
-                    verifyResult.isValid
+                  <div className={`rounded-xl p-6 mb-6 ${verifyResult.isValid
                       ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800'
                       : verifyResult.isRevoked
                         ? 'bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800'
                         : 'bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-200 dark:border-yellow-800'
-                  }`}>
+                    }`}>
                     <div className="flex items-center gap-4 mb-4">
                       {verifyResult.isValid ? (
                         <CheckCircle size={48} className="text-green-600 dark:text-green-400" />
@@ -347,13 +342,12 @@ const StudentDashboard = () => {
                         <AlertCircle size={48} className="text-yellow-600 dark:text-yellow-400" />
                       )}
                       <div>
-                        <h3 className={`text-xl font-bold ${
-                          verifyResult.isValid
+                        <h3 className={`text-xl font-bold ${verifyResult.isValid
                             ? 'text-green-700 dark:text-green-300'
                             : verifyResult.isRevoked
                               ? 'text-red-700 dark:text-red-300'
                               : 'text-yellow-700 dark:text-yellow-300'
-                        }`}>
+                          }`}>
                           {verifyResult.message}
                         </h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -379,16 +373,14 @@ const StudentDashboard = () => {
                         {verifyResult.blockchainHash}
                       </div>
                     </div>
-                    <div className={`p-4 rounded-lg ${
-                      verifyResult.hashMatch
+                    <div className={`p-4 rounded-lg ${verifyResult.hashMatch
                         ? 'bg-green-50 dark:bg-green-900/20'
                         : 'bg-red-50 dark:bg-red-900/20'
-                    }`}>
-                      <p className={`font-semibold ${
-                        verifyResult.hashMatch
+                      }`}>
+                      <p className={`font-semibold ${verifyResult.hashMatch
                           ? 'text-green-700 dark:text-green-300'
                           : 'text-red-700 dark:text-red-300'
-                      }`}>
+                        }`}>
                         Hash Match: {verifyResult.hashMatch ? '✓ Yes' : '✗ No'}
                       </p>
                       {!verifyResult.hashMatch && (

@@ -1,1 +1,346 @@
-import React, { useState } from 'react';import { useParams, useNavigate } from 'react-router-dom';import { toast } from 'react-toastify';import {  Shield,  CheckCircle,  XCircle,  AlertCircle,  Eye,  FileText,  ExternalLink} from 'lucide-react';import { API_BASE_URL } from '../constants';import { resolveIPFS } from '../utils/ipfs';const PublicVerify = () => {  const { certificateId } = useParams();  const navigate = useNavigate();  const [inputValue, setInputValue] = useState(certificateId || '');  const [verifying, setVerifying] = useState(false);  const [result, setResult] = useState(null);  const handleVerify = async (e) => {    e?.preventDefault();    if (!inputValue.trim()) {      toast.error('Please enter a Certificate ID');      return;    }    setVerifying(true);    setResult(null);    try {      const response = await fetch(`${API_BASE_URL}/api/certificates/public-verify/${inputValue.trim()}`, {        method: 'GET',        headers: {          'Content-Type': 'application/json'        }      });      const data = await response.json();      if (data.success) {        if (data.found) {          setResult({            found: true,            isValid: data.isValid,            status: data.data?.status || 'Unknown',            certificateId: data.data?.certificateId,            studentName: data.data?.studentName,            studentId: data.data?.studentId,            ipfsCID: data.data?.ipfsCID,            blockchainHash: data.data?.blockchainHash,            issuerAddress: data.data?.issuerAddress,            message: data.message          });        } else {          setResult({            found: false,            message: data.message || 'Certificate not found'          });        }      } else {        setResult({          found: false,          message: data.message || 'Certificate not found'        });      }    } catch (error) {      console.error('Verification error:', error);      toast.error('Failed to verify certificate');      setResult({        found: false,        message: 'Failed to verify certificate. Please try again.'      });    } finally {      setVerifying(false);    }  };  const getStatusDisplay = () => {    if (!result || !result.found) {      return {        icon: <XCircle size={48} color="#dc2626" />,        title: 'Certificate Not Found',        message: result?.message || 'The certificate ID you entered does not exist in our system.',        bgColor: '#fee2e2',        borderColor: '#fca5a5',        textColor: '#dc2626'      };    }    if (result.isValid) {      return {        icon: <CheckCircle size={48} color="#166534" />,        title: 'Certificate Valid',        message: 'This certificate is authentic and active.',        bgColor: '#dcfce7',        borderColor: '#86efac',        textColor: '#166534'      };    }    if (result.status === 'Revoked' || result.status === 'revoked') {      return {        icon: <XCircle size={48} color="#dc2626" />,        title: 'Certificate Revoked',        message: 'This certificate has been revoked and is no longer valid.',        bgColor: '#fee2e2',        borderColor: '#fca5a5',        textColor: '#dc2626'      };    }    return {      icon: <AlertCircle size={48} color="#64748b" />,      title: 'Unknown Status',      message: 'Unable to determine certificate status.',      bgColor: '#f1f5f9',      borderColor: '#cbd5e1',      textColor: '#64748b'    };  };  const statusDisplay = result ? getStatusDisplay() : null;  return (    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'Inter, sans-serif', padding: '2rem' }}>      <div style={{ maxWidth: '800px', margin: '0 auto' }}>        {}        <div style={{          textAlign: 'center',          marginBottom: '3rem'        }}>          <div style={{            display: 'inline-flex',            alignItems: 'center',            justifyContent: 'center',            width: '80px',            height: '80px',            backgroundColor: '#3b82f6',            borderRadius: '50%',            marginBottom: '1.5rem'          }}>            <Shield size={40} color="white" />          </div>          <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '0.5rem' }}>            Verify Certificate          </h1>          <p style={{ fontSize: '1.125rem', color: '#64748b' }}>            Enter a Certificate ID to verify its authenticity          </p>        </div>        {}        <div style={{          backgroundColor: 'white',          borderRadius: '12px',          padding: '2rem',          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',          marginBottom: '2rem'        }}>          <form onSubmit={handleVerify}>            <div style={{ marginBottom: '1.5rem' }}>              <label style={{                display: 'block',                marginBottom: '0.5rem',                fontWeight: '600',                color: '#374151'              }}>                Certificate ID or Hash              </label>              <div style={{ display: 'flex', gap: '0.5rem' }}>                <input                  type="text"                  value={inputValue}                  onChange={(e) => setInputValue(e.target.value)}                  placeholder="Enter Certificate ID..."                  style={{                    flex: 1,                    padding: '0.875rem',                    border: '1px solid #cbd5e1',                    borderRadius: '8px',                    fontSize: '1rem'                  }}                />                <button                  type="submit"                  disabled={verifying || !inputValue.trim()}                  style={{                    padding: '0.875rem 2rem',                    backgroundColor: (verifying || !inputValue.trim()) ? '#cbd5e1' : '#3b82f6',                    color: 'white',                    border: 'none',                    borderRadius: '8px',                    fontSize: '1rem',                    fontWeight: '600',                    cursor: (verifying || !inputValue.trim()) ? 'not-allowed' : 'pointer',                    transition: 'background-color 0.2s'                  }}                >                  {verifying ? 'Verifying...' : 'Verify'}                </button>              </div>            </div>          </form>        </div>        {}        {statusDisplay && (          <div style={{            backgroundColor: statusDisplay.bgColor,            border: `2px solid ${statusDisplay.borderColor}`,            borderRadius: '12px',            padding: '2rem',            textAlign: 'center'          }}>            <div style={{ marginBottom: '1rem' }}>              {statusDisplay.icon}            </div>            <h2 style={{              fontSize: '1.5rem',              fontWeight: 'bold',              color: statusDisplay.textColor,              marginBottom: '0.5rem'            }}>              {statusDisplay.title}            </h2>            <p style={{              fontSize: '1rem',              color: statusDisplay.textColor,              marginBottom: '1.5rem'            }}>              {statusDisplay.message}            </p>            {result && result.found && (              <div style={{                backgroundColor: 'white',                borderRadius: '8px',                padding: '1.5rem',                marginTop: '1.5rem',                textAlign: 'left'              }}>                <h3 style={{                  fontSize: '1.125rem',                  fontWeight: '600',                  color: '#1e293b',                  marginBottom: '1rem'                }}>                  Certificate Details                </h3>                <div style={{ display: 'grid', gap: '0.75rem' }}>                  <div>                    <span style={{ fontWeight: '600', color: '#64748b' }}>Certificate ID: </span>                    <span style={{ color: '#1e293b', fontFamily: 'monospace' }}>{result.certificateId}</span>                  </div>                  {result.studentName && (                    <div>                      <span style={{ fontWeight: '600', color: '#64748b' }}>Student: </span>                      <span style={{ color: '#1e293b' }}>{result.studentName}</span>                    </div>                  )}                  {result.studentId && (                    <div>                      <span style={{ fontWeight: '600', color: '#64748b' }}>Student ID: </span>                      <span style={{ color: '#1e293b' }}>{result.studentId}</span>                    </div>                  )}                  {result.ipfsCID && (                    <div>                      <span style={{ fontWeight: '600', color: '#64748b' }}>IPFS CID: </span>                      <span style={{ color: '#1e293b', fontFamily: 'monospace', fontSize: '0.875rem' }}>                        {result.ipfsCID}                      </span>                    </div>                  )}                  {result.blockchainHash && (                    <div>                      <span style={{ fontWeight: '600', color: '#64748b' }}>Blockchain Hash: </span>                      <span style={{ color: '#1e293b', fontFamily: 'monospace', fontSize: '0.875rem' }}>                        {result.blockchainHash.substring(0, 32)}...                      </span>                    </div>                  )}                  <div>                    <span style={{ fontWeight: '600', color: '#64748b' }}>Status: </span>                    <span style={{                      color: result.status === 'Active' || result.status === 'Valid' ? '#166534' : '#dc2626',                      fontWeight: '600'                    }}>                      {result.status}                    </span>                  </div>                </div>                {result.ipfsCID && (                  <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>                    <button                      onClick={() => window.open(resolveIPFS(result.ipfsCID), '_blank')}                      style={{                        display: 'flex',                        alignItems: 'center',                        gap: '0.5rem',                        padding: '0.75rem 1.5rem',                        backgroundColor: '#3b82f6',                        color: 'white',                        border: 'none',                        borderRadius: '8px',                        cursor: 'pointer',                        fontSize: '0.875rem',                        fontWeight: '500'                      }}                    >                      <Eye size={16} />                      View Certificate PDF                    </button>                  </div>                )}              </div>            )}          </div>        )}        {}        <div style={{          marginTop: '2rem',          padding: '1.5rem',          backgroundColor: '#eff6ff',          borderRadius: '8px',          border: '1px solid #bfdbfe'        }}>          <h3 style={{ fontWeight: '600', color: '#1e40af', marginBottom: '0.5rem' }}>            How Verification Works          </h3>          <p style={{ color: '#1e40af', lineHeight: '1.8', margin: 0 }}>            Our system verifies certificates by checking their status on the blockchain.             Each certificate is stored with a unique hash that cannot be tampered with.             If a certificate is valid, it means it was issued by an authorized institution             and has not been revoked. Revoked certificates are no longer considered valid.          </p>        </div>      </div>    </div>  );};export default PublicVerify;
+import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import {
+  Shield,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Eye
+} from 'lucide-react';
+import { API_BASE_URL } from '../constants';
+import { resolveIPFS } from '../utils/ipfs';
+
+const PublicVerify = () => {
+  const { certificateId } = useParams();
+  const [inputValue, setInputValue] = useState(certificateId || '');
+  const [verifying, setVerifying] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const handleVerify = async (e) => {
+    e?.preventDefault();
+
+    if (!inputValue.trim()) {
+      toast.error('Please enter a Certificate ID');
+      return;
+    }
+
+    setVerifying(true);
+    setResult(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/certificates/public-verify/${inputValue.trim()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        if (data.found) {
+          setResult({
+            found: true,
+            isValid: data.isValid,
+            status: data.data?.status || 'Unknown',
+            certificateId: data.data?.certificateId,
+            studentName: data.data?.studentName,
+            studentId: data.data?.studentId,
+            ipfsCID: data.data?.ipfsCID,
+            blockchainHash: data.data?.blockchainHash,
+            issuerAddress: data.data?.issuerAddress,
+            message: data.message
+          });
+        } else {
+          setResult({
+            found: false,
+            message: data.message || 'Certificate not found'
+          });
+        }
+      } else {
+        setResult({
+          found: false,
+          message: data.message || 'Certificate not found'
+        });
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      toast.error('Failed to verify certificate');
+      setResult({
+        found: false,
+        message: 'Failed to verify certificate. Please try again.'
+      });
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const getStatusDisplay = () => {
+    if (!result || !result.found) {
+      return {
+        icon: <XCircle size={48} color="#dc2626" />,
+        title: 'Certificate Not Found',
+        message: result?.message || 'The certificate ID you entered does not exist in our system.',
+        bgColor: '#fee2e2',
+        borderColor: '#fca5a5',
+        textColor: '#dc2626'
+      };
+    }
+
+    if (result.isValid) {
+      return {
+        icon: <CheckCircle size={48} color="#166534" />,
+        title: 'Certificate Valid',
+        message: 'This certificate is authentic and active.',
+        bgColor: '#dcfce7',
+        borderColor: '#86efac',
+        textColor: '#166534'
+      };
+    }
+
+    if (result.status === 'Revoked' || result.status === 'revoked') {
+      return {
+        icon: <XCircle size={48} color="#dc2626" />,
+        title: 'Certificate Revoked',
+        message: 'This certificate has been revoked and is no longer valid.',
+        bgColor: '#fee2e2',
+        borderColor: '#fca5a5',
+        textColor: '#dc2626'
+      };
+    }
+
+    return {
+      icon: <AlertCircle size={48} color="#64748b" />,
+      title: 'Unknown Status',
+      message: 'Unable to determine certificate status.',
+      bgColor: '#f1f5f9',
+      borderColor: '#cbd5e1',
+      textColor: '#64748b'
+    };
+  };
+
+  const statusDisplay = result ? getStatusDisplay() : null;
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', fontFamily: 'Inter, sans-serif', padding: '2rem' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        {/* Header */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '3rem'
+        }}>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '80px',
+            height: '80px',
+            backgroundColor: '#3b82f6',
+            borderRadius: '50%',
+            marginBottom: '1.5rem'
+          }}>
+            <Shield size={40} color="white" />
+          </div>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '0.5rem' }}>
+            Verify Certificate
+          </h1>
+          <p style={{ fontSize: '1.125rem', color: '#64748b' }}>
+            Enter a Certificate ID to verify its authenticity
+          </p>
+        </div>
+
+        {/* Search Form */}
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '12px',
+          padding: '2rem',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          marginBottom: '2rem'
+        }}>
+          <form onSubmit={handleVerify}>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: '600',
+                color: '#374151'
+              }}>
+                Certificate ID or Hash
+              </label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Enter Certificate ID..."
+                  style={{
+                    flex: 1,
+                    padding: '0.875rem',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    fontSize: '1rem'
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={verifying || !inputValue.trim()}
+                  style={{
+                    padding: '0.875rem 2rem',
+                    backgroundColor: (verifying || !inputValue.trim()) ? '#cbd5e1' : '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: (verifying || !inputValue.trim()) ? 'not-allowed' : 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                >
+                  {verifying ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Result Display */}
+        {statusDisplay && (
+          <div style={{
+            backgroundColor: statusDisplay.bgColor,
+            border: `2px solid ${statusDisplay.borderColor}`,
+            borderRadius: '12px',
+            padding: '2rem',
+            textAlign: 'center'
+          }}>
+            <div style={{ marginBottom: '1rem' }}>
+              {statusDisplay.icon}
+            </div>
+            <h2 style={{
+              fontSize: '1.5rem',
+              fontWeight: 'bold',
+              color: statusDisplay.textColor,
+              marginBottom: '0.5rem'
+            }}>
+              {statusDisplay.title}
+            </h2>
+            <p style={{
+              fontSize: '1rem',
+              color: statusDisplay.textColor,
+              marginBottom: '1.5rem'
+            }}>
+              {statusDisplay.message}
+            </p>
+
+            {result && result.found && (
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '8px',
+                padding: '1.5rem',
+                marginTop: '1.5rem',
+                textAlign: 'left'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#1e293b',
+                  marginBottom: '1rem'
+                }}>
+                  Certificate Details
+                </h3>
+                <div style={{ display: 'grid', gap: '0.75rem' }}>
+                  <div>
+                    <span style={{ fontWeight: '600', color: '#64748b' }}>Certificate ID: </span>
+                    <span style={{ color: '#1e293b', fontFamily: 'monospace' }}>{result.certificateId}</span>
+                  </div>
+                  {result.studentName && (
+                    <div>
+                      <span style={{ fontWeight: '600', color: '#64748b' }}>Student: </span>
+                      <span style={{ color: '#1e293b' }}>{result.studentName}</span>
+                    </div>
+                  )}
+                  {result.studentId && (
+                    <div>
+                      <span style={{ fontWeight: '600', color: '#64748b' }}>Student ID: </span>
+                      <span style={{ color: '#1e293b' }}>{result.studentId}</span>
+                    </div>
+                  )}
+                  {result.ipfsCID && (
+                    <div>
+                      <span style={{ fontWeight: '600', color: '#64748b' }}>IPFS CID: </span>
+                      <span style={{ color: '#1e293b', fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                        {result.ipfsCID}
+                      </span>
+                    </div>
+                  )}
+                  {result.blockchainHash && (
+                    <div>
+                      <span style={{ fontWeight: '600', color: '#64748b' }}>Blockchain Hash: </span>
+                      <span style={{ color: '#1e293b', fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                        {result.blockchainHash.substring(0, 32)}...
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <span style={{ fontWeight: '600', color: '#64748b' }}>Status: </span>
+                    <span style={{
+                      color: result.status === 'Active' || result.status === 'Valid' ? '#166534' : '#dc2626',
+                      fontWeight: '600'
+                    }}>
+                      {result.status}
+                    </span>
+                  </div>
+                </div>
+
+                {result.ipfsCID && (
+                  <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #e2e8f0' }}>
+                    <button
+                      onClick={() => window.open(resolveIPFS(result.ipfsCID), '_blank')}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '0.875rem',
+                        fontWeight: '500'
+                      }}
+                    >
+                      <Eye size={16} />
+                      View Certificate PDF
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Info Section */}
+        <div style={{
+          marginTop: '2rem',
+          padding: '1.5rem',
+          backgroundColor: '#eff6ff',
+          borderRadius: '8px',
+          border: '1px solid #bfdbfe'
+        }}>
+          <h3 style={{ fontWeight: '600', color: '#1e40af', marginBottom: '0.5rem' }}>
+            How Verification Works
+          </h3>
+          <p style={{ color: '#1e40af', lineHeight: '1.8', margin: 0 }}>
+            Our system verifies certificates by checking their status on the blockchain.
+            Each certificate is stored with a unique hash that cannot be tampered with.
+            If a certificate is valid, it means it was issued by an authorized institution
+            and has not been revoked. Revoked certificates are no longer considered valid.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PublicVerify;
