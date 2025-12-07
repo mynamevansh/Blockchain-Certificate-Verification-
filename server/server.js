@@ -7,6 +7,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
+  'https://blockchain-certificate-verification.vercel.app',
   process.env.CLIENT_URL
 ].filter(Boolean);
 app.use(cors({
@@ -99,9 +100,16 @@ const startServer = async () => {
     const server = http.createServer(app);
     const io = new Server(server, {
       cors: {
-        origin: allowedOrigins,
+        origin: (origin, callback) => {
+          if (!origin || allowedOrigins.includes(origin) || origin.includes('vercel.app')) {
+            callback(null, true);
+          } else {
+            callback(null, false);
+          }
+        },
         methods: ["GET", "POST"],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ["Access-Control-Allow-Origin"]
       }
     });
 
