@@ -1,0 +1,1 @@
+import abi from "../abi/CertificateVerification.json";export const CONTRACT_ADDRESS = "0x601A09f5476a344f73118D8106E551d3A4B2Cf26";export const CONTRACT_ABI = abi;
