@@ -10,21 +10,17 @@ import {
   ShieldCheck,
   Upload,
   CheckCircle,
-  XCircle,
-  Eye,
   Award,
   Wallet,
   AlertCircle,
   Trash2,
   Menu,
-  X,
-  Moon,
-  Sun
+  X
 } from 'lucide-react';
 import { API_BASE_URL } from '../constants';
 import { resolveIPFS } from '../utils/ipfs';
 import CertificateQRCode from '../components/CertificateQRCode';
-import StatusBadge from '../components/ui/StatusBadge';
+// import StatusBadge from '../components/ui/StatusBadge'; // unused
 import DashboardCard from '../components/ui/DashboardCard';
 import AnimatedButton from '../components/ui/AnimatedButton';
 import CertificateCard from '../components/ui/CertificateCard';
@@ -48,7 +44,7 @@ const AdminDashboard = () => {
   const [walletAddress, setWalletAddress] = useState(null);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
-  const [currentChainId, setCurrentChainId] = useState(null);
+  // const [currentChainId, setCurrentChainId] = useState(null); // unused variable
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
   const [formData, setFormData] = useState({
     file: null,
@@ -72,7 +68,7 @@ const AdminDashboard = () => {
     if (!isMetaMaskInstalled()) return;
     try {
       const chainId = await window.ethereum.request({ method: 'eth_chainId' });
-      setCurrentChainId(chainId);
+      // setCurrentChainId(chainId); // unused
       const isSepolia = chainId === SEPOLIA_CHAIN_ID || parseInt(chainId, 16) === SEPOLIA_CHAIN_ID_DECIMAL;
       setIsCorrectNetwork(isSepolia);
       return isSepolia;
@@ -164,7 +160,7 @@ const AdminDashboard = () => {
   const disconnectWallet = () => {
     setWalletAddress(null);
     setIsWalletConnected(false);
-    setCurrentChainId(null);
+    // setCurrentChainId(null); // unused
     setIsCorrectNetwork(false);
     toast.info('Wallet disconnected');
   };
@@ -200,7 +196,7 @@ const AdminDashboard = () => {
       }
     };
     const handleChainChanged = (chainId) => {
-      setCurrentChainId(chainId);
+      // setCurrentChainId(chainId); // unused
       const isSepolia = chainId === SEPOLIA_CHAIN_ID || parseInt(chainId, 16) === SEPOLIA_CHAIN_ID_DECIMAL;
       setIsCorrectNetwork(isSepolia);
       if (isSepolia) {
@@ -217,7 +213,7 @@ const AdminDashboard = () => {
         window.ethereum.removeListener('chainChanged', handleChainChanged);
       }
     };
-  }, []);
+  }, [checkNetwork]);
   useEffect(() => {
     const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
     const role = localStorage.getItem('role');
