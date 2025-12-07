@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useWebSocket } from '../context/SimpleWebSocketContext';
 const Navbar = () => {
-  const { user, isConnected, connectWallet, disconnectWallet } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { notifications } = useWebSocket();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const navigation = [
@@ -16,16 +17,9 @@ const Navbar = () => {
     { name: 'Dashboard', href: '/dashboard' },
   ];
   const isActive = (path) => location.pathname === path;
-  const handleConnectWallet = async () => {
-    try {
-      await connectWallet();
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-    }
-  };
-  const formatAddress = (address) => {
-    if (!address) return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  const handleLogout = async () => {
+    await logout();
+    navigate('/auth');
   };
   const unreadNotifications = notifications.length;
   return (
@@ -110,28 +104,28 @@ const Navbar = () => {
                 </div>
               )}
             </div>
-            {isConnected ? (
+            {isAuthenticated ? (
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-green-800">
-                    {formatAddress(user?.address)}
+                <div className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium text-blue-800">
+                    {user?.name || user?.email || 'User'}
                   </span>
                 </div>
                 <button
-                  onClick={disconnectWallet}
+                  onClick={handleLogout}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
                 >
-                  Disconnect
+                  Logout
                 </button>
               </div>
             ) : (
-              <button
-                onClick={handleConnectWallet}
+              <Link
+                to="/auth"
                 className="btn-primary"
               >
-                Connect Wallet
-              </button>
+                Login
+              </Link>
             )}
           </div>
           <div className="md:hidden flex items-center">
@@ -164,34 +158,32 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="px-3 py-2">
-              {isConnected ? (
+              {isAuthenticated ? (
                 <div className="space-y-2">
-                  <div className="flex items-center space-x-2 bg-green-50 px-3 py-2 rounded-lg">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-green-800">
-                      {formatAddress(user?.address)}
+                  <div className="flex items-center space-x-2 bg-blue-50 px-3 py-2 rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-blue-800">
+                      {user?.name || user?.email || 'User'}
                     </span>
                   </div>
                   <button
                     onClick={() => {
-                      disconnectWallet();
+                      handleLogout();
                       setIsMenuOpen(false);
                     }}
                     className="w-full btn-danger"
                   >
-                    Disconnect Wallet
+                    Logout
                   </button>
                 </div>
               ) : (
-                <button
-                  onClick={() => {
-                    handleConnectWallet();
-                    setIsMenuOpen(false);
-                  }}
-                  className="w-full btn-primary"
+                <Link
+                  to="/auth"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full btn-primary block text-center"
                 >
-                  Connect Wallet
-                </button>
+                  Login
+                </Link>
               )}
             </div>
           </div>
