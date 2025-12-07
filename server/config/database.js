@@ -47,6 +47,8 @@ const seedInitialData = async () => {
       });
       await initialAdmin.save();
       console.log('👤 Initial admin user created successfully');
+    } else {
+      console.log('ℹ️  Admin user already exists, skipping...');
     }
     const students = [
       {
@@ -87,11 +89,18 @@ const seedInitialData = async () => {
       }
     ];
     for (const studentData of students) {
-      const existingStudent = await User.findOne({ email: studentData.email });
+      const existingStudent = await User.findOne({
+        $or: [
+          { email: studentData.email },
+          { studentId: studentData.studentId }
+        ]
+      });
       if (!existingStudent) {
         const student = new User(studentData);
         await student.save();
         console.log(`🎓 Student ${studentData.name} created successfully`);
+      } else {
+        console.log(`ℹ️  Student ${studentData.name} already exists, skipping...`);
       }
     }
 
@@ -118,6 +127,8 @@ const seedInitialData = async () => {
       });
       await sampleCert.save();
       console.log('📜 Sample certificate CERT-2024-001 created successfully');
+    } else {
+      console.log('ℹ️  Sample certificate already exists, skipping...');
     }
   } catch (error) {
     console.error('❌ Error seeding initial data:', error.message);
