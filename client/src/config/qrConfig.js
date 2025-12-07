@@ -1,0 +1,1 @@
+export const VERIFY_BASE_URL = process.env.REACT_APP_VERIFY_BASE_URL || window.location.origin;export default {    VERIFY_BASE_URL,    QR_CODE_SIZE: 256,    QR_CODE_LEVEL: 'H',     INCLUDE_MARGIN: true};
