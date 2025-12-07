@@ -1,0 +1,97 @@
+{
+  "certificateMetadata": {
+    "certificateId": "CERT-2024-CS-001",
+    "studentInfo": {
+      "studentId": "STU-2024-12345",
+      "studentName": "John Michael Doe",
+      "email": "john.doe@university.edu",
+      "enrollmentYear": "2020",
+      "graduationYear": "2024"
+    },
+    "certificateDetails": {
+      "program": "Bachelor of Science in Computer Science",
+      "institution": "XYZ University",
+      "department": "Department of Computer Science and Engineering",
+      "degree": "B.Sc.",
+      "major": "Computer Science",
+      "minor": "Data Science",
+      "gpa": "3.85",
+      "honors": "Cum Laude",
+      "issueDate": "2024-05-15",
+      "expiryDate": null,
+      "credits": "120"
+    },
+    "verification": {
+      "certificateHash": "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a9c0e9b3e7a8f1c2d5b6e9f0a3c6d9e2f5a8b1c4d7e0f3a6b9c2d5e8f1a4b7c",
+      "hashAlgorithm": "SHA-512",
+      "ipfsCID": "QmXyZ123AbcDefGhiJkl456MnoPqr789StUvWxYz012AbC",
+      "ipfsGatewayUrl": "https://ipfs.io/ipfs/QmXyZ123AbcDefGhiJkl456MnoPqr789StUvWxYz012AbC",
+      "blockchainNetwork": "Ethereum Sepolia",
+      "contractAddress": "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb1",
+      "transactionHash": "0xabc123def456789abc123def456789abc123def456789abc123def456789abc12",
+      "blockNumber": "5123456",
+      "issuerAddress": "0x1234567890123456789012345678901234567890",
+      "issuedTimestamp": "1715788800",
+      "status": "Active"
+    },
+    "issuer": {
+      "name": "Office of the Registrar",
+      "title": "University Registrar",
+      "institution": "XYZ University",
+      "email": "registrar@university.edu",
+      "phone": "+1-555-0123",
+      "address": "123 University Ave, City, State 12345",
+      "authorizedSignatory": "Dr. Jane Smith",
+      "signature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925...",
+      "publicKey": "0x04f8a8fd2c0e3e8e9c5e8f4c7b2d9e6f3a0c1d8b5e2f9a6c3d0e7f4a1b8c5d2e9f..."
+    },
+    "courseWork": {
+      "totalCourses": 40,
+      "majorCourses": [
+        "Data Structures and Algorithms",
+        "Database Management Systems",
+        "Operating Systems",
+        "Computer Networks",
+        "Software Engineering",
+        "Machine Learning",
+        "Artificial Intelligence",
+        "Web Development"
+      ],
+      "capstoneProject": {
+        "title": "Blockchain-Based Certificate Verification System",
+        "grade": "A+",
+        "supervisor": "Prof. Robert Johnson"
+      }
+    },
+    "additionalInfo": {
+      "achievements": [
+        "Dean's List - All Semesters",
+        "Best Final Year Project Award 2024",
+        "IEEE Student Member"
+      ],
+      "certifications": [
+        "AWS Certified Solutions Architect",
+        "Google Cloud Professional"
+      ],
+      "languages": ["English", "Spanish"],
+      "remarks": "Graduated with distinction"
+    }
+  },
+  "fileInfo": {
+    "originalFilename": "certificate_john_doe_2024.pdf",
+    "fileSize": "245760",
+    "fileSizeReadable": "240 KB",
+    "mimeType": "application/pdf",
+    "uploadedAt": "2024-05-15T14:30:00Z",
+    "uploadedBy": "registrar@university.edu"
+  },
+  "blockchainData": {
+    "certificateId": "CERT-2024-CS-001",
+    "certificateHash": "a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a9c0e9b3e7a8f1c2d5b6e9f0a3c6d9e2f5a8b1c4d7e0f3a6b9c2d5e8f1a4b7c",
+    "ipfsCID": "QmXyZ123AbcDefGhiJkl456MnoPqr789StUvWxYz012AbC",
+    "studentId": "STU-2024-12345",
+    "studentName": "John Michael Doe",
+    "issuerSignature": "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925",
+    "force": false
+  }
+}
