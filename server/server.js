@@ -6,7 +6,7 @@ dotenv.config();
 const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
-  'http://localhost:3001',
+  'http://localhost:5000',
   process.env.CLIENT_URL
 ].filter(Boolean);
 app.use(cors({
@@ -87,25 +87,52 @@ app.use((err, req, res, next) => {
     message: error.message || 'Internal Server Error'
   });
 });
+const http = require('http');
+const { Server } = require('socket.io');
+
 const startServer = async () => {
   try {
     await connectDB();
     await seedInitialData();
-const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
+    const PORT = process.env.PORT || 5000;
+
+    const server = http.createServer(app);
+    const io = new Server(server, {
+      cors: {
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true
+      }
+    });
+
+    // Make io accessible to our router
+    app.set('io', io);
+
+    io.on('connection', (socket) => {
+      console.log('🔌 New client connected:', socket.id);
+
+      socket.on('disconnect', () => {
+        console.log('❌ Client disconnected:', socket.id);
+      });
+    });
+
+    server.listen(PORT, () => {
       console.log('');
       console.log('🚀 ================================');
       console.log('🚀 SERVER STARTED SUCCESSFULLY!');
       console.log('🚀 ================================');
       console.log(`🌐 Server running on port ${PORT}`);
       console.log(`🔗 Local: http://localhost:${PORT}`);
-      console.log(`🔗 Health Check: http://localhost:${PORT}/health`);
+      console.log(`🔗 Health Check: http://localhost:${PORT}/api/health`);
       console.log(`🔗 API Base: http://localhost:${PORT}/api`);
       console.log('🚀 ================================');
       console.log('');
       console.log('🔐 Initial Login Credentials:');
       console.log('📧 Admin: University_admin@university.edu / admin123');
-      console.log('🎓 Student: student@university.edu / demostudent');
+      console.log('🎓 Students:');
+      console.log('   • Vansh: vansh@university.edu / vansh123');
+      console.log('   • Shashank: shashank@university.edu / shashank123');
+      console.log('   • Shreyas: shreyas@university.edu / shreyas123');
       console.log('');
     });
   } catch (error) {

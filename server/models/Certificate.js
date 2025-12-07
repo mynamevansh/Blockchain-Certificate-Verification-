@@ -8,9 +8,9 @@ const certificateSchema = new mongoose.Schema({
     uppercase: true
   },
   studentId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    type: String, 
+    required: true,
+    trim: true
   },
   studentName: {
     type: String,
@@ -69,17 +69,27 @@ const certificateSchema = new mongoose.Schema({
   },
   blockchainHash: {
     type: String,
-    required: true,
+    default: '',
     trim: true
   },
   ipfsHash: {
     type: String,
     trim: true
   },
+  fileHash: {
+    type: String,
+    trim: true,
+    index: true 
+  },
+  transactionHash: {
+    type: String,
+    trim: true,
+    default: null
+  },
   issuedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Admin',
-    required: true
+    required: false 
   },
   revokedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -91,6 +101,19 @@ const certificateSchema = new mongoose.Schema({
   revokeReason: {
     type: String,
     trim: true
+  },
+  revocationTransactionHash: {
+    type: String,
+    trim: true,
+    default: null
+  },
+  reactivatedAt: {
+    type: Date
+  },
+  activationTransactionHash: {
+    type: String,
+    trim: true,
+    default: null
   },
   metadata: {
     version: {
@@ -111,23 +134,23 @@ const certificateSchema = new mongoose.Schema({
     default: Date.now
   }
 });
-certificateSchema.pre('save', function(next) {
+certificateSchema.pre('save', function (next) {
   this.updatedAt = Date.now();
   next();
 });
-certificateSchema.methods.revoke = async function(adminId, reason) {
+certificateSchema.methods.revoke = async function (adminId, reason) {
   this.status = 'Revoked';
   this.revokedBy = adminId;
   this.revokedDate = new Date();
   this.revokeReason = reason;
   return await this.save();
 };
-certificateSchema.statics.generateCertificateId = function() {
+certificateSchema.statics.generateCertificateId = function () {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000);
   return `CERT-${timestamp}-${random}`;
 };
-certificateSchema.statics.findValidByStudent = function(studentId) {
+certificateSchema.statics.findValidByStudent = function (studentId) {
   return this.find({ studentId, status: 'Valid' }).populate('issuedBy', 'name email');
 };
 module.exports = mongoose.model('Certificate', certificateSchema);
