@@ -10,11 +10,13 @@
     "ajv-keywords": "^5.1.0",
     "axios": "^1.4.0",
     "crypto-js": "^4.1.1",
+    "ethers": "^5.8.0",
     "lucide-react": "^0.546.0",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.1",
-    "react-scripts": "5.0.1",
+    "react-scripts": "^5.0.1",
     "react-toastify": "^11.0.5",
     "socket.io-client": "^4.7.1",
     "web-vitals": "^5.1.0"
@@ -51,6 +53,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
+    "baseline-browser-mapping": "^2.9.4",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.4.17"
   },
