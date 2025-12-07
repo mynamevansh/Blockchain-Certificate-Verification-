@@ -1,1196 +1,958 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { 
-  FileText, 
-  CheckCircle, 
-  XCircle, 
-  Users, 
-  Plus,
-  Search,
-  Download,
-  Eye,
-  Trash2,
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
   LogOut,
+  Plus,
   ShieldCheck,
-  Settings,
-  BarChart3,
-  Menu,
-  Home,
+  Upload,
+  CheckCircle,
+  XCircle,
+  Eye,
   Award,
-  UserCheck,
-  Activity,
-  AlertCircle
+  Wallet,
+  AlertCircle,
+  Trash2,
+  Menu,
+  X,
+  Moon,
+  Sun
 } from 'lucide-react';
+import { API_BASE_URL } from '../constants';
+import { resolveIPFS } from '../utils/ipfs';
+import CertificateQRCode from '../components/CertificateQRCode';
+import StatusBadge from '../components/ui/StatusBadge';
+import DashboardCard from '../components/ui/DashboardCard';
+import AnimatedButton from '../components/ui/AnimatedButton';
+import CertificateCard from '../components/ui/CertificateCard';
+import ThemeToggle from '../components/ui/ThemeToggle';
+import blockchainService from '../services/blockchain';
+const SEPOLIA_CHAIN_ID = '0xaa36a7';
+const SEPOLIA_CHAIN_ID_DECIMAL = 11155111;
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('overview');
-  const [certificates, setCertificates] = useState([]);
-  const [users, setUsers] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [revokeId, setRevokeId] = useState('');
+  const [activeTab, setActiveTab] = useState('issue');
+  const [certificates, setCertificates] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [issuing, setIssuing] = useState(false);
   const [revoking, setRevoking] = useState(false);
-  const [revocationResult, setRevocationResult] = useState(null);
-  const [stats, setStats] = useState({
-    totalCertificates: 0,
-    activeCertificates: 0,
-    revokedCertificates: 0,
-    totalUsers: 0,
-    pendingRequests: 0,
-    monthlyIssued: 0
+  const [activating, setActivating] = useState(false);
+  const [revokeModal, setRevokeModal] = useState({ open: false, certificate: null });
+  const [activateModal, setActivateModal] = useState({ open: false, certificate: null });
+  const [filterTab, setFilterTab] = useState('all');
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [isWalletConnected, setIsWalletConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [currentChainId, setCurrentChainId] = useState(null);
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
+  const [formData, setFormData] = useState({
+    file: null,
+    studentId: '',
+    course: '',
+    degree: '',
+    university: 'University of Excellence',
+    gpa: '',
+    graduationDate: '',
+    dean: 'Dr. John Anderson',
+    registrar: 'Mary Johnson'
   });
-  useEffect(() => {
-    const sampleCertificates = [
-      {
-        id: 'CERT-2024-001',
-        recipientName: 'Vansh Ranawat',
-        courseName: 'Advanced Web Development',
-        issueDate: '2024-05-15',
-        expiryDate: '2024-12-15',
-        status: 'Valid',
-        issuer: 'Dr. Sarah Johnson'
-      },
-      {
-        id: 'CERT-2024-002',
-        recipientName: 'Emily Davis',
-        courseName: 'Database Management',
-        issueDate: '2024-06-10',
-        expiryDate: '2024-12-10',
-        status: 'Valid',
-        issuer: 'Prof. Michael Brown'
-      },
-      {
-        id: 'CERT-2024-003',
-        recipientName: 'David Wilson',
-        courseName: 'Cybersecurity Fundamentals',
-        issueDate: '2024-03-20',
-        expiryDate: '2024-09-20',
-        status: 'Revoked',
-        issuer: 'Dr. Lisa Chen'
+  const isMetaMaskInstalled = () => {
+    return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined';
+  };
+  const formatAddress = (address) => {
+    if (!address) return '';
+    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  };
+  const checkNetwork = async () => {
+    if (!isMetaMaskInstalled()) return;
+    try {
+      const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+      setCurrentChainId(chainId);
+      const isSepolia = chainId === SEPOLIA_CHAIN_ID || parseInt(chainId, 16) === SEPOLIA_CHAIN_ID_DECIMAL;
+      setIsCorrectNetwork(isSepolia);
+      return isSepolia;
+    } catch (error) {
+      console.error('Error checking network:', error);
+      setIsCorrectNetwork(false);
+      return false;
+    }
+  };
+  const switchToSepolia = async () => {
+    if (!isMetaMaskInstalled()) {
+      toast.error('MetaMask not installed');
+      return false;
+    }
+    try {
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: SEPOLIA_CHAIN_ID }],
+      });
+      return true;
+    } catch (switchError) {
+      if (switchError.code === 4902) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: SEPOLIA_CHAIN_ID,
+                chainName: 'Sepolia Test Network',
+                nativeCurrency: {
+                  name: 'ETH',
+                  symbol: 'ETH',
+                  decimals: 18,
+                },
+                rpcUrls: ['https://rpc.sepolia.org'],
+                blockExplorerUrls: ['https://sepolia.etherscan.io'],
+              },
+            ],
+          });
+          return true;
+        } catch (addError) {
+          console.error('Error adding Sepolia network:', addError);
+          toast.error('Failed to add Sepolia network to MetaMask');
+          return false;
+        }
+      } else {
+        console.error('Error switching network:', switchError);
+        toast.error('Failed to switch to Sepolia network');
+        return false;
       }
-    ];
-    setCertificates(sampleCertificates);
-    setUsers([]);
-    setStats({
-      totalCertificates: sampleCertificates.length,
-      activeCertificates: sampleCertificates.filter(c => c.status === 'Valid').length,
-      revokedCertificates: sampleCertificates.filter(c => c.status === 'Revoked').length,
-      totalUsers: 15,
-      pendingRequests: 3,
-      monthlyIssued: 12
-    });
+    }
+  };
+  const connectWallet = async () => {
+    if (!isMetaMaskInstalled()) {
+      toast.error('MetaMask not installed. Please install MetaMask to continue.');
+      return;
+    }
+    setIsConnecting(true);
+    try {
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_requestAccounts' 
+      });
+      if (accounts && accounts.length > 0) {
+        const address = accounts[0];
+        setWalletAddress(address);
+        setIsWalletConnected(true);
+        const isSepolia = await checkNetwork();
+        if (!isSepolia) {
+          toast.warning('Please switch to Sepolia network in MetaMask');
+        } else {
+          toast.success(`Connected: ${formatAddress(address)}`);
+        }
+        console.log('✅ Connected Account:', address);
+        console.log('✅ Network:', isSepolia ? 'Sepolia' : 'Other');
+      }
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+      if (error.code === 4001) {
+        toast.error('User denied connection request');
+      } else if (error.code === -32002) {
+        toast.error('Connection request already pending. Please check MetaMask.');
+      } else {
+        toast.error('Failed to connect wallet. Please try again.');
+      }
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+  const disconnectWallet = () => {
+    setWalletAddress(null);
+    setIsWalletConnected(false);
+    setCurrentChainId(null);
+    setIsCorrectNetwork(false);
+    toast.info('Wallet disconnected');
+  };
+  useEffect(() => {
+    if (!isMetaMaskInstalled()) {
+      return;
+    }
+    const checkConnection = async () => {
+      try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts && accounts.length > 0) {
+          const address = accounts[0];
+          setWalletAddress(address);
+          setIsWalletConnected(true);
+          const isSepolia = await checkNetwork();
+          console.log('✅ Wallet already connected');
+          console.log('✅ Selected Account:', address);
+          console.log('✅ Network:', isSepolia ? 'Sepolia' : 'Other');
+        }
+      } catch (error) {
+        console.error('Error checking existing connection:', error);
+      }
+    };
+    checkConnection();
+    const handleAccountsChanged = (accounts) => {
+      if (accounts && accounts.length > 0) {
+        setWalletAddress(accounts[0]);
+        setIsWalletConnected(true);
+        toast.info(`Account changed: ${formatAddress(accounts[0])}`);
+        console.log('✅ Account changed:', accounts[0]);
+      } else {
+        disconnectWallet();
+      }
+    };
+    const handleChainChanged = (chainId) => {
+      setCurrentChainId(chainId);
+      const isSepolia = chainId === SEPOLIA_CHAIN_ID || parseInt(chainId, 16) === SEPOLIA_CHAIN_ID_DECIMAL;
+      setIsCorrectNetwork(isSepolia);
+      if (isSepolia) {
+        toast.success('Switched to Sepolia network');
+      } else {
+        toast.warning('Please switch to Sepolia network in MetaMask');
+      }
+    };
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+    window.ethereum.on('chainChanged', handleChainChanged);
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      }
+    };
   }, []);
-  const handleSignOut = () => {
-    localStorage.removeItem('userType');
-    localStorage.removeItem('user');
-    toast.success('Signed out successfully');
-    navigate('/auth');
+  useEffect(() => {
+    const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+    const role = localStorage.getItem('role');
+    if (!token) {
+      navigate('/auth');
+      return;
+    }
+    if (role !== 'admin' && role !== 'super_admin') {
+      navigate('/student-dashboard');
+      return;
+    }
+    fetchStudents();
+    if (activeTab === 'certificates') {
+      fetchCertificates();
+    }
+  }, [navigate, activeTab]);
+  const fetchStudents = async () => {
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/api/certificates/students`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setStudents(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching students:', error);
+    }
   };
-  const handleRevokeCertificate = (certificateId) => {
-    setCertificates(prev => 
-      prev.map(cert => 
-        cert.id === certificateId 
-          ? { ...cert, status: 'Revoked' }
-          : cert
-      )
-    );
-    setStats(prev => ({
-      ...prev,
-      activeCertificates: prev.activeCertificates - 1,
-      revokedCertificates: prev.revokedCertificates + 1
-    }));
-    toast.success(`Certificate ${certificateId} has been revoked`);
+  const fetchCertificates = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/api/certificates/admin`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setCertificates(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching certificates:', error);
+      toast.error('Failed to load certificates');
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleRevocationForm = async (e) => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type !== 'application/pdf') {
+        toast.error('Please upload a PDF file');
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size must be less than 10MB');
+        return;
+      }
+      setFormData({ ...formData, file });
+    }
+  };
+  const handleStudentChange = (e) => {
+    const studentId = e.target.value;
+    setFormData({ ...formData, studentId });
+  };
+  const handleIssueCertificate = async (e) => {
     e.preventDefault();
-    if (!revokeId.trim()) {
-      toast.error('Please enter a certificate ID');
+    if (!isWalletConnected || !walletAddress) {
+      toast.error('Please connect your MetaMask wallet first');
+      return;
+    }
+    if (!isCorrectNetwork) {
+      const switchNetwork = window.confirm('Please switch to Sepolia network in MetaMask. Would you like to switch now?');
+      if (switchNetwork) {
+        const switched = await switchToSepolia();
+        if (!switched) return;
+      } else {
+        return;
+      }
+    }
+    if (!formData.file) {
+      toast.error('Please select a PDF file');
+      return;
+    }
+    if (!formData.studentId) {
+      toast.error('Please select a student');
+      return;
+    }
+    setIssuing(true);
+    try {
+      toast.info('📝 Generating certificate hash...');
+      const fileHash = await blockchainService.generateFileHash(formData.file);
+      console.log('Generated File Hash:', fileHash);
+      toast.info('☁️ Uploading to IPFS...');
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+      const formDataToSend = new FormData();
+      formDataToSend.append('file', formData.file);
+      formDataToSend.append('studentId', formData.studentId);
+      formDataToSend.append('course', formData.course || 'Blockchain Certification');
+      formDataToSend.append('degree', formData.degree || 'Certificate of Achievement');
+      formDataToSend.append('university', formData.university);
+      if (formData.gpa) formDataToSend.append('gpa', formData.gpa);
+      if (formData.graduationDate) formDataToSend.append('graduationDate', formData.graduationDate);
+      formDataToSend.append('dean', formData.dean);
+      formDataToSend.append('registrar', formData.registrar);
+      formDataToSend.append('certificateHash', fileHash); 
+      const uploadResponse = await fetch(`${API_BASE_URL}/api/certificates/upload-ipfs`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formDataToSend
+      });
+      const uploadData = await uploadResponse.json();
+      if (!uploadResponse.ok) {
+        throw new Error(uploadData.message || 'Failed to upload to IPFS');
+      }
+      const ipfsCID = uploadData.data?.ipfsCID || uploadData.ipfsCID;
+      if (!ipfsCID) {
+        throw new Error('IPFS CID not received from server');
+      }
+      console.log('IPFS CID:', ipfsCID);
+      const selectedStudent = students.find(s => s.studentId === formData.studentId);
+      if (!selectedStudent) {
+        throw new Error('Student not found');
+      }
+      toast.info('🔐 Waiting for blockchain confirmation...');
+      const blockchainResult = await blockchainService.issueCertificate({
+        hash: fileHash,
+        ipfsCID: ipfsCID,
+        studentId: formData.studentId,
+        studentName: selectedStudent.name,
+        issuerSignature: walletAddress
+      });
+      console.log('Blockchain Result:', blockchainResult);
+      toast.success(`✅ Certificate on blockchain! TX: ${blockchainResult.txHash.substring(0, 10)}...`);
+      toast.info('💾 Saving to database...');
+      const finalResponse = await fetch(`${API_BASE_URL}/api/certificates/issue`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          studentId: formData.studentId,
+          course: formData.course || 'Blockchain Certification',
+          degree: formData.degree || 'Certificate of Achievement',
+          university: formData.university,
+          gpa: formData.gpa,
+          graduationDate: formData.graduationDate,
+          dean: formData.dean,
+          registrar: formData.registrar,
+          ipfsCID: ipfsCID,
+          certificateHash: fileHash,
+          certificateId: blockchainResult.certificateId,
+          transactionHash: blockchainResult.txHash,
+          issuerWallet: blockchainResult.wallet
+        })
+      });
+      const finalData = await finalResponse.json();
+      if (!finalResponse.ok) {
+        console.warn('Database save failed, but certificate is on blockchain:', blockchainResult.txHash);
+        throw new Error(finalData.message || 'Failed to save certificate to database');
+      }
+      if (finalData.success) {
+        toast.success('🎉 Certificate issued successfully on blockchain and database!');
+        setFormData({
+          file: null,
+          studentId: '',
+          course: '',
+          degree: '',
+          university: 'University of Excellence',
+          gpa: '',
+          graduationDate: '',
+          dean: 'Dr. John Anderson',
+          registrar: 'Mary Johnson'
+        });
+        const fileInput = document.getElementById('file-input');
+        if (fileInput) fileInput.value = '';
+        if (activeTab === 'certificates') {
+          fetchCertificates();
+        }
+      }
+    } catch (error) {
+      console.error('Issue error:', error);
+      if (error.code === 4001) {
+        toast.error('❌ Transaction rejected by user');
+      } else if (error.message.includes('MetaMask')) {
+        toast.error('❌ ' + error.message);
+      } else {
+        toast.error(error.message || 'Failed to issue certificate');
+      }
+    } finally {
+      setIssuing(false);
+    }
+  };
+  const handleViewCertificate = (certificate) => {
+    const cid = certificate.ipfsHash || certificate.ipfsCID;
+    if (cid) {
+      window.open(resolveIPFS(cid), '_blank');
+    } else {
+      toast.error('Certificate PDF not available');
+    }
+  };
+  const handleRevokeCertificate = async () => {
+    if (!revokeModal.certificate) return;
+    const certificate = revokeModal.certificate;
+    if (!isWalletConnected || !walletAddress) {
+      toast.error('Please connect your MetaMask wallet first');
+      setRevokeModal({ open: false, certificate: null });
+      return;
+    }
+    if (!isCorrectNetwork) {
+      toast.error('Please switch to Sepolia network in MetaMask');
+      setRevokeModal({ open: false, certificate: null });
       return;
     }
     setRevoking(true);
-    setRevocationResult(null);
-    setTimeout(() => {
-      const certificateIndex = certificates.findIndex(c => 
-        c.id.toLowerCase() === revokeId.trim().toLowerCase()
-      );
-      if (certificateIndex !== -1) {
-        const certificate = certificates[certificateIndex];
-        if (certificate.status === 'Valid') {
-          const updatedCertificates = [...certificates];
-          updatedCertificates[certificateIndex] = { ...certificate, status: 'Revoked' };
-          setCertificates(updatedCertificates);
-          setStats(prev => ({
-            ...prev,
-            activeCertificates: prev.activeCertificates - 1,
-            revokedCertificates: prev.revokedCertificates + 1
-          }));
-          setRevocationResult({
-            success: true,
-            message: `Certificate ${certificate.id} has been successfully revoked`,
-            certificate: updatedCertificates[certificateIndex]
-          });
-          toast.success('Certificate revoked successfully');
-        } else {
-          setRevocationResult({
-            success: false,
-            message: 'Certificate is already revoked'
-          });
-          toast.warning('Certificate already revoked');
-        }
-      } else {
-        setRevocationResult({
-          success: false,
-          message: 'Certificate not found'
-        });
-        toast.error('Certificate not found');
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/api/certificates/revoke/${certificate.certificateId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          reason: 'Revoked by admin'
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to revoke certificate');
       }
+      if (data.success) {
+        toast.success('Certificate revoked successfully!');
+        setRevokeModal({ open: false, certificate: null });
+        fetchCertificates();
+      }
+    } catch (error) {
+      console.error('Revoke error:', error);
+      toast.error(error.message || 'Failed to revoke certificate');
+    } finally {
       setRevoking(false);
-      setRevokeId('');
-    }, 1200);
+    }
   };
-  const getStatusBadge = (status) => {
-    const isValid = status === 'Valid';
-    return (
-      <span style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '4px 12px',
-        borderRadius: '6px',
-        fontSize: '0.875rem',
-        fontWeight: '500',
-        backgroundColor: isValid ? '#dcfce7' : '#fee2e2',
-        color: isValid ? '#166534' : '#dc2626'
-      }}>
-        {isValid ? '✔️' : '❌'}
-        {status}
-      </span>
-    );
+  const openRevokeModal = (certificate) => {
+    if (certificate.status === 'Revoked') {
+      toast.warning('Certificate is already revoked');
+      return;
+    }
+    setRevokeModal({ open: true, certificate });
   };
-  const StatCard = ({ icon, title, value, subtitle, color }) => (
-    <div style={{
-      backgroundColor: 'white',
-      padding: '1.5rem',
-      borderRadius: '12px',
-      border: '1px solid #e2e8f0',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div>
-          <p style={{
-            fontSize: '0.875rem',
-            color: '#64748b',
-            margin: '0 0 0.25rem 0',
-            fontFamily: 'Open Sans, sans-serif'
-          }}>
-            {title}
-          </p>
-          <p style={{
-            fontSize: '2rem',
-            fontWeight: '600',
-            color: '#1e293b',
-            margin: '0 0 0.25rem 0',
-            fontFamily: 'Roboto, sans-serif'
-          }}>
-            {value}
-          </p>
-          {subtitle && (
-            <p style={{
-              fontSize: '0.75rem',
-              color: '#94a3b8',
-              margin: 0,
-              fontFamily: 'Open Sans, sans-serif'
-            }}>
-              {subtitle}
-            </p>
-          )}
-        </div>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          backgroundColor: color + '20',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          {icon}
-        </div>
-      </div>
-    </div>
-  );
+  const handleActivateCertificate = async () => {
+    if (!activateModal.certificate) return;
+    const certificate = activateModal.certificate;
+    if (!isWalletConnected || !walletAddress) {
+      toast.error('Please connect your MetaMask wallet first');
+      setActivateModal({ open: false, certificate: null });
+      return;
+    }
+    if (!isCorrectNetwork) {
+      toast.error('Please switch to Sepolia network in MetaMask');
+      setActivateModal({ open: false, certificate: null });
+      return;
+    }
+    setActivating(true);
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+      const response = await fetch(`${API_BASE_URL}/api/certificates/activate/${certificate.certificateId}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to activate certificate');
+      }
+      if (data.success) {
+        toast.success('Certificate activated successfully!');
+        setActivateModal({ open: false, certificate: null });
+        fetchCertificates();
+      }
+    } catch (error) {
+      console.error('Activate error:', error);
+      toast.error(error.message || 'Failed to activate certificate');
+    } finally {
+      setActivating(false);
+    }
+  };
+  const openActivateModal = (certificate) => {
+    if (certificate.status === 'Valid') {
+      toast.warning('Certificate is already active');
+      return;
+    }
+    if (certificate.status !== 'Revoked') {
+      toast.warning('Certificate must be revoked to activate');
+      return;
+    }
+    setActivateModal({ open: true, certificate });
+  };
+  const getFilteredCertificates = () => {
+    if (filterTab === 'active') {
+      return certificates.filter(cert => cert.status === 'Valid');
+    } else if (filterTab === 'revoked') {
+      return certificates.filter(cert => cert.status === 'Revoked');
+    }
+    return certificates;
+  };
+  const handleSignOut = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('user');
+    navigate('/auth');
+  };
+  const selectedStudent = students.find(s => s.studentId === formData.studentId);
   return (
-    <div style={{ 
-      display: 'flex', 
-      minHeight: '100vh', 
-      backgroundColor: '#f8fafc',
-      fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Open Sans", sans-serif'
-    }}>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {}
-      <div style={{
-        width: sidebarOpen ? '280px' : '80px',
-        backgroundColor: 'white',
-        borderRight: '1px solid #e5e7eb',
-        transition: 'width 0.3s ease',
-        position: 'fixed',
-        height: '100vh',
-        zIndex: 10,
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-      }}>
+      <div className={`fixed left-0 top-0 h-full bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 shadow-2xl z-50 transition-all duration-300 ${
+        sidebarOpen ? 'w-72' : 'w-20'
+      }`}>
         {}
-        <div style={{
-          padding: '1.5rem',
-          borderBottom: '1px solid #e5e7eb',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              backgroundColor: '#3b82f6',
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}>
-              <ShieldCheck size={20} style={{ color: 'white' }} />
+        <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg">
+              <ShieldCheck size={24} className="text-white" />
             </div>
             {sidebarOpen && (
-              <div>
-                <h2 style={{
-                  fontSize: '1.125rem',
-                  fontWeight: '600',
-                  color: '#111827',
-                  margin: 0
-                }}>
-                  CertifyChain
-                </h2>
-                <p style={{
-                  fontSize: '0.75rem',
-                  color: '#6b7280',
-                  margin: 0
-                }}>
-                  Admin Portal
-                </p>
-              </div>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                CertifyChain
+              </h1>
             )}
           </div>
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            style={{
-              padding: '0.5rem',
-              backgroundColor: 'transparent',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              color: '#6b7280'
-            }}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <Menu size={16} />
+            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
         {}
-        <nav style={{ padding: '1rem' }}>
+        <nav className="p-4 space-y-2">
           {[
-            { id: 'overview', icon: Home, label: 'Overview' },
-            { id: 'certificates', icon: Award, label: 'Certificates' },
-            { id: 'revoke', icon: XCircle, label: 'Revoke Certificate' },
-            { id: 'users', icon: Users, label: 'Users' },
-            { id: 'settings', icon: Settings, label: 'Settings' }
-          ].map((item) => (
+            { id: 'issue', icon: Plus, label: 'Issue Certificate' },
+            { id: 'certificates', icon: Award, label: 'All Certificates' }
+          ].map(item => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem 1rem',
-                marginBottom: '0.25rem',
-                backgroundColor: activeTab === item.id ? '#f3f4f6' : 'transparent',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: activeTab === item.id ? '#374151' : '#6b7280',
-                cursor: 'pointer',
-                textAlign: 'left',
-                transition: 'all 0.2s'
+              onClick={() => {
+                setActiveTab(item.id);
+                if (item.id === 'certificates') fetchCertificates();
               }}
-              onMouseEnter={(e) => {
-                if (activeTab !== item.id) {
-                  e.target.style.backgroundColor = '#f9fafb';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== item.id) {
-                  e.target.style.backgroundColor = 'transparent';
-                }
-              }}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                activeTab === item.id
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg'
+                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
             >
-              <item.icon size={18} />
+              <item.icon size={20} />
               {sidebarOpen && <span>{item.label}</span>}
             </button>
           ))}
         </nav>
         {}
-        {sidebarOpen && (
-          <div style={{
-            position: 'absolute',
-            bottom: '1rem',
-            left: '1rem',
-            right: '1rem',
-            padding: '1rem',
-            backgroundColor: '#f9fafb',
-            borderRadius: '8px',
-            border: '1px solid #e5e7eb'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              marginBottom: '0.75rem'
-            }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                backgroundColor: '#e5e7eb',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <UserCheck size={16} style={{ color: '#6b7280' }} />
-              </div>
-              <div>
-                <p style={{
-                  fontSize: '0.875rem',
-                  fontWeight: '500',
-                  color: '#111827',
-                  margin: 0
-                }}>
-                  Administrator
-                </p>
-                <p style={{
-                  fontSize: '0.75rem',
-                  color: '#6b7280',
-                  margin: 0
-                }}>
-                  admin@university.edu
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={handleSignOut}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                padding: '0.625rem',
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '6px',
-                fontSize: '0.75rem',
-                color: '#6b7280',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
-            >
-              <LogOut size={14} />
-              Sign Out
-            </button>
-          </div>
-        )}
-      </div>
-      {}
-      <div style={{
-        flex: 1,
-        marginLeft: sidebarOpen ? '280px' : '80px',
-        transition: 'margin-left 0.3s ease'
-      }}>
-        {}
-        <header style={{
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '1rem 2rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
-        }}>
-          <div>
-            <h1 style={{
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              color: '#111827',
-              margin: 0
-            }}>
-              {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-            </h1>
-            <p style={{
-              fontSize: '0.875rem',
-              color: '#6b7280',
-              margin: 0
-            }}>
-              {activeTab === 'overview' && 'System overview and statistics'}
-              {activeTab === 'certificates' && 'Manage all certificates'}
-              {activeTab === 'revoke' && 'Revoke and invalidate certificates'}
-              {activeTab === 'users' && 'User management and permissions'}
-              {activeTab === 'settings' && 'System configuration'}
-            </p>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '8px'
-            }}>
-              <Activity size={16} style={{ color: '#10b981' }} />
-              <span style={{
-                fontSize: '0.875rem',
-                color: '#374151',
-                fontWeight: '500'
-              }}>
-                System Online
-              </span>
-            </div>
-          </div>
-        </header>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <span style={{
-              fontSize: '0.875rem',
-              color: '#64748b',
-              fontFamily: 'Open Sans, sans-serif'
-            }}>
-              Welcome, System Administrator
-            </span>
-            <button
-              onClick={handleSignOut}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 1rem',
-                backgroundColor: '#f1f5f9',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                fontSize: '0.875rem',
-                color: '#475569',
-                cursor: 'pointer',
-                fontFamily: 'Open Sans, sans-serif'
-              }}
-            >
-              <LogOut size={16} />
-              Sign Out
-            </button>
-          </div>
-        </div>
-      {}
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '1.5rem 1.5rem 0 1.5rem'
-      }}>
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          borderBottom: '1px solid #e2e8f0',
-          marginBottom: '2rem'
-        }}>
-          {[
-            { id: 'overview', label: 'Overview', icon: BarChart3 },
-            { id: 'certificates', label: 'Certificates', icon: FileText },
-            { id: 'users', label: 'Users', icon: Users },
-            { id: 'settings', label: 'Settings', icon: Settings }
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem 1rem',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  borderBottom: `2px solid ${activeTab === tab.id ? '#3b82f6' : 'transparent'}`,
-                  color: activeTab === tab.id ? '#3b82f6' : '#64748b',
-                  cursor: 'pointer',
-                  fontFamily: 'Roboto, sans-serif',
-                  fontSize: '0.875rem',
-                  fontWeight: '500'
-                }}
-              >
-                <Icon size={16} />
-                {tab.label}
-              </button>
-            );
-          })}
+        <div className="absolute bottom-4 left-4 right-4">
+          <AnimatedButton
+            variant="danger"
+            size="md"
+            onClick={handleSignOut}
+            icon={<LogOut size={18} />}
+            fullWidth
+          >
+            {sidebarOpen && 'Logout'}
+          </AnimatedButton>
         </div>
       </div>
       {}
-      <main style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '0 1.5rem 3rem 1.5rem'
-      }}>
+      <div className={`transition-all duration-300 ${sidebarOpen ? 'ml-72' : 'ml-20'}`}>
         {}
-        {activeTab === 'overview' && (
-          <div>
-            {}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-              gap: '1.5rem',
-              marginBottom: '2rem'
-            }}>
-              <StatCard
-                icon={<FileText size={24} style={{ color: '#3b82f6' }} />}
-                title="Total Certificates"
-                value={stats.totalCertificates}
-                subtitle="All issued certificates"
-                color="#3b82f6"
-              />
-              <StatCard
-                icon={<CheckCircle size={24} style={{ color: '#10b981' }} />}
-                title="Active Certificates"
-                value={stats.activeCertificates}
-                subtitle="Currently valid"
-                color="#10b981"
-              />
-              <StatCard
-                icon={<XCircle size={24} style={{ color: '#ef4444' }} />}
-                title="Revoked Certificates"
-                value={stats.revokedCertificates}
-                subtitle="Inactive certificates"
-                color="#ef4444"
-              />
-              <StatCard
-                icon={<Users size={24} style={{ color: '#8b5cf6' }} />}
-                title="Total Students"
-                value={stats.totalUsers}
-                subtitle="Registered users"
-                color="#8b5cf6"
-              />
-            </div>
-            {}
-            <div style={{
-              backgroundColor: 'white',
-              padding: '1.5rem',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0'
-            }}>
-              <h3 style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                color: '#1e293b',
-                margin: '0 0 1rem 0',
-                fontFamily: 'Roboto, sans-serif'
-              }}>
-                Quick Actions
-              </h3>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1rem'
-              }}>
-                <button
-                  onClick={() => setActiveTab('certificates')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '1rem',
-                    backgroundColor: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: 'Open Sans, sans-serif',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
-                >
-                  <Plus size={20} style={{ color: '#3b82f6' }} />
-                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Issue New Certificate</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('certificates')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '1rem',
-                    backgroundColor: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: 'Open Sans, sans-serif',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
-                >
-                  <Search size={20} style={{ color: '#10b981' }} />
-                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Verify Certificate</span>
-                </button>
-                <button
-                  onClick={() => setActiveTab('users')}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '1rem',
-                    backgroundColor: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: 'Open Sans, sans-serif',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#f8fafc'}
-                >
-                  <Users size={20} style={{ color: '#8b5cf6' }} />
-                  <span style={{ fontSize: '0.875rem', color: '#374151' }}>Manage Users</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {}
-        {activeTab === 'certificates' && (
-          <div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1.5rem'
-            }}>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                color: '#1e293b',
-                margin: 0,
-                fontFamily: 'Roboto, sans-serif'
-              }}>
-                Tamper proof certificate verification
-              </h2>
-              <button style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.75rem 1rem',
-                backgroundColor: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontFamily: 'Roboto, sans-serif',
-                fontSize: '0.875rem',
-                fontWeight: '500'
-              }}>
-                <Plus size={16} />
-                Issue Certificate
-              </button>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              overflow: 'hidden'
-            }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f8fafc' }}>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Certificate ID</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Recipient</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Course</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Issue Date</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Status</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {certificates.map((cert, index) => (
-                    <tr key={cert.id} style={{ borderTop: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#1e293b', fontFamily: 'Open Sans, sans-serif', fontWeight: '600' }}>{cert.id}</td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#1e293b', fontFamily: 'Open Sans, sans-serif' }}>
-                        <div>
-                          <div style={{ fontWeight: '500' }}>{cert.recipientName}</div>
-                          <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{cert.recipientEmail}</div>
-                        </div>
-                      </td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#1e293b', fontFamily: 'Open Sans, sans-serif' }}>{cert.courseName}</td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#1e293b', fontFamily: 'Open Sans, sans-serif' }}>{new Date(cert.issueDate).toLocaleDateString()}</td>
-                      <td style={{ padding: '1rem' }}>{getStatusBadge(cert.status)}</td>
-                      <td style={{ padding: '1rem' }}>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button style={{
-                            padding: '0.375rem',
-                            backgroundColor: '#f1f5f9',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}>
-                            <Eye size={14} style={{ color: '#64748b' }} />
-                          </button>
-                          <button style={{
-                            padding: '0.375rem',
-                            backgroundColor: '#f1f5f9',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '6px',
-                            cursor: 'pointer'
-                          }}>
-                            <Download size={14} style={{ color: '#64748b' }} />
-                          </button>
-                          {cert.status === 'Valid' && (
-                            <button
-                              onClick={() => handleRevokeCertificate(cert.id)}
-                              style={{
-                                padding: '0.375rem',
-                                backgroundColor: '#fef2f2',
-                                border: '1px solid #fecaca',
-                                borderRadius: '6px',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              <Trash2 size={14} style={{ color: '#dc2626' }} />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-        {}
-        {activeTab === 'users' && (
-          <div>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1.5rem'
-            }}>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                color: '#1e293b',
-                margin: 0,
-                fontFamily: 'Roboto, sans-serif'
-              }}>
-                User Management
-              </h2>
-            </div>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              overflow: 'hidden'
-            }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ backgroundColor: '#f8fafc' }}>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Name</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Email</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Role</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Join Date</th>
-                    <th style={{ padding: '1rem', textAlign: 'left', fontSize: '0.875rem', fontWeight: '600', color: '#374151', fontFamily: 'Roboto, sans-serif' }}>Certificates</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user, index) => (
-                    <tr key={user.id} style={{ borderTop: '1px solid #e2e8f0' }}>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#1e293b', fontFamily: 'Open Sans, sans-serif', fontWeight: '500' }}>{user.name}</td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#64748b', fontFamily: 'Open Sans, sans-serif' }}>{user.email}</td>
-                      <td style={{ padding: '1rem' }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          padding: '4px 12px',
-                          borderRadius: '6px',
-                          fontSize: '0.75rem',
-                          fontWeight: '500',
-                          backgroundColor: user.role === 'admin' ? '#dbeafe' : '#f0fdf4',
-                          color: user.role === 'admin' ? '#1e40af' : '#166534',
-                          textTransform: 'capitalize'
-                        }}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#64748b', fontFamily: 'Open Sans, sans-serif' }}>{new Date(user.joinDate).toLocaleDateString()}</td>
-                      <td style={{ padding: '1rem', fontSize: '0.875rem', color: '#1e293b', fontFamily: 'Open Sans, sans-serif', fontWeight: '500' }}>{user.certificateCount}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-        {}
-        {activeTab === 'revoke' && (
-          <div style={{ padding: '2rem' }}>
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              padding: '2rem',
-              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-              marginBottom: '2rem'
-            }}>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                color: '#1e293b',
-                margin: '0 0 1.5rem 0',
-                fontFamily: 'Roboto, sans-serif',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <XCircle size={24} style={{ color: '#dc2626' }} />
-                Revoke Certificate
-              </h2>
-              <form onSubmit={handleRevocationForm} style={{ marginBottom: '2rem' }}>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr auto',
-                  gap: '1rem',
-                  alignItems: 'end'
-                }}>
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      color: '#374151',
-                      marginBottom: '0.5rem',
-                      fontFamily: 'Open Sans, sans-serif'
-                    }}>
-                      Certificate ID to Revoke
-                    </label>
-                    <input
-                      type="text"
-                      value={revokeId}
-                      onChange={(e) => setRevokeId(e.target.value)}
-                      placeholder="Enter certificate ID (e.g., CERT-2024-001)"
-                      style={{
-                        width: '100%',
-                        padding: '0.75rem 1rem',
-                        border: '2px solid #d1d5db',
-                        borderRadius: '8px',
-                        fontSize: '0.875rem',
-                        fontFamily: 'Open Sans, sans-serif',
-                        outline: 'none',
-                        transition: 'border-color 0.2s'
-                      }}
-                      onFocus={(e) => e.target.style.borderColor = '#dc2626'}
-                      onBlur={(e) => e.target.style.borderColor = '#d1d5db'}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={revoking}
-                    style={{
-                      padding: '0.75rem 2rem',
-                      backgroundColor: revoking ? '#9ca3af' : '#dc2626',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      cursor: revoking ? 'not-allowed' : 'pointer',
-                      fontFamily: 'Roboto, sans-serif',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
-                    }}
-                  >
-                    {revoking ? (
-                      <>
-                        <div style={{
-                          width: '16px',
-                          height: '16px',
-                          border: '2px solid #ffffff33',
-                          borderTop: '2px solid #ffffff',
-                          borderRadius: '50%',
-                          animation: 'spin 1s linear infinite'
-                        }}></div>
-                        Revoking...
-                      </>
-                    ) : (
-                      <>
-                        <XCircle size={16} />
-                        Revoke Certificate
-                      </>
-                    )}
-                  </button>
+        <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
+          <div className="px-8 py-4 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {activeTab === 'issue' ? 'Issue Certificate' : 'Certificate Management'}
+            </h2>
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
+              {!isMetaMaskInstalled() ? (
+                <div className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                  <AlertCircle size={18} className="text-red-600 dark:text-red-400" />
+                  <span className="text-sm font-medium text-red-600 dark:text-red-400">MetaMask not installed</span>
                 </div>
-              </form>
-              {}
-              {revocationResult && (
-                <div style={{
-                  backgroundColor: revocationResult.success ? '#f0fdf4' : '#fef2f2',
-                  border: `1px solid ${revocationResult.success ? '#bbf7d0' : '#fecaca'}`,
-                  borderRadius: '8px',
-                  padding: '1.5rem'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    marginBottom: '0.5rem'
-                  }}>
-                    {revocationResult.success ? (
-                      <CheckCircle size={20} style={{ color: '#16a34a' }} />
-                    ) : (
-                      <AlertCircle size={20} style={{ color: '#dc2626' }} />
-                    )}
-                    <h3 style={{
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      color: revocationResult.success ? '#166534' : '#dc2626',
-                      margin: 0,
-                      fontFamily: 'Roboto, sans-serif'
-                    }}>
-                      {revocationResult.success ? 'Certificate Revoked Successfully' : 'Revocation Failed'}
-                    </h3>
-                  </div>
-                  <p style={{
-                    color: revocationResult.success ? '#166534' : '#dc2626',
-                    margin: '0 0 1rem 0',
-                    fontWeight: '500',
-                    fontFamily: 'Open Sans, sans-serif'
-                  }}>
-                    {revocationResult.message}
-                  </p>
-                  {revocationResult.success && revocationResult.certificate && (
-                    <div style={{
-                      backgroundColor: 'white',
-                      padding: '1rem',
-                      borderRadius: '6px',
-                      border: '1px solid #d1fae5'
-                    }}>
-                      <h4 style={{
-                        fontSize: '0.875rem',
-                        fontWeight: '600',
-                        color: '#374151',
-                        margin: '0 0 0.5rem 0',
-                        fontFamily: 'Roboto, sans-serif'
-                      }}>
-                        Certificate Details:
-                      </h4>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                        gap: '0.75rem',
-                        fontSize: '0.75rem',
-                        fontFamily: 'Open Sans, sans-serif'
-                      }}>
-                        <div><strong>ID:</strong> {revocationResult.certificate.id}</div>
-                        <div><strong>Recipient:</strong> {revocationResult.certificate.recipientName}</div>
-                        <div><strong>Course:</strong> {revocationResult.certificate.courseName}</div>
-                        <div><strong>New Status:</strong> <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          padding: '2px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.75rem',
-                          fontWeight: '500',
-                          backgroundColor: '#fee2e2',
-                          color: '#dc2626'
-                        }}>
-                          ❌ {revocationResult.certificate.status}
-                        </span></div>
-                      </div>
+              ) : !isWalletConnected ? (
+                <AnimatedButton
+                  variant="primary"
+                  size="sm"
+                  onClick={connectWallet}
+                  disabled={isConnecting}
+                  icon={<Wallet size={18} />}
+                >
+                  {isConnecting ? 'Connecting...' : 'Connect MetaMask'}
+                </AnimatedButton>
+              ) : (
+                <div className="flex items-center gap-3">
+                  {!isCorrectNetwork && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+                      <AlertCircle size={18} className="text-yellow-600 dark:text-yellow-400" />
+                      <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">Wrong Network</span>
+                      <AnimatedButton
+                        variant="outline"
+                        size="sm"
+                        onClick={switchToSepolia}
+                      >
+                        Switch
+                      </AnimatedButton>
                     </div>
                   )}
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
+                    isCorrectNetwork 
+                      ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
+                      : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                  }`}>
+                    <div className={`w-2 h-2 rounded-full ${isCorrectNetwork ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <span className={`text-sm font-medium ${
+                      isCorrectNetwork 
+                        ? 'text-green-700 dark:text-green-300' 
+                        : 'text-red-700 dark:text-red-300'
+                    }`}>
+                      {formatAddress(walletAddress)}
+                    </span>
+                    <button
+                      onClick={disconnectWallet}
+                      className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
                 </div>
               )}
-              {}
-              <div style={{
-                backgroundColor: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                padding: '1.5rem',
-                marginTop: '2rem'
-              }}>
-                <h4 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#374151',
-                  margin: '0 0 1rem 0',
-                  fontFamily: 'Roboto, sans-serif'
-                }}>
-                  How to Revoke a Certificate:
-                </h4>
-                <ol style={{
-                  fontSize: '0.875rem',
-                  color: '#64748b',
-                  margin: 0,
-                  paddingLeft: '1.25rem',
-                  fontFamily: 'Open Sans, sans-serif',
-                  lineHeight: '1.5'
-                }}>
-                  <li>Enter the exact Certificate ID you want to revoke</li>
-                  <li>Click the "Revoke Certificate" button</li>
-                  <li>Confirm the action when prompted</li>
-                  <li>The certificate status will be updated to "Revoked" immediately</li>
-                  <li>Revoked certificates cannot be restored to valid status</li>
-                </ol>
-                <div style={{
-                  marginTop: '1rem',
-                  padding: '0.75rem',
-                  backgroundColor: '#fef3c7',
-                  border: '1px solid #f59e0b',
-                  borderRadius: '6px'
-                }}>
-                  <p style={{
-                    fontSize: '0.75rem',
-                    color: '#92400e',
-                    margin: 0,
-                    fontWeight: '500',
-                    fontFamily: 'Open Sans, sans-serif'
-                  }}>
-                    ⚠️ <strong>Warning:</strong> Certificate revocation is permanent and cannot be undone. Use this feature carefully.
-                  </p>
-                </div>
-              </div>
-              {}
-              <div style={{
-                backgroundColor: 'white',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                marginTop: '2rem',
-                overflow: 'hidden'
-              }}>
-                <div style={{
-                  padding: '1rem 1.5rem',
-                  backgroundColor: '#f8fafc',
-                  borderBottom: '1px solid #e2e8f0'
-                }}>
-                  <h4 style={{
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    color: '#374151',
-                    margin: 0,
-                    fontFamily: 'Roboto, sans-serif'
-                  }}>
-                    Valid Certificates Available for Revocation:
-                  </h4>
-                </div>
-                <div style={{ padding: '1.5rem' }}>
-                  {certificates.filter(cert => cert.status === 'Valid').length > 0 ? (
-                    <div style={{
-                      display: 'grid',
-                      gap: '0.75rem'
-                    }}>
-                      {certificates.filter(cert => cert.status === 'Valid').map(cert => (
-                        <div key={cert.id} style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '0.75rem',
-                          backgroundColor: '#f8fafc',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '6px'
-                        }}>
-                          <div style={{
-                            fontSize: '0.875rem',
-                            fontFamily: 'Open Sans, sans-serif'
-                          }}>
-                            <strong>{cert.id}</strong> - {cert.recipientName} ({cert.courseName})
-                          </div>
-                          <button
-                            onClick={() => setRevokeId(cert.id)}
-                            style={{
-                              padding: '0.375rem 0.75rem',
-                              backgroundColor: '#dc2626',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '4px',
-                              fontSize: '0.75rem',
-                              fontWeight: '500',
-                              cursor: 'pointer',
-                              fontFamily: 'Roboto, sans-serif'
-                            }}
-                          >
-                            Select for Revocation
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p style={{
-                      fontSize: '0.875rem',
-                      color: '#64748b',
-                      margin: 0,
-                      textAlign: 'center',
-                      fontFamily: 'Open Sans, sans-serif'
-                    }}>
-                      No valid certificates available for revocation.
-                    </p>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
-        )}
+        </div>
         {}
-        {activeTab === 'settings' && (
-          <div>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: '600',
-              color: '#1e293b',
-              margin: '0 0 1.5rem 0',
-              fontFamily: 'Roboto, sans-serif'
-            }}>
-              System Settings
-            </h2>
-            <div style={{
-              backgroundColor: 'white',
-              padding: '2rem',
-              borderRadius: '12px',
-              border: '1px solid #e2e8f0',
-              textAlign: 'center'
-            }}>
-              <Settings size={48} style={{ color: '#64748b', margin: '0 auto 1rem auto' }} />
-              <h3 style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                color: '#374151',
-                margin: '0 0 0.5rem 0',
-                fontFamily: 'Roboto, sans-serif'
-              }}>
-                Settings Panel
-              </h3>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#64748b',
-                margin: 0,
-                fontFamily: 'Open Sans, sans-serif'
-              }}>
-                System configuration and administrative settings will be available here.
-              </p>
+        <div className="p-8">
+          {activeTab === 'issue' && (
+            <div className="max-w-4xl mx-auto space-y-6">
+              <DashboardCard>
+                <form onSubmit={handleIssueCertificate} className="space-y-6">
+                  {}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Upload Certificate PDF *
+                    </label>
+                    <div className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 ${
+                      formData.file 
+                        ? 'border-green-300 bg-green-50 dark:bg-green-900/20' 
+                        : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 hover:border-blue-400'
+                    }`}>
+                      <input
+                        id="file-input"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                      <label htmlFor="file-input" className="cursor-pointer">
+                        <Upload size={48} className={`mx-auto mb-3 ${formData.file ? 'text-green-600' : 'text-gray-400'}`} />
+                        {formData.file ? (
+                          <div>
+                            <CheckCircle size={24} className="mx-auto mb-2 text-green-600" />
+                            <p className="font-semibold text-green-700 dark:text-green-300">{formData.file.name}</p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {(formData.file.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="font-semibold text-gray-700 dark:text-gray-300">Click to upload PDF</p>
+                            <p className="text-sm text-gray-500 mt-1">Max size: 10MB</p>
+                          </div>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                  {}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Select Student *
+                    </label>
+                    <select
+                      value={formData.studentId}
+                      onChange={handleStudentChange}
+                      required
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    >
+                      <option value="">-- Select Student --</option>
+                      {students.map(student => (
+                        <option key={student.studentId} value={student.studentId}>
+                          {student.name} ({student.studentId})
+                        </option>
+                      ))}
+                    </select>
+                    {selectedStudent && (
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                        Email: {selectedStudent.email}
+                      </p>
+                    )}
+                  </div>
+                  {}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Course
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.course}
+                        onChange={(e) => setFormData({ ...formData, course: e.target.value })}
+                        placeholder="e.g., Blockchain Certification"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Degree
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.degree}
+                        onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
+                        placeholder="e.g., Certificate of Achievement"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                  </div>
+                  {}
+                  <AnimatedButton
+                    type="submit"
+                    variant="primary"
+                    size="lg"
+                    disabled={issuing || !formData.file || !formData.studentId || !isWalletConnected || !isCorrectNetwork}
+                    fullWidth
+                    icon={issuing ? null : <Upload size={20} />}
+                  >
+                    {issuing 
+                      ? 'Issuing Certificate...' 
+                      : !isWalletConnected 
+                        ? 'Connect Wallet to Issue Certificate'
+                        : !isCorrectNetwork
+                          ? 'Switch to Sepolia Network'
+                          : 'Issue Certificate to Blockchain'}
+                  </AnimatedButton>
+                </form>
+              </DashboardCard>
+              {}
+              <DashboardCard className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-200 dark:border-blue-800">
+                <h3 className="font-bold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
+                  <ShieldCheck size={20} />
+                  How it works:
+                </h3>
+                <ol className="text-blue-800 dark:text-blue-200 space-y-2 list-decimal list-inside">
+                  <li>Upload the certificate PDF file</li>
+                  <li>Select a student (only Shashank, Shreyas, or Vansh)</li>
+                  <li>Click "Issue Certificate" - the system will:
+                    <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
+                      <li>Upload PDF to Pinata IPFS</li>
+                      <li>Calculate SHA-256 hash</li>
+                      <li>Store on blockchain</li>
+                    </ul>
+                  </li>
+                </ol>
+              </DashboardCard>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+          {activeTab === 'certificates' && (
+            <div className="space-y-6">
+              {}
+              <div className="flex gap-2 border-b-2 border-gray-200 dark:border-gray-700">
+                {[
+                  { id: 'all', label: 'All' },
+                  { id: 'active', label: 'Active' },
+                  { id: 'revoked', label: 'Revoked' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setFilterTab(tab.id)}
+                    className={`px-6 py-3 font-semibold transition-all duration-200 border-b-2 ${
+                      filterTab === tab.id
+                        ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              {}
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+                  <p className="mt-4 text-gray-600 dark:text-gray-400">Loading certificates...</p>
+                </div>
+              ) : getFilteredCertificates().length === 0 ? (
+                <DashboardCard className="text-center py-12">
+                  <Award size={64} className="mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {filterTab === 'active' ? 'No active certificates' : 
+                     filterTab === 'revoked' ? 'No revoked certificates' : 
+                     'No certificates issued yet'}
+                  </p>
+                </DashboardCard>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {getFilteredCertificates().map((cert, index) => (
+                    <div key={cert._id} className="animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                      <CertificateCard
+                        certificate={cert}
+                        onView={handleViewCertificate}
+                        onRevoke={openRevokeModal}
+                        onActivate={openActivateModal}
+                        showQR={<CertificateQRCode certificateId={cert.certificateId} />}
+                        isRevoking={revoking}
+                        isActivating={activating}
+                        isAdmin={true}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      {}
+      {revokeModal.open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <DashboardCard className="max-w-md w-full animate-slide-up">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Revoke Certificate</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to revoke this certificate? This action will:
+            </p>
+            <ul className="text-gray-600 dark:text-gray-400 mb-6 space-y-2 list-disc list-inside">
+              <li>Mark the certificate as revoked on the blockchain</li>
+              <li>Update the certificate status in the database</li>
+              <li>Make the certificate invalid for verification</li>
+            </ul>
+            {revokeModal.certificate && (
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <strong>Certificate ID:</strong> {revokeModal.certificate.certificateId}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <strong>Student:</strong> {revokeModal.certificate.studentName}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>Course:</strong> {revokeModal.certificate.course}
+                </p>
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <AnimatedButton
+                variant="secondary"
+                onClick={() => setRevokeModal({ open: false, certificate: null })}
+                disabled={revoking}
+              >
+                Cancel
+              </AnimatedButton>
+              <AnimatedButton
+                variant="danger"
+                onClick={handleRevokeCertificate}
+                disabled={revoking}
+                icon={<Trash2 size={18} />}
+              >
+                {revoking ? 'Revoking...' : 'Confirm Revoke'}
+              </AnimatedButton>
+            </div>
+          </DashboardCard>
+        </div>
+      )}
+      {}
+      {activateModal.open && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <DashboardCard className="max-w-md w-full animate-slide-up">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Activate Certificate</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to activate this certificate? This action will:
+            </p>
+            <ul className="text-gray-600 dark:text-gray-400 mb-6 space-y-2 list-disc list-inside">
+              <li>Mark the certificate as active on the blockchain</li>
+              <li>Update the certificate status in the database</li>
+              <li>Make the certificate valid for verification again</li>
+            </ul>
+            {activateModal.certificate && (
+              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <strong>Certificate ID:</strong> {activateModal.certificate.certificateId}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
+                  <strong>Student:</strong> {activateModal.certificate.studentName}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  <strong>Course:</strong> {activateModal.certificate.course}
+                </p>
+              </div>
+            )}
+            <div className="flex gap-3 justify-end">
+              <AnimatedButton
+                variant="secondary"
+                onClick={() => setActivateModal({ open: false, certificate: null })}
+                disabled={activating}
+              >
+                Cancel
+              </AnimatedButton>
+              <AnimatedButton
+                variant="success"
+                onClick={handleActivateCertificate}
+                disabled={activating}
+                icon={<CheckCircle size={18} />}
+              >
+                {activating ? 'Activating...' : 'Confirm Activate'}
+              </AnimatedButton>
+            </div>
+          </DashboardCard>
+        </div>
+      )}
     </div>
   );
 };
