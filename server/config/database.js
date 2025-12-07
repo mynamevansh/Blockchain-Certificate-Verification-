@@ -1,19 +1,42 @@
-const mongoose = require('mongoose'); const connectDB = async () => {
+const mongoose = require('mongoose');
+
+const connectDB = async () => {
   try {
-    const options = { maxPoolSize: 10, serverSelectionTimeoutMS: 10000, socketTimeoutMS: 45000, heartbeatFrequencyMS: 30000, ssl: true, authSource: 'admin', retryWrites: true, }; const conn = await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI, options); console.log(`✅ MongoDB Connected Successfully!`); console.log(`📊 Database: ${conn.connection.db.databaseName} `); console.log(`🌐 Host: ${conn.connection.host} `); console.log(`🔌 Port: ${conn.connection.port} `); mongoose.connection.on('connected', () => {
+    const options = {
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      heartbeatFrequencyMS: 30000,
+      ssl: true,
+      authSource: 'admin',
+      retryWrites: true,
+    };
+
+    const conn = await mongoose.connect(process.env.MONGO_URI || process.env.MONGODB_URI, options);
+
+    console.log(`✅ MongoDB Connected Successfully!`);
+    console.log(`📊 Database: ${conn.connection.db.databaseName}`);
+    console.log(`🌐 Host: ${conn.connection.host}`);
+    console.log(`🔌 Port: ${conn.connection.port}`);
+
+    mongoose.connection.on('connected', () => {
       console.log('📡 Mongoose connected to MongoDB');
     });
+
     mongoose.connection.on('error', (err) => {
       console.error('❌ Mongoose connection error:', err);
     });
+
     mongoose.connection.on('disconnected', () => {
       console.log('📴 Mongoose disconnected from MongoDB');
     });
+
     process.on('SIGINT', async () => {
       await mongoose.connection.close();
       console.log('🔌 MongoDB connection closed through app termination');
       process.exit(0);
     });
+
   } catch (error) {
     console.error('❌ MongoDB Connection Failed:', error.message);
     console.error('🔍 Error Details:', {
@@ -21,6 +44,7 @@ const mongoose = require('mongoose'); const connectDB = async () => {
       message: error.message,
       code: error.code,
     });
+
     if (error.message.includes('ECONNREFUSED')) {
       console.log('💡 Check Atlas cluster status, whitelist IP, and credentials');
     } else if (error.message.includes('authentication failed')) {
@@ -31,10 +55,12 @@ const mongoose = require('mongoose'); const connectDB = async () => {
     process.exit(1);
   }
 };
+
 const seedInitialData = async () => {
   try {
     const Admin = require('../models/Admin');
     const User = require('../models/User');
+
     const existingAdmin = await Admin.findOne({ email: 'University_admin@university.edu' });
     if (!existingAdmin) {
       const initialAdmin = new Admin({
@@ -50,6 +76,7 @@ const seedInitialData = async () => {
     } else {
       console.log('ℹ️  Admin user already exists, skipping...');
     }
+
     const students = [
       {
         name: 'Vansh Ranawat',
@@ -88,19 +115,29 @@ const seedInitialData = async () => {
         emailVerified: true,
       }
     ];
+
     for (const studentData of students) {
-      const existingStudent = await User.findOne({
-        $or: [
-          { email: studentData.email },
-          { studentId: studentData.studentId }
-        ]
-      });
-      if (!existingStudent) {
-        const student = new User(studentData);
-        await student.save();
-        console.log(`🎓 Student ${studentData.name} created successfully`);
-      } else {
-        console.log(`ℹ️  Student ${studentData.name} already exists, skipping...`);
+      try {
+        const existingStudent = await User.findOne({
+          $or: [
+            { email: studentData.email },
+            { studentId: studentData.studentId }
+          ]
+        });
+
+        if (!existingStudent) {
+          const student = new User(studentData);
+          await student.save();
+          console.log(`🎓 Student ${studentData.name} created successfully`);
+        } else {
+          console.log(`ℹ️  Student ${studentData.name} already exists, skipping...`);
+        }
+      } catch (error) {
+        if (error.code === 11000) {
+          console.log(`ℹ️  Student ${studentData.name} already exists (Duplicate Key), skipping...`);
+        } else {
+          console.error(`❌ Error creating student ${studentData.name}:`, error.message);
+        }
       }
     }
 
@@ -130,8 +167,10 @@ const seedInitialData = async () => {
     } else {
       console.log('ℹ️  Sample certificate already exists, skipping...');
     }
+
   } catch (error) {
     console.error('❌ Error seeding initial data:', error.message);
   }
 };
+
 module.exports = { connectDB, seedInitialData };
