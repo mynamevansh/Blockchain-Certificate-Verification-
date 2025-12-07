@@ -38,7 +38,7 @@ const LandingPage = () => {
             projectSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
-    const features = [
+    /* const features = [
         {
             icon: Lock,
             title: 'Immutable Security',
@@ -71,7 +71,7 @@ const LandingPage = () => {
             description: 'Built for educational institutions with enterprise-grade reliability.',
             pill: 'Verified Technology'
         }
-    ];
+    ]; // unused */
     const whyChooseFeatures = [
         {
             icon: ShieldCheck,
@@ -98,7 +98,7 @@ const LandingPage = () => {
             color: '#f59e0b'
         }
     ];
-    const workflowSteps = [
+    /* const workflowSteps = [
         {
             step: '01',
             title: 'Certificate Creation',
@@ -123,7 +123,7 @@ const LandingPage = () => {
             description: 'Administrators maintain full control over certificate status, updates, and management throughout the entire lifecycle.',
             icon: Globe
         }
-    ];
+    ]; // unused */
     const projectCards = [
         {
             icon: TrendingUp,
