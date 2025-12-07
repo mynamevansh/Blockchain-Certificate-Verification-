@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import {
-  FileText,
-  Download,
-  Eye,
   LogOut,
   GraduationCap,
   Shield,
@@ -18,7 +15,7 @@ import { API_BASE_URL } from '../constants';
 import { resolveIPFS } from '../utils/ipfs';
 import CryptoJS from 'crypto-js';
 import CertificateQRCode from '../components/CertificateQRCode';
-import StatusBadge from '../components/ui/StatusBadge';
+// import StatusBadge from '../components/ui/StatusBadge'; // unused
 import DashboardCard from '../components/ui/DashboardCard';
 import AnimatedButton from '../components/ui/AnimatedButton';
 import CertificateCard from '../components/ui/CertificateCard';
