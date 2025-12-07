@@ -2,16 +2,12 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     ShieldCheck,
-    Search,
     Users,
     Award,
     CheckCircle,
-    Globe,
     ArrowRight,
     Play,
     Zap,
-    Lock,
-    Building2,
     Rocket,
     TrendingUp,
     Code,
@@ -179,7 +175,7 @@ const LandingPage = () => {
             backgroundColor: '#ffffff',
             minHeight: '100vh'
         }}>
-            {}
+            { }
             {isLoading && (
                 <div style={{
                     position: 'fixed',
@@ -194,7 +190,7 @@ const LandingPage = () => {
                     <Loader size={60} color="#3b82f6" />
                 </div>
             )}
-            {}
+            { }
             <header style={{
                 backgroundColor: 'white',
                 borderBottom: '1px solid #e5e7eb',
@@ -295,7 +291,7 @@ const LandingPage = () => {
                     </div>
                 </div>
             </header>
-            {}
+            { }
             <section style={{
                 background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
                 padding: '6rem 2rem',
@@ -413,7 +409,7 @@ const LandingPage = () => {
                     </div>
                 </div>
             </section>
-            {}
+            { }
             <section style={{
                 padding: '6rem 2rem',
                 backgroundColor: 'white'
@@ -501,7 +497,7 @@ const LandingPage = () => {
                     </div>
                 </div>
             </section>
-            {}
+            { }
             <section id="project-overview" style={{
                 padding: '6rem 2rem',
                 backgroundColor: '#f8fafc'
@@ -576,7 +572,7 @@ const LandingPage = () => {
                     </div>
                 </div>
             </section>
-            {}
+            { }
             <section style={{
                 padding: '6rem 2rem',
                 backgroundColor: 'white'
@@ -619,7 +615,7 @@ const LandingPage = () => {
                     </div>
                 </div>
             </section>
-            {}
+            { }
             <section style={{
                 padding: '6rem 2rem',
                 backgroundColor: '#f8fafc'
@@ -709,7 +705,7 @@ const LandingPage = () => {
                     </div>
                 </div>
             </section>
-            {}
+            { }
             <section style={{
                 padding: '6rem 2rem',
                 background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
@@ -773,7 +769,7 @@ const LandingPage = () => {
                     </button>
                 </div>
             </section>
-            {}
+            { }
             <footer style={{
                 backgroundColor: '#0f172a',
                 color: 'white',
