@@ -1,29 +1,64 @@
+import { ethers } from 'ethers';
 import CryptoJS from 'crypto-js';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from './contractConfig';
 class BlockchainService {
   constructor() {
-    this.web3 = null;
+    this.provider = null;
+    this.signer = null;
     this.contract = null;
     this.account = null;
     this.networkId = null;
   }
   async initialize() {
-    if (typeof window.ethereum !== 'undefined') {
+    if (!window.ethereum) {
+      console.warn("MetaMask not found. Blockchain operations will use backend service.");
+      return false;
+    }
+    try {
+      await window.ethereum.request({ method: "eth_requestAccounts" });
+      const sepoliaChainId = "0xaa36a7"; 
       try {
-        await window.ethereum.request({ method: 'eth_requestAccounts' });
-        this.web3 = window.ethereum;
-        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-        this.account = accounts[0];
-        this.networkId = await window.ethereum.request({ method: 'net_version' });
-        console.log('Blockchain service initialized');
-        console.log('Account:', this.account);
-        console.log('Network ID:', this.networkId);
-        return true;
-      } catch (error) {
-        console.error('Error initializing blockchain service:', error);
-        throw error;
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: sepoliaChainId }],
+        });
+        console.log("🟢 Switched to Sepolia network");
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          console.log("🟡 Sepolia not added — adding network...");
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: sepoliaChainId,
+                chainName: "Sepolia Test Network",
+                nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+                rpcUrls: ["https://rpc.sepolia.org"],
+                blockExplorerUrls: ["https://sepolia.etherscan.io"],
+              },
+            ],
+          });
+        } else {
+          console.error("🔴 Network switch failed:", switchError);
+          throw switchError;
+        }
       }
-    } else {
-      throw new Error('MetaMask not found. Please install MetaMask to use this application.');
+      this.provider = new ethers.providers.Web3Provider(window.ethereum);
+      this.signer = this.provider.getSigner();
+      this.account = await this.signer.getAddress();
+      this.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, this.signer);
+      const network = await this.provider.getNetwork();
+      this.networkId = network.chainId;
+      console.log("⚡ Blockchain initialized");
+      console.log("Connected Account:", this.account);
+      console.log("Network:", this.networkId);
+      if (this.networkId !== 11155111) {
+        console.warn("🚨 Not on Sepolia! Contract may fail");
+      }
+      return true;
+    } catch (error) {
+      console.error("Initialization error:", error);
+      throw error;
     }
   }
   async generateFileHash(file) {
@@ -33,98 +68,97 @@ class BlockchainService {
         try {
           const arrayBuffer = event.target.result;
           const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer);
-          const hash = CryptoJS.SHA512(wordArray);
+          const hash = CryptoJS.SHA256(wordArray);
           resolve(hash.toString(CryptoJS.enc.Hex));
-        } catch (error) {
-          reject(error);
+        } catch (err) {
+          reject(err);
         }
       };
-      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.onerror = () => reject("Error reading file");
       reader.readAsArrayBuffer(file);
     });
   }
   async issueCertificate(certificateData) {
     try {
-      if (!this.account) {
-        await this.initialize();
+      if (!this.contract) {
+        const initialized = await this.initialize();
+        if (!initialized || !this.contract) {
+          throw new Error("MetaMask not available. Please use the backend API to issue certificates.");
+        }
       }
-      const certificateId = `cert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const transaction = {
+      const certificateId = `cert_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const tx = await this.contract.issueCertificate(
         certificateId,
-        hash: certificateData.hash,
-        issuer: this.account,
-        recipient: certificateData.recipient,
-        metadata: certificateData.metadata,
-        timestamp: new Date().toISOString(),
-        status: 'active',
-        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`, // Mock transaction hash
+        certificateData.hash,
+        certificateData.ipfsCID,
+        certificateData.studentId,
+        certificateData.studentName,
+        certificateData.issuerSignature || "",
+        false 
+      );
+      console.log("⏳ Waiting for transaction confirmation...", tx.hash);
+      await tx.wait();
+      return {
+        certificateId,
+        txHash: tx.hash,
+        wallet: this.account,
       };
-      console.log('Certificate issued (mock):', transaction);
-      return transaction;
     } catch (error) {
-      console.error('Error issuing certificate:', error);
+      console.error("Issue Error:", error);
       throw error;
     }
   }
-  async verifyCertificate(certificateHash) {
+  async verifyCertificate(certificateId) {
     try {
-      if (!this.account) {
-        await this.initialize();
+      if (!this.contract) {
+        const initialized = await this.initialize();
+        if (!initialized || !this.contract) {
+          throw new Error("MetaMask not available. Please use the backend API to verify certificates.");
+        }
       }
-      const mockVerification = {
-        isValid: Math.random() > 0.3, // 70% chance of being valid for demo
-        certificateId: `cert_${Date.now()}`,
-        status: Math.random() > 0.8 ? 'revoked' : 'active', // 20% chance of being revoked
-        issuer: '0x742d35Cc6321d08e73c8d4c6C9Af2b179b3d9f3f',
-        timestamp: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+      const result = await this.contract.verifyCertificate(certificateId);
+      const statusMap = ["unknown", "active", "revoked"];
+      const status = statusMap[result[6]] || "unknown";
+      return {
+        certificateId,
+        certificateHash: result[0],
+        ipfsCID: result[1],
+        studentId: result[2],
+        studentName: result[3],
+        issuer: result[4],
+        issuedAt: new Date(result[5].toNumber() * 1000).toISOString(),
+        status,
+        isValid: status === "active",
       };
-      console.log('Certificate verification (mock):', mockVerification);
-      return mockVerification;
     } catch (error) {
-      console.error('Error verifying certificate:', error);
+      console.error("Verify Error:", error);
       throw error;
     }
   }
-  async revokeCertificate(certificateId, reason) {
+  async revokeCertificate(certificateId, reason = "No reason provided") {
     try {
-      if (!this.account) {
-        await this.initialize();
+      if (!this.contract) {
+        const initialized = await this.initialize();
+        if (!initialized || !this.contract) {
+          throw new Error("MetaMask not available. Please use the backend API to revoke certificates.");
+        }
       }
-      const revocation = {
+      const tx = await this.contract.revokeCertificate(certificateId);
+      await tx.wait();
+      return {
         certificateId,
         revokedBy: this.account,
         reason,
         timestamp: new Date().toISOString(),
-        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+        txHash: tx.hash,
       };
-      console.log('Certificate revoked (mock):', revocation);
-      return revocation;
     } catch (error) {
-      console.error('Error revoking certificate:', error);
+      console.error("Revoke Error:", error);
       throw error;
     }
   }
-  async getCertificateDetails(certificateId) {
-    try {
-      if (!this.account) {
-        await this.initialize();
-      }
-      const certificate = {
-        certificateId,
-        hash: `0x${Math.random().toString(16).substr(2, 128)}`,
-        issuer: '0x742d35Cc6321d08e73c8d4c6C9Af2b179b3d9f3f',
-        recipient: '0x123456789abcdef123456789abcdef1234567890',
-        status: Math.random() > 0.2 ? 'active' : 'revoked',
-        issuedAt: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
-        transactionHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-      };
-      console.log('Certificate details (mock):', certificate);
-      return certificate;
-    } catch (error) {
-      console.error('Error getting certificate details:', error);
-      throw error;
-    }
+  getCertificateDetails(id) {
+    return this.verifyCertificate(id);
   }
   isConnected() {
     return !!this.account;
@@ -134,18 +168,6 @@ class BlockchainService {
   }
   getNetworkId() {
     return this.networkId;
-  }
-  async switchNetwork(targetNetworkId = '1') {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: `0x${parseInt(targetNetworkId).toString(16)}` }],
-      });
-      return true;
-    } catch (error) {
-      console.error('Error switching network:', error);
-      throw error;
-    }
   }
 }
 const blockchainService = new BlockchainService();
