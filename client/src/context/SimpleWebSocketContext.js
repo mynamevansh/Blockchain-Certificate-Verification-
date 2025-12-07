@@ -1,5 +1,10 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
+import { toast } from 'react-toastify';
+import { API_BASE_URL } from '../constants';
+
 const WebSocketContext = createContext();
+
 export const useWebSocket = () => {
   const context = useContext(WebSocketContext);
   if (!context) {
@@ -7,24 +12,10 @@ export const useWebSocket = () => {
   }
   return context;
 };
+
 export const WebSocketProvider = ({ children }) => {
-  React.useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      const originalError = console.error;
-      console.error = (...args) => {
-        if (args[0]?.includes?.('WebSocket connection') || 
-            args[0]?.includes?.('ws://localhost')) {
-          return; // Suppress WebSocket errors
-        }
-        originalError.apply(console, args);
-      };
-      return () => {
-        console.error = originalError;
-      };
-    }
-  }, []);
-  const [socket] = useState(null);
-  const [isConnected] = useState(false); // Set to false since no backend
+  const [socket, setSocket] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   const [notifications, setNotifications] = useState([
     {
       id: '1',
@@ -39,49 +30,81 @@ export const WebSocketProvider = ({ children }) => {
       title: 'System Update',
       message: 'The system has been updated with new security features.',
       timestamp: new Date(Date.now() - 60000).toISOString(),
-    },
-    {
-      id: '3',
-      type: 'warning',
-      title: 'Maintenance Notice',
-      message: 'Scheduled maintenance will occur tonight from 12:00 AM to 2:00 AM.',
-      timestamp: new Date(Date.now() - 120000).toISOString(),
     }
   ]);
-  const connect = () => {
-    console.log('WebSocket connection will be established when backend is ready');
-  };
-  const disconnect = () => {
-    console.log('WebSocket disconnection');
-  };
-  const emit = (event, data) => {
-    console.log('Would emit:', event, data);
-  };
-  const addNotification = (notification) => {
-    const newNotification = {
-      ...notification,
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
+
+  useEffect(() => {
+    const socketInstance = io(API_BASE_URL, {
+      withCredentials: true,
+      transports: ['polling', 'websocket'],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      autoConnect: true
+    });
+
+    socketInstance.on('connect', () => {
+      console.log('✅ WebSocket connected:', socketInstance.id);
+      setIsConnected(true);
+    });
+
+    socketInstance.on('disconnect', () => {
+      console.log('❌ WebSocket disconnected');
+      setIsConnected(false);
+    });
+
+    socketInstance.on('notification', (notification) => {
+      console.log('🔔 New notification received:', notification);
+      setNotifications(prev => [
+        {
+          id: Date.now().toString(),
+          timestamp: new Date().toISOString(),
+          ...notification
+        },
+        ...prev
+      ]);
+
+      // Show toast for new notification
+      if (notification.type === 'success') {
+        toast.success(notification.title || 'Success');
+      } else if (notification.type === 'error') {
+        toast.error(notification.title || 'Error');
+      } else {
+        toast.info(notification.title || 'Info');
+      }
+    });
+
+    setSocket(socketInstance);
+
+    return () => {
+      console.log('🧹 Cleaning up WebSocket connection');
+      socketInstance.disconnect();
     };
-    setNotifications(prev => [newNotification, ...prev]);
+  }, []);
+
+  const emitEvent = (eventName, data) => {
+    if (socket && isConnected) {
+      socket.emit(eventName, data);
+    }
   };
-  const removeNotification = (id) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
-  };
+
   const clearNotifications = () => {
     setNotifications([]);
   };
+
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
   const value = {
     socket,
     isConnected,
     notifications,
-    connect,
-    disconnect,
-    emit,
-    addNotification,
-    removeNotification,
+    emitEvent,
     clearNotifications,
+    removeNotification
   };
+
   return (
     <WebSocketContext.Provider value={value}>
       {children}
