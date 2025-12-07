@@ -2,19 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { connectDB, seedInitialData } = require('./config/database');
-
 dotenv.config();
 const app = express();
-
-/* ---------------------------------------------
-   CORS CONFIG
---------------------------------------------- */
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5000',
   process.env.CLIENT_URL
 ].filter(Boolean);
-
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.some(allowed => origin.startsWith(allowed.replace('*', '')))) {
@@ -27,118 +21,95 @@ app.use(cors({
   },
   credentials: true
 }));
-
-/* ---------------------------------------------
-   BODY PARSING
---------------------------------------------- */
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-/* ---------------------------------------------
-   REQUEST LOGGING (dev mode only)
---------------------------------------------- */
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  next();
+});
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
-    console.log(`${req.method} ${req.path} -`, new Date().toISOString());
+    console.log(`${req.method} ${req.path} - ${new Date().toISOString()}`);
     next();
   });
 }
-
-/* ---------------------------------------------
-   HEALTH CHECK
---------------------------------------------- */
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Server running successfully',
+    message: 'Server is running successfully',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development'
   });
 });
-
-/* ---------------------------------------------
-   ROUTES
---------------------------------------------- */
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/certificates', require('./routes/certificates'));
-
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Welcome to Certificate Verification API',
     version: '1.0.0',
     endpoints: {
-      health: '/api/health',
+      health: '/health',
       auth: '/api/auth',
       admin: '/api/admin',
-      users: '/api/users',
-      certificates: '/api/certificates'
-    }
+      users: '/api/users'
+    },
+    documentation: 'See README.md for API documentation'
   });
 });
-
-/* ---------------------------------------------
-   404 HANDLER
---------------------------------------------- */
 app.use((req, res) => {
   res.status(404).json({
     success: false,
     message: `Route ${req.originalUrl} not found`
   });
 });
-
-/* ---------------------------------------------
-   GLOBAL ERROR HANDLER
---------------------------------------------- */
 app.use((err, req, res, next) => {
   console.error('Global Error Handler:', err);
-
-  let status = err.statusCode || 500;
-  let message = err.message || 'Internal Server Error';
-
-  if (err.code === 11000) {
-    message = 'Duplicate field value entered';
-    status = 400;
-  }
+  let error = { ...err };
+  error.message = err.message;
   if (err.name === 'CastError') {
-    message = 'Invalid ID format';
-    status = 400;
+    const message = 'Invalid ID format';
+    error = { message, statusCode: 400 };
   }
-
-  res.status(status).json({ success: false, message });
+  if (err.code === 11000) {
+    const message = 'Duplicate field value entered';
+    error = { message, statusCode: 400 };
+  }
+  if (err.name === 'ValidationError') {
+    const message = Object.values(err.errors).map(val => val.message);
+    error = { message, statusCode: 400 };
+  }
+  res.status(error.statusCode || 500).json({
+    success: false,
+    message: error.message || 'Internal Server Error'
+  });
 });
-
-/* ---------------------------------------------
-   SOCKET.IO SETUP (CORE FIX)
---------------------------------------------- */
 const http = require('http');
 const { Server } = require('socket.io');
 
 const startServer = async () => {
   try {
     await connectDB();
-
-    // ⛔ Avoid seeding duplicates in production
-    if (process.env.NODE_ENV === 'development') {
-      await seedInitialData();
-    }
-
+    await seedInitialData();
     const PORT = process.env.PORT || 5000;
-    const server = http.createServer(app);
 
+    const server = http.createServer(app);
     const io = new Server(server, {
       cors: {
-        origin: "*",      // ⭐ FIX: works for localhost + Render deployments
-        methods: ["GET", "POST"]
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true
       }
     });
 
+    // Make io accessible to our router
     app.set('io', io);
 
     io.on('connection', (socket) => {
-      console.log('🔌 Client connected:', socket.id);
+      console.log('🔌 New client connected:', socket.id);
 
       socket.on('disconnect', () => {
         console.log('❌ Client disconnected:', socket.id);
@@ -156,7 +127,7 @@ const startServer = async () => {
       console.log(`🔗 API Base: http://localhost:${PORT}/api`);
       console.log('🚀 ================================');
       console.log('');
-      console.log('🔐 Initial Login Credentials (dev only):');
+      console.log('🔐 Initial Login Credentials:');
       console.log('📧 Admin: University_admin@university.edu / admin123');
       console.log('🎓 Students:');
       console.log('   • Vansh: vansh@university.edu / vansh123');
@@ -164,16 +135,11 @@ const startServer = async () => {
       console.log('   • Shreyas: shreyas@university.edu / shreyas123');
       console.log('');
     });
-
   } catch (error) {
     console.error('❌ Failed to start server:', error);
     process.exit(1);
   }
 };
-
-/* ---------------------------------------------
-   PROCESS SAFETY
---------------------------------------------- */
 process.on('unhandledRejection', (err) => {
   console.error('❌ Unhandled Promise Rejection:', err);
   process.exit(1);
@@ -182,10 +148,6 @@ process.on('uncaughtException', (err) => {
   console.error('❌ Uncaught Exception:', err);
   process.exit(1);
 });
-
-/* ---------------------------------------------
-   START SERVER
---------------------------------------------- */
 if (require.main === module) {
   startServer();
 } else {
@@ -194,14 +156,14 @@ if (require.main === module) {
     if (!isConnected) {
       try {
         await connectDB();
+        await seedInitialData();
         isConnected = true;
-        console.log('✅ Serverless initialized');
+        console.log('✅ Serverless function initialized');
       } catch (error) {
-        console.error('❌ Serverless init error:', error);
+        console.error('❌ Serverless initialization error:', error);
       }
     }
   };
   initializeServerless();
 }
-
 module.exports = app;
