@@ -100,17 +100,18 @@ const startServer = async () => {
     const server = http.createServer(app);
     const io = new Server(server, {
       cors: {
-        origin: (origin, callback) => {
-          if (!origin || allowedOrigins.includes(origin) || origin.includes('vercel.app')) {
-            callback(null, true);
-          } else {
-            callback(null, false);
-          }
-        },
+        origin: [
+          'http://localhost:3000',
+          'http://localhost:5000',
+          'https://blockchain-certificate-verification.vercel.app',
+          'https://blockchain-certificate-verification-sj2j.onrender.com'
+        ],
         methods: ["GET", "POST"],
         credentials: true,
         allowedHeaders: ["Access-Control-Allow-Origin"]
-      }
+      },
+      transports: ['polling', 'websocket'],
+      allowEIO3: true
     });
 
     // Make io accessible to our router
