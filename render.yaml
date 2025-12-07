@@ -4,39 +4,19 @@ services:
     env: node
     region: oregon
     plan: free
-
-    # ------------------------
-    # ⭐ MOST IMPORTANT FIXES
-    # ------------------------
-
-    rootDir: server                  # <-- ALWAYS REQUIRED
-    buildCommand: npm install        # <-- No need to cd server, Render already in rootDir
-    startCommand: node api/index.js  # <-- Start backend normally
-
-    # ------------------------
-    # PORT CONFIG
-    # ------------------------
+    rootDirectory: server
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
-
       - key: PORT
         value: "10000"
-
-      # ------------------------
-      # DATABASE & AUTH
-      # ------------------------
       - key: MONGO_URI
         sync: false
-
       - key: JWT_SECRET
         sync: false
-
       - key: JWT_EXPIRE
         value: "24h"
-
-      # ------------------------
-      # CORS + SOCKET URL
-      # ------------------------
       - key: CLIENT_URL
         value: "https://blockchain-certificate-verification.vercel.app"
