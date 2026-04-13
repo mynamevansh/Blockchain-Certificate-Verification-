@@ -47,6 +47,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/certificates', require('./routes/certificates'));
+app.use('/api/ipfs', require('./routes/ipfs'));
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
@@ -56,7 +57,9 @@ app.get('/', (req, res) => {
       health: '/health',
       auth: '/api/auth',
       admin: '/api/admin',
-      users: '/api/users'
+      users: '/api/users',
+      certificates: '/api/certificates',
+      ipfs: '/api/ipfs'
     },
     documentation: 'See README.md for API documentation'
   });
@@ -95,6 +98,13 @@ const startServer = async () => {
   try {
     await connectDB();
     await seedInitialData();
+    
+    const { testConnection } = require('./utils/pinata');
+    const pinataReady = await testConnection();
+    if (!pinataReady) {
+      console.warn('⚠️  WARNING: Pinata is not properly configured. Certificate uploads will fail.');
+      console.warn('   Please set PINATA_API_KEY and PINATA_SECRET_API_KEY environment variables.');
+    }
     const PORT = process.env.PORT || 5000;
 
     const server = http.createServer(app);

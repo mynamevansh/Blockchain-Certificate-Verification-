@@ -76,14 +76,23 @@ router.post('/upload-ipfs', authenticate, upload.single('file'), async (req, res
       if (req.file && fs.existsSync(req.file.path)) {
         fs.unlinkSync(req.file.path);
       }
+      console.error('❌ Pinata upload detailed error:', error);
       throw error;
     }
   } catch (error) {
     console.error('❌ IPFS upload error:', error);
+    
+    let errorMessage = 'Failed to upload to IPFS';
+    if (error.message.includes('Pinata credentials')) {
+      errorMessage = 'Server configuration error: Pinata credentials not set. Contact your administrator.';
+    } else if (error.message.includes('Pinata upload failed')) {
+      errorMessage = error.message;
+    }
+    
     res.status(500).json({
       success: false,
-      message: 'Failed to upload to IPFS',
-      error: error.message
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

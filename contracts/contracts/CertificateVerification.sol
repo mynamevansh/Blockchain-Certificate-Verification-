@@ -93,19 +93,10 @@ contract CertificateVerification is Ownable {
     
     // ==================== STATE VARIABLES ====================
     
-    // Mapping from certificate ID to Certificate struct
     mapping(string => Certificate) private certificates;
-    
-    // Mapping to track authorized issuers
     mapping(address => bool) public authorizedIssuers;
-    
-    // Array to keep track of all certificate IDs
     string[] private certificateIds;
-    
-    // Counter for total certificates issued
     uint256 public totalCertificatesIssued;
-    
-    // Counter for total certificates revoked
     uint256 public totalCertificatesRevoked;
     
     // ==================== EVENTS ====================
@@ -189,8 +180,6 @@ contract CertificateVerification is Ownable {
      * @dev Constructor sets the contract deployer as the owner
      */
     constructor() Ownable(msg.sender) {
-        // Owner is automatically set by Ownable constructor
-        // Owner is automatically an authorized issuer
         authorizedIssuers[msg.sender] = true;
     }
     
@@ -220,13 +209,11 @@ contract CertificateVerification is Ownable {
         onlyAuthorizedIssuer
         validCertificateId(_certificateId)
     {
-        // Validate input parameters
         require(bytes(_certificateHash).length > 0, "Certificate hash cannot be empty");
         require(bytes(_ipfsCID).length > 0, "IPFS CID cannot be empty");
         require(bytes(_studentId).length > 0, "Student ID cannot be empty");
         require(bytes(_studentName).length > 0, "Student name cannot be empty");
         
-        // Check if certificate already exists
         CertificateStatus currentStatus = certificates[_certificateId].status;
         
         if (currentStatus != CertificateStatus.Unknown) {
@@ -236,7 +223,6 @@ contract CertificateVerification is Ownable {
             );
         }
         
-        // Create new certificate
         certificates[_certificateId] = Certificate({
             certificateHash: _certificateHash,
             ipfsCID: _ipfsCID,
@@ -247,13 +233,11 @@ contract CertificateVerification is Ownable {
             status: CertificateStatus.Active
         });
         
-        // Add to certificate IDs array if new
         if (currentStatus == CertificateStatus.Unknown) {
             certificateIds.push(_certificateId);
             totalCertificatesIssued++;
         }
         
-        // Emit event
         emit CertificateIssued(
             _certificateId,
             _certificateHash,
@@ -327,11 +311,9 @@ contract CertificateVerification is Ownable {
             "Certificate is already revoked"
         );
         
-        // Update status to revoked
         cert.status = CertificateStatus.Revoked;
         totalCertificatesRevoked++;
         
-        // Emit event
         emit CertificateRevoked(
             _certificateId,
             msg.sender,
@@ -362,11 +344,9 @@ contract CertificateVerification is Ownable {
             "Certificate is not revoked"
         );
         
-        // Update status to active
         cert.status = CertificateStatus.Active;
         totalCertificatesRevoked--;
         
-        // Emit event
         emit CertificateActivated(
             _certificateId,
             msg.sender,
