@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const FormData = require('form-data');
 
 const PINATA_API_KEY = process.env.PINATA_API_KEY;
 const PINATA_SECRET_API_KEY = process.env.PINATA_SECRET_API_KEY;
@@ -46,8 +47,7 @@ const uploadToPinata = async (filePath, metadata = {}) => {
         const fileName = path.basename(filePath);
 
         const formData = new FormData();
-        const blob = fs.readFileSync(filePath);
-        formData.append('file', blob, fileName);
+        formData.append('file', fileStream, fileName);
 
         const metadata_json = {
             name: metadata.name || 'Certificate',
@@ -60,7 +60,7 @@ const uploadToPinata = async (filePath, metadata = {}) => {
             headers: {
                 'pinata_api_key': PINATA_API_KEY,
                 'pinata_secret_api_key': PINATA_SECRET_API_KEY,
-                ...formData.getHeaders?.()
+                ...formData.getHeaders()
             },
             timeout: 30000
         });
