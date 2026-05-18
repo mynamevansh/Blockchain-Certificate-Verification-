@@ -1,1 +1,5 @@
-import abi from "../abi/CertificateVerification.json";export const CONTRACT_ADDRESS = "0x601A09f5476a344f73118D8106E551d3A4B2Cf26";export const CONTRACT_ABI = abi;
+import abi from "../abi/CertificateVerification.json";
+import { BLOCKCHAIN_CONFIG } from "../constants";
+
+export const CONTRACT_ADDRESS = BLOCKCHAIN_CONFIG.CONTRACT_ADDRESS;
+export const CONTRACT_ABI = abi;

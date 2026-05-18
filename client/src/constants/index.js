@@ -1,8 +1,17 @@
 export const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || process.env.REACT_APP_API_URL || 'http://localhost:5000';
 export const WS_URL = process.env.REACT_APP_WS_URL || 'https://blockchain-certificate-verification-sj2j.onrender.com';
+export const ISSUER_WALLET_ADDRESS =
+  process.env.REACT_APP_ISSUER_WALLET_ADDRESS ||
+  '0x8c0BfDecAaEEadCba45EFA5de95F5d5f61136302';
+
+export const normalizeAddress = (address) => address?.toLowerCase() ?? '';
+
 export const BLOCKCHAIN_CONFIG = {
-  NETWORK_ID: process.env.REACT_APP_NETWORK_ID || '1337',
-  CONTRACT_ADDRESS: process.env.REACT_APP_CONTRACT_ADDRESS || '',
+  NETWORK_ID: process.env.REACT_APP_NETWORK_ID || '11155111',
+  CONTRACT_ADDRESS:
+    process.env.REACT_APP_CONTRACT_ADDRESS ||
+    '0xb1E4d3E5FE855b1cbB4F454E69be4E904fD1571A',
+  ISSUER_WALLET_ADDRESS,
   IPFS_GATEWAY: process.env.REACT_APP_IPFS_GATEWAY || 'https://ipfs.io/ipfs/',
 };
 export const APP_CONFIG = {

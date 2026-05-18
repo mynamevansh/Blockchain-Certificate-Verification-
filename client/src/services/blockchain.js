@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import CryptoJS from 'crypto-js';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from './contractConfig';
+import { ISSUER_WALLET_ADDRESS, normalizeAddress } from '../constants';
 class BlockchainService {
   constructor() {
     this.provider = null;
@@ -61,6 +62,20 @@ class BlockchainService {
       throw error;
     }
   }
+
+  async syncAccount() {
+    if (!window.ethereum) {
+      throw new Error("MetaMask not available");
+    }
+    this.provider = new ethers.providers.Web3Provider(window.ethereum);
+    this.signer = this.provider.getSigner();
+    this.account = await this.signer.getAddress();
+    this.contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, this.signer);
+    const network = await this.provider.getNetwork();
+    this.networkId = network.chainId;
+    return this.account;
+  }
+
   async generateFileHash(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -78,14 +93,45 @@ class BlockchainService {
       reader.readAsArrayBuffer(file);
     });
   }
+  async isAuthorizedIssuer(address) {
+    if (!this.provider) {
+      const initialized = await this.initialize();
+      if (!initialized || !this.provider) {
+        return false;
+      }
+    }
+    const readContract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      CONTRACT_ABI,
+      this.provider
+    );
+    return readContract.isAuthorizedIssuer(address);
+  }
+
+  async ensureIssuerAuthorized() {
+    if (!window.ethereum) {
+      throw new Error("MetaMask not available");
+    }
+
+    await this.syncAccount();
+
+    if (normalizeAddress(this.account) !== normalizeAddress(ISSUER_WALLET_ADDRESS)) {
+      throw new Error(
+        `MetaMask is using ${this.account}. Switch to issuer wallet ${ISSUER_WALLET_ADDRESS} and try again.`
+      );
+    }
+
+    const authorized = await this.isAuthorizedIssuer(this.account);
+    if (!authorized) {
+      throw new Error(
+        `Wallet ${this.account} is not an authorized issuer on contract ${CONTRACT_ADDRESS}.`
+      );
+    }
+  }
+
   async issueCertificate(certificateData) {
     try {
-      if (!this.contract) {
-        const initialized = await this.initialize();
-        if (!initialized || !this.contract) {
-          throw new Error("MetaMask not available. Please use the backend API to issue certificates.");
-        }
-      }
+      await this.ensureIssuerAuthorized();
       const certificateId = `cert_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
       const tx = await this.contract.issueCertificate(
         certificateId,
@@ -137,12 +183,7 @@ class BlockchainService {
   }
   async revokeCertificate(certificateId, reason = "No reason provided") {
     try {
-      if (!this.contract) {
-        const initialized = await this.initialize();
-        if (!initialized || !this.contract) {
-          throw new Error("MetaMask not available. Please use the backend API to revoke certificates.");
-        }
-      }
+      await this.ensureIssuerAuthorized();
       const tx = await this.contract.revokeCertificate(certificateId);
       await tx.wait();
       return {

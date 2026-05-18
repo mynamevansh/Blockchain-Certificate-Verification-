@@ -14,7 +14,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
-import { API_BASE_URL } from '../constants';
+import { API_BASE_URL, ISSUER_WALLET_ADDRESS, normalizeAddress } from '../constants';
 import { resolveIPFS } from '../utils/ipfs';
 import CertificateQRCode from '../components/CertificateQRCode';
 // import StatusBadge from '../components/ui/StatusBadge'; // unused
@@ -43,6 +43,7 @@ const AdminDashboard = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   // const [currentChainId, setCurrentChainId] = useState(null); // unused variable
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
+  const [isAuthorizedWallet, setIsAuthorizedWallet] = useState(false);
   const [formData, setFormData] = useState({
     file: null,
     studentId: '',
@@ -61,6 +62,36 @@ const AdminDashboard = () => {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
+
+  const checkWalletAuthorization = useCallback(async (address, { notifyMismatch = false } = {}) => {
+    if (!address) {
+      setIsAuthorizedWallet(false);
+      return false;
+    }
+    if (normalizeAddress(address) !== normalizeAddress(ISSUER_WALLET_ADDRESS)) {
+      setIsAuthorizedWallet(false);
+      if (notifyMismatch) {
+        toast.warning(
+          `Switch MetaMask to issuer wallet ${formatAddress(ISSUER_WALLET_ADDRESS)}`
+        );
+      }
+      return false;
+    }
+    try {
+      const authorized = await blockchainService.isAuthorizedIssuer(address);
+      setIsAuthorizedWallet(authorized);
+      if (!authorized) {
+        toast.error(
+          'This wallet is not authorized on the contract. Run contracts/scripts/add-issuer.js from the deployer account.'
+        );
+      }
+      return authorized;
+    } catch (error) {
+      console.error('Error checking issuer authorization:', error);
+      setIsAuthorizedWallet(false);
+      return false;
+    }
+  }, []);
   const checkNetwork = useCallback(async () => {
     if (!isMetaMaskInstalled()) return;
     try {
@@ -118,47 +149,103 @@ const AdminDashboard = () => {
       }
     }
   };
-  const connectWallet = async () => {
+  const requestIssuerAccount = async () => {
+    try {
+      await window.ethereum.request({
+        method: 'wallet_requestPermissions',
+        params: [
+          {
+            eth_accounts: {
+              restrictReturnedAccounts: [ISSUER_WALLET_ADDRESS],
+            },
+          },
+        ],
+      });
+    } catch (permissionError) {
+      if (permissionError.code !== 4001) {
+        console.warn('wallet_requestPermissions fallback:', permissionError);
+      } else {
+        throw permissionError;
+      }
+    }
+
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    });
+    const issuerAccount = accounts.find(
+      (account) => normalizeAddress(account) === normalizeAddress(ISSUER_WALLET_ADDRESS)
+    );
+
+    if (!issuerAccount) {
+      throw new Error(
+        `Issuer wallet not found. In MetaMask, select account ${ISSUER_WALLET_ADDRESS} and try again.`
+      );
+    }
+
+    return issuerAccount;
+  };
+
+  const connectIssuerWallet = async () => {
     if (!isMetaMaskInstalled()) {
       toast.error('MetaMask not installed. Please install MetaMask to continue.');
-      return;
+      return false;
     }
+
     setIsConnecting(true);
     try {
-      const accounts = await window.ethereum.request({ 
-        method: 'eth_requestAccounts' 
-      });
-      if (accounts && accounts.length > 0) {
-        const address = accounts[0];
-        setWalletAddress(address);
-        setIsWalletConnected(true);
-        const isSepolia = await checkNetwork();
-        if (!isSepolia) {
-          toast.warning('Please switch to Sepolia network in MetaMask');
-        } else {
-          toast.success(`Connected: ${formatAddress(address)}`);
+      let address;
+      try {
+        address = await requestIssuerAccount();
+      } catch (error) {
+        if (error.code === 4001) {
+          toast.error('Connection cancelled in MetaMask');
+          return false;
         }
-        console.log('✅ Connected Account:', address);
-        console.log('✅ Network:', isSepolia ? 'Sepolia' : 'Other');
+        throw error;
       }
+
+      setWalletAddress(address);
+      setIsWalletConnected(true);
+
+      const isSepolia = await checkNetwork();
+      if (!isSepolia) {
+        const switched = await switchToSepolia();
+        if (!switched) {
+          toast.warning('Please switch to Sepolia network in MetaMask');
+          return false;
+        }
+        await checkNetwork();
+      }
+
+      await blockchainService.initialize();
+      const authorized = await checkWalletAuthorization(address, { notifyMismatch: true });
+      if (authorized) {
+        toast.success(`Issuer wallet connected: ${formatAddress(address)}`);
+      }
+
+      console.log('Connected Account:', address);
+      console.log('Network: Sepolia');
+      return authorized;
     } catch (error) {
-      console.error('Error connecting wallet:', error);
-      if (error.code === 4001) {
-        toast.error('User denied connection request');
-      } else if (error.code === -32002) {
-        toast.error('Connection request already pending. Please check MetaMask.');
+      console.error('Error connecting issuer wallet:', error);
+      if (error.code === -32002) {
+        toast.error('Connection request pending. Open MetaMask and approve.');
       } else {
-        toast.error('Failed to connect wallet. Please try again.');
+        toast.error(error.message || 'Failed to connect issuer wallet');
       }
+      return false;
     } finally {
       setIsConnecting(false);
     }
   };
+
+  const connectWallet = connectIssuerWallet;
   const disconnectWallet = () => {
     setWalletAddress(null);
     setIsWalletConnected(false);
     // setCurrentChainId(null); // unused
     setIsCorrectNetwork(false);
+    setIsAuthorizedWallet(false);
     toast.info('Wallet disconnected');
   };
   useEffect(() => {
@@ -169,10 +256,17 @@ const AdminDashboard = () => {
       try {
         const accounts = await window.ethereum.request({ method: 'eth_accounts' });
         if (accounts && accounts.length > 0) {
-          const address = accounts[0];
+          const issuerAccount = accounts.find(
+            (account) => normalizeAddress(account) === normalizeAddress(ISSUER_WALLET_ADDRESS)
+          );
+          const address = issuerAccount || accounts[0];
           setWalletAddress(address);
           setIsWalletConnected(true);
           const isSepolia = await checkNetwork();
+          if (isSepolia && issuerAccount) {
+            await blockchainService.initialize();
+            await checkWalletAuthorization(address);
+          }
           console.log('✅ Wallet already connected');
           console.log('✅ Selected Account:', address);
           console.log('✅ Network:', isSepolia ? 'Sepolia' : 'Other');
@@ -184,8 +278,17 @@ const AdminDashboard = () => {
     checkConnection();
     const handleAccountsChanged = (accounts) => {
       if (accounts && accounts.length > 0) {
-        setWalletAddress(accounts[0]);
+        const issuerAccount = accounts.find(
+          (account) => normalizeAddress(account) === normalizeAddress(ISSUER_WALLET_ADDRESS)
+        );
+        const address = issuerAccount || accounts[0];
+        setWalletAddress(address);
         setIsWalletConnected(true);
+        if (issuerAccount) {
+          checkWalletAuthorization(address);
+        } else {
+          setIsAuthorizedWallet(false);
+        }
         toast.info(`Account changed: ${formatAddress(accounts[0])}`);
         console.log('✅ Account changed:', accounts[0]);
       } else {
@@ -298,6 +401,10 @@ const AdminDashboard = () => {
         return;
       }
     }
+    const authorized = await checkWalletAuthorization(walletAddress);
+    if (!authorized) {
+      return;
+    }
     if (!formData.file) {
       toast.error('Please select a PDF file');
       return;
@@ -345,6 +452,7 @@ const AdminDashboard = () => {
         throw new Error('Student not found');
       }
       toast.info('🔐 Waiting for blockchain confirmation...');
+      await blockchainService.syncAccount();
       const blockchainResult = await blockchainService.issueCertificate({
         hash: fileHash,
         ipfsCID: ipfsCID,
@@ -638,14 +746,30 @@ const AdminDashboard = () => {
                       </AnimatedButton>
                     </div>
                   )}
+                  {isWalletConnected && normalizeAddress(walletAddress) !== normalizeAddress(ISSUER_WALLET_ADDRESS) && (
+                    <div className="flex items-center gap-2 px-4 py-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+                      <AlertCircle size={18} className="text-yellow-600 dark:text-yellow-400" />
+                      <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+                        Wrong account connected
+                      </span>
+                      <AnimatedButton
+                        variant="outline"
+                        size="sm"
+                        onClick={connectIssuerWallet}
+                        disabled={isConnecting}
+                      >
+                        {isConnecting ? 'Connecting...' : `Connect ${formatAddress(ISSUER_WALLET_ADDRESS)}`}
+                      </AnimatedButton>
+                    </div>
+                  )}
                   <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border ${
-                    isCorrectNetwork 
+                    isCorrectNetwork && isAuthorizedWallet
                       ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' 
                       : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
                   }`}>
-                    <div className={`w-2 h-2 rounded-full ${isCorrectNetwork ? 'bg-green-500' : 'bg-red-500'}`} />
+                    <div className={`w-2 h-2 rounded-full ${isCorrectNetwork && isAuthorizedWallet ? 'bg-green-500' : 'bg-red-500'}`} />
                     <span className={`text-sm font-medium ${
-                      isCorrectNetwork 
+                      isCorrectNetwork && isAuthorizedWallet
                         ? 'text-green-700 dark:text-green-300' 
                         : 'text-red-700 dark:text-red-300'
                     }`}>
@@ -758,12 +882,25 @@ const AdminDashboard = () => {
                   </div>
                   {}
                   <AnimatedButton
-                    type="submit"
+                    type={!isWalletConnected || !isAuthorizedWallet ? 'button' : 'submit'}
                     variant="primary"
                     size="lg"
-                    disabled={issuing || !formData.file || !formData.studentId || !isWalletConnected || !isCorrectNetwork}
+                    disabled={
+                      issuing ||
+                      (!isAuthorizedWallet && isConnecting) ||
+                      (isAuthorizedWallet &&
+                        (!formData.file || !formData.studentId || !isCorrectNetwork))
+                    }
                     fullWidth
                     icon={issuing ? null : <Upload size={20} />}
+                    onClick={
+                      !isWalletConnected || !isAuthorizedWallet
+                        ? (e) => {
+                            e.preventDefault();
+                            connectIssuerWallet();
+                          }
+                        : undefined
+                    }
                   >
                     {issuing 
                       ? 'Issuing Certificate...' 
@@ -771,7 +908,9 @@ const AdminDashboard = () => {
                         ? 'Connect Wallet to Issue Certificate'
                         : !isCorrectNetwork
                           ? 'Switch to Sepolia Network'
-                          : 'Issue Certificate to Blockchain'}
+                          : !isAuthorizedWallet
+                            ? `Connect ${formatAddress(ISSUER_WALLET_ADDRESS)}`
+                            : 'Issue Certificate to Blockchain'}
                   </AnimatedButton>
                 </form>
               </DashboardCard>
