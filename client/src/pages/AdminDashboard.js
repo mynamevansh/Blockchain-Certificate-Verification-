@@ -313,7 +313,7 @@ const AdminDashboard = () => {
         window.ethereum.removeListener('chainChanged', handleChainChanged);
       }
     };
-  }, [checkNetwork]);
+  }, [checkNetwork, checkWalletAuthorization]);
   useEffect(() => {
     const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
     const role = localStorage.getItem('role');
