@@ -8,11 +8,17 @@ yarn-error.log*
 build/
 dist/
 
-# Environment variables
+# Environment variables and secrets (never commit real keys)
 .env
 .env.*
+.env.deployment
+.env.local
+.env.*.local
 !.env.example
 !.env.README
+**/secrets/
+*.pem
+*.key
 
 # IDE and editor files
 .vscode/
